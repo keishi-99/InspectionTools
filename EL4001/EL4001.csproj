@@ -8,4 +8,20 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="sine.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="H.InputSimulator" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinFormsLibrary\WinFormsLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Common\sine.ico" />
+  </ItemGroup>
+
 </Project>
