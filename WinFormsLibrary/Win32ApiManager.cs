@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Windows.Input;
 
 namespace WinFormsLibrary {
 
@@ -210,16 +211,15 @@ namespace WinFormsLibrary {
             return NativeMethods.UnregisterHotKey(hWnd, id);
         }
 
-        //// ホットキーを表すクラス
-        //public class Hotkey(uint modifier, Keys key, Action action)
-        //{
-        //    private static int s_nextId = 1; // 初期値を1に設定 (0は予約用)
+        // ホットキーを表すクラス
+        public class Hotkey(uint modifier, System.Windows.Input.Key key, Action action) {
+            private static int s_nextId = 1;
 
-        //    public uint Modifier { get; set; } = modifier;
-        //    public int Key { get; set; } = (int)key; // Keys を int に変換
-        //    public int Id { get; } = s_nextId++; // 次の一意なIDを割り当ててカウンターをインクリメント
-        //    public Action Action { get; set; } = action ?? throw new ArgumentNullException(nameof(action), "Action cannot be null.");
-        //}
+            public int Id { get; } = s_nextId++;
+            public uint Modifier { get; set; } = modifier;
+            public int VirtualKey { get; set; } = KeyInterop.VirtualKeyFromKey(key); // Key -> VKコード
+            public Action Action { get; set; } = action ?? throw new ArgumentNullException(nameof(action));
+        }
 
         public const uint ModNone = 0x0;
         public const uint ModAlt = 0x1;
@@ -239,43 +239,43 @@ namespace WinFormsLibrary {
         public const int SwShowNomal = 1; // 通常のサイズと位置で表示し、アクティブにする
         public const int SwShow = 5;       // ウィンドウを現在のサイズと位置で表示する
 
-        //public const Keys HotkeyMinus = Keys.OemMinus;              // ( - )用
-        //public const Keys HotkeyTilde = Keys.Oem7;                  // ( ^ )用
-        //public const Keys HotkeyAtsign = Keys.Oemtilde;             // ( @ )用
-        //public const Keys HotkeyBracketL = Keys.OemOpenBrackets;    // ( [ )用
-        //public const Keys HotkeySemiColon = Keys.Oemplus;           // ( ; )用
-        //public const Keys HotkeyColon = Keys.OemSemicolon;          // ( : )用
-        //public const Keys HotkeyBracketR = Keys.OemCloseBrackets;   // ( ] )用
-        //public const Keys HotkeyComma = Keys.Oemcomma;              // ( , )用
-        //public const Keys HotkeyPeriod = Keys.OemPeriod;            // ( . )用
-        //public const Keys HotkeySlash = Keys.OemQuestion;           // ( / )用
-        //public const Keys HotkeyBackslash = Keys.OemBackslash;      // ( \ )用
+        public const Key HotkeyMinus = Key.OemMinus;              // ( - )用
+        public const Key HotkeyTilde = Key.Oem7;                  // ( ^ )用
+        public const Key HotkeyAtsign = Key.OemTilde;             // ( @ )用
+        public const Key HotkeyBracketL = Key.OemOpenBrackets;    // ( [ )用
+        public const Key HotKeyemiColon = Key.OemPlus;           // ( ; )用
+        public const Key HotkeyColon = Key.OemSemicolon;          // ( : )用
+        public const Key HotkeyBracketR = Key.OemCloseBrackets;   // ( ] )用
+        public const Key HotkeyComma = Key.OemComma;              // ( , )用
+        public const Key HotkeyPeriod = Key.OemPeriod;            // ( . )用
+        public const Key HotkeySlash = Key.OemQuestion;           // ( / )用
+        public const Key HotkeyBackslash = Key.OemBackslash;      // ( \ )用
 
-        //public const Keys HotkeyD1 = Keys.D1;      // ( 1 )用
-        //public const Keys HotkeyD2 = Keys.D2;      // ( 2 )用
-        //public const Keys HotkeyD3 = Keys.D3;      // ( 3 )用
-        //public const Keys HotkeyD4 = Keys.D4;      // ( 4 )用
-        //public const Keys HotkeyD5 = Keys.D5;      // ( 5 )用
-        //public const Keys HotkeyD6 = Keys.D6;      // ( 6 )用
-        //public const Keys HotkeyD7 = Keys.D7;      // ( 7 )用
-        //public const Keys HotkeyD8 = Keys.D8;      // ( 8 )用
-        //public const Keys HotkeyD9 = Keys.D9;      // ( 9 )用
-        //public const Keys HotkeyD0 = Keys.D0;      // ( 0 )用
+        public const Key HotkeyD1 = Key.D1;      // ( 1 )用
+        public const Key HotkeyD2 = Key.D2;      // ( 2 )用
+        public const Key HotkeyD3 = Key.D3;      // ( 3 )用
+        public const Key HotkeyD4 = Key.D4;      // ( 4 )用
+        public const Key HotkeyD5 = Key.D5;      // ( 5 )用
+        public const Key HotkeyD6 = Key.D6;      // ( 6 )用
+        public const Key HotkeyD7 = Key.D7;      // ( 7 )用
+        public const Key HotkeyD8 = Key.D8;      // ( 8 )用
+        public const Key HotkeyD9 = Key.D9;      // ( 9 )用
+        public const Key HotkeyD0 = Key.D0;      // ( 0 )用
 
-        //public const Keys HotkeyNum0 = Keys.NumPad0;     // ( num0 )用
-        //public const Keys HotkeyNum1 = Keys.NumPad1;     // ( num1 )用
-        //public const Keys HotkeyNum2 = Keys.NumPad2;     // ( num2 )用
-        //public const Keys HotkeyNum3 = Keys.NumPad3;     // ( num3 )用
-        //public const Keys HotkeyNum4 = Keys.NumPad4;     // ( num4 )用
-        //public const Keys HotkeyNum5 = Keys.NumPad5;     // ( num5 )用
-        //public const Keys HotkeyNum6 = Keys.NumPad6;     // ( num6 )用
-        //public const Keys HotkeyNum7 = Keys.NumPad7;     // ( num7 )用
-        //public const Keys HotkeyNum8 = Keys.NumPad8;     // ( num8 )用
-        //public const Keys HotkeyNum9 = Keys.NumPad9;     // ( num9 )用
+        public const Key HotkeyNum0 = Key.NumPad0;     // ( num0 )用
+        public const Key HotkeyNum1 = Key.NumPad1;     // ( num1 )用
+        public const Key HotkeyNum2 = Key.NumPad2;     // ( num2 )用
+        public const Key HotkeyNum3 = Key.NumPad3;     // ( num3 )用
+        public const Key HotkeyNum4 = Key.NumPad4;     // ( num4 )用
+        public const Key HotkeyNum5 = Key.NumPad5;     // ( num5 )用
+        public const Key HotkeyNum6 = Key.NumPad6;     // ( num6 )用
+        public const Key HotkeyNum7 = Key.NumPad7;     // ( num7 )用
+        public const Key HotkeyNum8 = Key.NumPad8;     // ( num8 )用
+        public const Key HotkeyNum9 = Key.NumPad9;     // ( num9 )用
 
-        //public const Keys HotkeyNumAdd = Keys.Add;              // ( num+ )用
-        //public const Keys HotkeyNumSubtract = Keys.Subtract;    // ( num- )用
-        //public const Keys HotkeyNumDivide = Keys.Divide;        // ( num/ )用
-        //public const Keys HotkeyNumMultiply = Keys.Multiply;    // ( num* )用
+        public const Key HotkeyNumAdd = Key.Add;              // ( num+ )用
+        public const Key HotkeyNumSubtract = Key.Subtract;    // ( num- )用
+        public const Key HotkeyNumDivide = Key.Divide;        // ( num/ )用
+        public const Key HotkeyNumMultiply = Key.Multiply;    // ( num* )用
     }
 }

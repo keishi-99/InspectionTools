@@ -1,0 +1,48 @@
+﻿<Window x:Class="EL4001.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EL4001"
+        xmlns:Common="clr-namespace:EL4001.Common"
+        mc:Ignorable="d"
+        Title="EL4001" Height="260" Width="220" Icon="/Common/sine.ico" ResizeMode="CanMinimize">
+
+    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition Height="0.5*"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <ComboBox x:Name="Dmm01ComboBox" IsEditable="True" Text="[DMM1]" HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" IsReadOnly="True"/>
+        <ComboBox x:Name="Dmm02ComboBox" IsEditable="True" Text="[DMM2]" HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" IsReadOnly="True" Grid.Column="1"/>
+        <ComboBox x:Name="OscComboBox" IsEditable="True" Text="[OSC]" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80" IsReadOnly="True" Grid.Row="1"/>
+        <ComboBox x:Name="DcsComboBox" IsEditable="True" Text="[DCS]" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80" IsReadOnly="True" Grid.Row="1" Grid.Column="1"/>
+
+        <TextBox x:Name="OscRangeLabel" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="80" IsReadOnly="True" Grid.Row="2"/>
+
+        <Grid x:Name="DcsGrid" Grid.Row="2" Grid.Column="1" Width="80">
+            <TextBox x:Name="DcsNumberLabel" HorizontalAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="25" IsReadOnly="True"/>
+            <TextBox x:Name="DcsRangeLabel" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" IsReadOnly="True"/>
+        </Grid>
+        
+        <Button x:Name="ConnectButton" Content="接続" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ConnectButton_Click" Width="60" Grid.Row="3"/>
+        <Button x:Name="ReleaseButton" Content="解除" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ReleaseButton_Click" Width="60" Grid.Row="3" Grid.Column="1" IsEnabled="False"/>
+
+        <CheckBox x:Name="HotKeyChekBox" Content="HotKey" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="HotKeyChekBox_Checked" Unchecked="HotKeyChekBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="4"/>
+        <CheckBox x:Name="TopMostCheckBox" Content="最前面" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="TopMostCheckBox_Checked" Unchecked="TopMostCheckBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="4" Grid.Column="1"/>
+
+        <Button x:Name="InstListButton" Content="測定器" HorizontalAlignment="Center" VerticalAlignment="Center" Click="InstListButton_Click" Width="60" Grid.Row="5" Grid.Column="1"/>
+
+        <Common:WaitingCircle x:Name="ProgressRing" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="3" Grid.RowSpan="5" Padding="20,20,20,20" Visibility="Collapsed"/>
+        
+    </Grid>
+</Window>
