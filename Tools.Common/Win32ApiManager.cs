@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Windows.Input;
 
-namespace WinFormsLibrary {
+namespace Tools.Common {
 
     internal static partial class NativeMethods {
 

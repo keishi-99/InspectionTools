@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EL4001"
-        xmlns:Common="clr-namespace:EL4001.Common"
+        xmlns:Common="clr-namespace:Tools.Common.Tool;assembly=Tools.Common"
         mc:Ignorable="d"
         Title="EL4001" Height="260" Width="220" Icon="/Common/sine.ico" ResizeMode="CanMinimize">
 

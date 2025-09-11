@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using VisaComLib;
 
-namespace WinFormsLibrary {
+namespace Tools.Common {
     internal static partial class NativeMethods {
         [LibraryImport("ausb.dll", EntryPoint = "ausb_start")]
         public static partial int start(uint dwTmout);

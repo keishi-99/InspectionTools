@@ -1,8 +1,8 @@
-﻿<Application x:Class="WinFormsLibrary.App"
+﻿<Application x:Class="EL3801.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WinFormsLibrary"
-             StartupUri="InstListWindow.xaml">
+             xmlns:local="clr-namespace:EL3801"
+             StartupUri="MainWindow.xaml">
     <Application.Resources>
          
     </Application.Resources>

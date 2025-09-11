@@ -1,9 +1,9 @@
 ﻿using System.Data;
 using System.Windows;
 
-namespace WinFormsLibrary {
+namespace Tools.Common.InstList {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// InstListWindow.xaml の相互作用ロジック
     /// </summary>
     public partial class InstListWindow : Window {
 
