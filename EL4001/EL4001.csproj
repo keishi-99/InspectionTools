@@ -6,10 +6,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>sine.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="sine.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="sine.ico" />
   </ItemGroup>
 
   <ItemGroup>
