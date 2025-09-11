@@ -26,11 +26,11 @@
         <ComboBox x:Name="Dmm02ComboBox" IsEditable="True" Text="[DMM-1]" HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" IsReadOnly="True" Grid.Row="1"/>
         <ComboBox x:Name="Dmm03ComboBox" IsEditable="True" Text="[DMM-2]" HorizontalAlignment="Center" VerticalAlignment="Center" Width="80" IsReadOnly="True" Grid.Row="1" Grid.Column="1"/>
 
-        <Button x:Name="ConnectButton" Content="接続" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ConnectButton_Click" Width="60" Grid.Row="3"/>
-        <Button x:Name="ReleaseButton" Content="解除" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ReleaseButton_Click" Width="60" Grid.Row="3" Grid.Column="1" IsEnabled="False"/>
+        <Button x:Name="ConnectButton" Content="接続" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ConnectButton_Click" Width="60" Grid.Row="2"/>
+        <Button x:Name="ReleaseButton" Content="解除" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ReleaseButton_Click" Width="60" Grid.Row="2" Grid.Column="1" IsEnabled="False"/>
 
-        <CheckBox x:Name="HotKeyChekBox" Content="HotKey" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="HotKeyChekBox_Checked" Unchecked="HotKeyChekBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="2"/>
-        <CheckBox x:Name="TopMostCheckBox" Content="最前面" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="TopMostCheckBox_Checked" Unchecked="TopMostCheckBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="2" Grid.Column="1"/>
+        <CheckBox x:Name="HotKeyChekBox" Content="HotKey" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="HotKeyChekBox_Checked" Unchecked="HotKeyChekBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="3"/>
+        <CheckBox x:Name="TopMostCheckBox" Content="最前面" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="TopMostCheckBox_Checked" Unchecked="TopMostCheckBox_Unchecked" Style="{StaticResource {x:Type ToggleButton}}" Width="60" Grid.Row="3" Grid.Column="1"/>
 
         <Button x:Name="InstListButton" Content="測定器" HorizontalAlignment="Center" VerticalAlignment="Center" Click="InstListButton_Click" Width="60" Grid.Row="4" Grid.Column="1"/>
 
