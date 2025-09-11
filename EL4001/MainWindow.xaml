@@ -30,8 +30,8 @@
         <TextBox x:Name="OscRangeLabel" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="80" IsReadOnly="True" Grid.Row="2"/>
 
         <Grid x:Name="DcsGrid" Grid.Row="2" Grid.Column="1" Width="80">
-            <TextBox x:Name="DcsNumberLabel" HorizontalAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="25" IsReadOnly="True"/>
-            <TextBox x:Name="DcsRangeLabel" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" IsReadOnly="True"/>
+            <TextBox x:Name="DcsNumberLabel" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="25" IsReadOnly="True"/>
+            <TextBox x:Name="DcsRangeLabel" HorizontalAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="50" IsReadOnly="True"/>
         </Grid>
         
         <Button x:Name="ConnectButton" Content="接続" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ConnectButton_Click" Width="60" Grid.Row="3"/>
