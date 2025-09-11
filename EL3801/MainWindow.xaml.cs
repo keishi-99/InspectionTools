@@ -5,12 +5,13 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Tools.Common;
 using Tools.Common.InstList;
 using WindowsInput;
 using static Tools.Common.Win32Wrapper;
 
-namespace EL4001 {
+namespace EL3801 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -18,25 +19,28 @@ namespace EL4001 {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
-        private readonly InstClass _instDcs;
         private readonly InstClass _instDmm01;
         private readonly InstClass _instDmm02;
-        private readonly InstClass _instOsc;
+        private readonly InstClass _instDmm03;
 
-        public ObservableCollection<string> DcsList { get; } = [];
         public ObservableCollection<string> Dmm1List { get; } = [];
         public ObservableCollection<string> Dmm2List { get; } = [];
-        public ObservableCollection<string> OscList { get; } = [];
+        public ObservableCollection<string> Dmm3List { get; } = [];
 
         public MainWindow() {
             InitializeComponent();
-            _instDcs = new();
             _instDmm01 = new();
             _instDmm02 = new();
-            _instOsc = new();
+            _instDmm03 = new();
             LoadEvents();
             // Window が完全に作られたあとにハンドルを取得
             Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
+
+            _timer = new DispatcherTimer {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
         }
 
         public class InstClass {
@@ -69,7 +73,6 @@ namespace EL4001 {
 
         internal DataTable _dataTable = new();
 
-        private Dictionary<int, (string cmd2, string cmd3, string text)> _dicSwitchDcs = [];
         private readonly List<Hotkey> _hotkeys = [];
         private HwndSource? _source;
 
@@ -77,11 +80,13 @@ namespace EL4001 {
 
         private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
+        // タイマー
+        private readonly DispatcherTimer _timer;
+
         // 起動時
         private void LoadEvents() {
             InstListImport();
             FormatSet();
-            RegDictionary();
         }
         private void InstListImport() {
             const string XmlFilePath = "VisaAddress.xml";
@@ -95,10 +100,9 @@ namespace EL4001 {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(DcsComboBox, DcsList, "電流電圧発生器", [2, 3], "[DCS]");
-            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM2]");
-            UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
+            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM-V]");
+            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM-1]");
+            UpdateComboBox(Dmm03ComboBox, Dmm3List, "デジタルマルチメータ", [1, 2], "[DMM-2]");
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
             if (_dataTable == null) return;
@@ -121,10 +125,9 @@ namespace EL4001 {
 
         // 選択した機器のVisaAddressを取得
         private void SelectInst() {
-            GetVisaAddress(_instDcs, DcsComboBox);
             GetVisaAddress(_instDmm01, Dmm01ComboBox);
             GetVisaAddress(_instDmm02, Dmm02ComboBox);
-            GetVisaAddress(_instOsc, OscComboBox);
+            GetVisaAddress(_instDmm03, Dmm03ComboBox);
         }
         private void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
             instClass.ResetProperties();
@@ -145,59 +148,21 @@ namespace EL4001 {
             frm1.ShowDialog();
             InstListImport();
         }
-        // 機器設定辞書登録
-        private void RegDictionary() {
-            _dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3, string text)>
-            {
-                { 0, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-                { 1, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 2, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 3, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 4, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 5, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-                { 6, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-                { 7, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 8, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-                { 9, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 10, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
-                { 11, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-                { 12, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 13, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-                { 14, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 15, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
-            };
-        }
         // 機器初期設定
         private void FormatSet() {
-            _instDcs.InstCommand = _instDcs.SignalType switch {
-                2 => "SIR3,SOI+0,SBY,*OPC?",
-                3 => "RCF5R6S0EO0EOC",
-                _ => string.Empty,
-            };
             _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,F1,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?",
+                1 => "*RST,F1,R7,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",
                 _ => string.Empty,
             };
             _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F1,R5,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?",
+                1 => "*RST,F3,R3,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?",
                 _ => string.Empty,
             };
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 => """
-                    *RST;
-                    :HEADER 0;
-                    :CH1:PROBE 1.0E1;SCALE 2.0E0;
-                    :HORIZONTAL:MAIN:SCALE 5.0E-2;POSITION 1.0E-1;
-                    :TRIGGER:MAIN:LEVEL 7.2E-1;
-                    :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
-                    :MEASUREMENT:MEAS2:TYPE NWIDTH;SOURCE CH1;
-                    :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
-                    :MEASUREMENT:MEAS4:TYPE NONE;SOURCE MATH;
-                    :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
-                    *OPC?
-                    """,
+            _instDmm03.InstCommand = _instDmm03.SignalType switch {
+                1 => "*RST,F3,R3,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?",
                 _ => string.Empty,
             };
         }
@@ -212,20 +177,14 @@ namespace EL4001 {
                 CheckDmmId();
                 FormatSet();
 
-                var devices = new[] { _instDcs, _instDmm01, _instDmm02, _instOsc };
+                var devices = new[] { _instDmm01, _instDmm02, _instDmm03 };
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
-                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    DcsNumberLabel.Text = "00";
-                    DcsRangeLabel.Text = "OFF";
-                }
-                if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRangeLabel.Text = "50m"; }
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
-                OscComboBox.IsEnabled = false;
-                DcsComboBox.IsEnabled = false;
+                Dmm03ComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
                 InstListButton.IsEnabled = false;
@@ -239,7 +198,7 @@ namespace EL4001 {
         }
         // DMMのIDチェック処理
         private void CheckDmmId() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index }
+            var indices = new[] { _instDmm01.Index, _instDmm02.Index, _instDmm03.Index }
                 .Where(i => i >= 1); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
@@ -293,22 +252,17 @@ namespace EL4001 {
         private void Release() {
             VisibleProgressImage(false);
 
-            _instDcs.ResetProperties();
             _instDmm01.ResetProperties();
             _instDmm02.ResetProperties();
-            _instOsc.ResetProperties();
+            _instDmm03.ResetProperties();
 
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
-            OscComboBox.IsEnabled = true;
-            DcsComboBox.IsEnabled = true;
+            Dmm03ComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
             InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
-            OscRangeLabel.Text = string.Empty;
-            DcsNumberLabel.Text = string.Empty;
-            DcsRangeLabel.Text = string.Empty;
         }
 
         // DMM測定値取得
@@ -331,96 +285,16 @@ namespace EL4001 {
                 VisibleProgressImage(false);
             }
         }
-        // OSC測定値取得
-        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
-            try {
-                VisibleProgressImage(true);
-
-                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-                return output;
-
-            } finally {
-                VisibleProgressImage(false);
-            }
-        }
-        // DCSローテーション
-        private async void RotationDcs(InstClass instClass, bool isNext) {
-            try {
-                VisibleProgressImage(true);
-
-                var maxSettingNumber = _dicSwitchDcs.Keys.Count;
-                instClass.SettingNumber = (instClass.SettingNumber + (isNext ? 1 : -1) + maxSettingNumber) % maxSettingNumber;
-                var settingNumber = instClass.SettingNumber;
-
-                instClass.InstCommand = instClass.SignalType switch {
-                    2 => _dicSwitchDcs[settingNumber].cmd2,
-                    3 => _dicSwitchDcs[settingNumber].cmd3,
-                    _ => throw new ApplicationException(),
-                };
-
-                await ConnectDeviceAsync(instClass);
-                DcsNumberLabel.Text = settingNumber.ToString("00");
-                DcsRangeLabel.Text = _dicSwitchDcs[settingNumber].text;
-
-                VisibleProgressImage(false);
-
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        // OSCローテーション
-        private async void RotationOsc(InstClass instClass) {
-            try {
-                VisibleProgressImage(true);
-
-                (instClass.InstCommand, var rangeText) = instClass.SettingNumber switch {
-                    0 => (":HORIZONTAL:MAIN:SCALE 5.0E-4;POSITION 0.0;*OPC?", "500u"),
-                    1 => (":HORIZONTAL:MAIN:SCALE 5.0E-2;POSITION 1.0E-1;*OPC?", "50ms"),
-                    _ => throw new ApplicationException(),
-                };
-
-                await ConnectDeviceAsync(instClass);
-
-                OscRangeLabel.Text = rangeText;
-
-                // 設定番号を反転
-                instClass.SettingNumber = (instClass.SettingNumber == 0) ? 1 : 0;
-
-                VisibleProgressImage(false);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyColon() {
+        private async void ActionHotkeyPeriod() {
             if (_isProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm01);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumMultiply() {
-            if (_isProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm01);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.000"));
+                sim.Keyboard.TextEntry(output.ToString("0.0"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -429,50 +303,14 @@ namespace EL4001 {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.0000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumAdd() {
-            if (_isProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.0000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        // OSCローテーション
-        private void ActionHotkeyPeriod() {
-            if (_isProcessing) { return; }
-            RotationOsc(_instOsc);
-        }
-        // OSC meas1測定値コピー
         private async void ActionHotkeySlash() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadOsc(_instOsc, 1);
+                var output = await ReadDmm(_instDmm02);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                sim.Keyboard.TextEntry(output.ToString("0.0"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -480,34 +318,21 @@ namespace EL4001 {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // OSC meas2測定値コピー
+        // DMM03測定値コピー
         private async void ActionHotkeyBackslash() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadOsc(_instOsc, 2);
+                var output = await ReadDmm(_instDmm03);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                sim.Keyboard.TextEntry(output.ToString("0.0"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-        }
-        // DCSローテーション
-        private void ActionHotkeyAtsign() {
-            if (_isProcessing) { return; }
-            RotationDcs(_instDcs, true);
-        }
-        private void ActionHotkeyShiftAtsign() {
-            if (_isProcessing) { return; }
-            RotationDcs(_instDcs, false);
-        }
-        private void ActionHotkeyNumDivide() {
-            if (_isProcessing) { return; }
-            RotationDcs(_instDcs, true);
         }
 
         // HotkKeyの登録
@@ -515,31 +340,19 @@ namespace EL4001 {
             _hotkeys.Clear();
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyColon, ActionHotkeyColon),
-                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
-                    ]);
+                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                ]);
             }
             if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
-                        new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
-                    ]);
+                    new(ModNone, HotkeySlash, ActionHotkeySlash),
+                ]);
             }
-            if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
+            if (!string.IsNullOrEmpty(_instDmm03.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                        new(ModNone, HotkeySlash, ActionHotkeySlash),
-                        new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
-                    ]);
+                    new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
+                ]);
             }
-            if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                _hotkeys.AddRange([
-                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
-                        new(ModShift, HotkeyAtsign, ActionHotkeyShiftAtsign),
-                        new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
-                    ]);
-            }
-
 
             var helper = new WindowInteropHelper(this);
             _source = HwndSource.FromHwnd(helper.Handle);
@@ -574,5 +387,7 @@ namespace EL4001 {
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
         private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
         private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
+        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
+
     }
 }

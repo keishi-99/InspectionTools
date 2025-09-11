@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace WinFormsLibrary {
+namespace EL3801 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
