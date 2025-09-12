@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools.Common", "Tools.Commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EL3801", "EL3801\EL3801.csproj", "{05AB80A1-9B7B-4B7B-B839-20961FEAE4BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassFlow", "MassFlow\MassFlow.csproj", "{44261936-1382-45D6-975B-AE2C97AE0503}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{05AB80A1-9B7B-4B7B-B839-20961FEAE4BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05AB80A1-9B7B-4B7B-B839-20961FEAE4BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05AB80A1-9B7B-4B7B-B839-20961FEAE4BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44261936-1382-45D6-975B-AE2C97AE0503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44261936-1382-45D6-975B-AE2C97AE0503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44261936-1382-45D6-975B-AE2C97AE0503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44261936-1382-45D6-975B-AE2C97AE0503}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
