@@ -462,6 +462,14 @@ namespace EL0122FI {
                 MessageBox.Show("数値に変換できません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        private async void ActionHotkeyNumAdd() {
+            if (int.TryParse(WaitTimeTextBox.Text, out var delay)) {
+                await ProcessAllDataAsync(delay);
+            }
+            else {
+                MessageBox.Show("数値に変換できません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // HotkKeyの登録
         private void SetHotKey() {
@@ -469,6 +477,7 @@ namespace EL0122FI {
 
             _hotkeys.AddRange([
                 new(ModNone, HotkeyComma, ActionHotkeyComma),
+                new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
             ]);
 
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
