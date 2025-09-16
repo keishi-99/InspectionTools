@@ -1085,8 +1085,7 @@ namespace MassFlow {
             }
 
             var sim = new InputSimulator();
-            Clipboard.SetText(SerialTextBox.Text);
-            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.TextEntry(SerialTextBox.Text);
             SerialIncrement(1);
         }
         // キャリブレーション値コピー
@@ -1110,11 +1109,10 @@ namespace MassFlow {
                 await PerformClipboardAndSendKeys(a2l);
                 await PerformClipboardAndSendKeys(a2h);
 
-                static async Task PerformClipboardAndSendKeys(string textToSet) {
+                static async Task PerformClipboardAndSendKeys(string text) {
                     await Task.Delay(500);
-                    Clipboard.SetText(textToSet);
                     var sim = new InputSimulator();
-                    sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+                    sim.Keyboard.TextEntry(text);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                 }
             } finally {
@@ -1135,18 +1133,16 @@ namespace MassFlow {
             if (_isProcessing) { return; }
 
             var output = await ReadDmm(_instDmm);
-            Clipboard.SetText((output * 1000).ToString("0.0000"));
             var sim = new InputSimulator();
-            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
         }
         // OSC mes1値コピー
         private async void ActionHotkeySlash() {
             if (_isProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 1);
-            Clipboard.SetText(output.ToString("0.0000"));
             var sim = new InputSimulator();
-            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.TextEntry(output.ToString("0.0000"));
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // OSC mes2値コピー
@@ -1154,9 +1150,8 @@ namespace MassFlow {
             if (_isProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 2);
-            Clipboard.SetText(output.ToString("0.0000"));
             var sim = new InputSimulator();
-            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.TextEntry(output.ToString("0.0000"));
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // DCS切り替え
