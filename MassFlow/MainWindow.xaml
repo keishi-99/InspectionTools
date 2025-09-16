@@ -433,7 +433,6 @@
                 x:Name="SerialTextBox"
                 Width="80"
                 Margin="10,0,0,0"
-                IsReadOnly="True"
                 MaxLength="8"
                 MaxLines="1" />
             <Button
