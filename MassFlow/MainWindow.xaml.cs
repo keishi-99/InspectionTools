@@ -613,6 +613,7 @@ namespace MassFlow {
 
             DcsComboBox.IsEnabled = true;
             DmmComboBox.IsEnabled = true;
+            FgNumberComboBox.IsEnabled = true;
             Fg01ComboBox.IsEnabled = true;
             Fg02_1ComboBox.IsEnabled = true;
             Fg02_2ComboBox.IsEnabled = true;
@@ -1321,6 +1322,17 @@ namespace MassFlow {
             SetForegroundWindow(hWnd);
         }
 
+        // FGパネルの表示切替
+        private void FgPanelVisible() {
+            var i = FgNumberComboBox.SelectedIndex;
+
+            (FgNumberGrid1.Visibility, FgNumberGrid2.Visibility) = i switch {
+                0 => (Visibility.Visible, Visibility.Collapsed),
+                1 => (Visibility.Collapsed, Visibility.Visible),
+                _ => (Visibility.Collapsed, Visibility.Collapsed) // 0と1以外の場合
+            };
+        }
+
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
@@ -1371,6 +1383,6 @@ namespace MassFlow {
         private void SerialBack_Click(object sender, RoutedEventArgs e) { SerialIncrement(-1); }
         private void SerialNext_Click(object sender, RoutedEventArgs e) { SerialIncrement(1); }
 
-        private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { FgPanelVisible(); }
     }
 }

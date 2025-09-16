@@ -119,29 +119,6 @@
             Content="7V" />
 
 
-        <StackPanel
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Horizontal">
-            <Label
-                Grid.Column="1"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Content="FG数" />
-            <ComboBox
-                x:Name="FgNumberComboBox"
-                Grid.Column="1"
-                Width="32"
-                VerticalAlignment="Center"
-                IsEditable="True"
-                IsReadOnly="True"
-                SelectedIndex="0"
-                SelectionChanged="FgNumberComboBox_SelectionChanged">
-                <ComboBoxItem Content="1" />
-                <ComboBoxItem Content="2" />
-            </ComboBox>
-        </StackPanel>
         <Grid
             x:Name="FgNumberGrid1"
             Grid.Row="1"
@@ -183,6 +160,30 @@
                 IsReadOnly="True"
                 Text="[FG2]" />
         </Grid>
+
+        <StackPanel
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <Label
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="FG数" />
+            <ComboBox
+                x:Name="FgNumberComboBox"
+                Grid.Column="1"
+                Width="32"
+                VerticalAlignment="Center"
+                IsEditable="True"
+                IsReadOnly="True"
+                SelectedIndex="0"
+                SelectionChanged="FgNumberComboBox_SelectionChanged">
+                <ComboBoxItem Content="1" />
+                <ComboBoxItem Content="2" />
+            </ComboBox>
+        </StackPanel>
 
         <RadioButton
             x:Name="DcsOffRadioButton"
