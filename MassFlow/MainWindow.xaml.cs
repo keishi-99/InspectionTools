@@ -796,7 +796,7 @@ namespace MassFlow {
         }
 
         // Serialロック
-        private void SerialLockToggle() { SerialTextBox.IsReadOnly = SerialLockCheckBox.IsChecked ?? false; }
+        private void SerialLockToggle() { SerialTextBox.IsEnabled = !SerialLockCheckBox.IsChecked ?? false; }
         // Serialインクリメント
         private void SerialIncrement(int i) {
             try {
