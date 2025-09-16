@@ -243,7 +243,7 @@ namespace Tools.Common {
         public const Key HotkeyTilde = Key.Oem7;                  // ( ^ )用
         public const Key HotkeyAtsign = Key.OemTilde;             // ( @ )用
         public const Key HotkeyBracketL = Key.OemOpenBrackets;    // ( [ )用
-        public const Key HotKeyemiColon = Key.OemPlus;           // ( ; )用
+        public const Key HotkeySemiColon = Key.OemPlus;           // ( ; )用
         public const Key HotkeyColon = Key.OemSemicolon;          // ( : )用
         public const Key HotkeyBracketR = Key.OemCloseBrackets;   // ( ] )用
         public const Key HotkeyComma = Key.OemComma;              // ( , )用

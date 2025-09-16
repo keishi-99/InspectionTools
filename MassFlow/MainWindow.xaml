@@ -54,7 +54,70 @@
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
-            Text="[DMM1]" />
+            Text="[DMM]" />
+
+        <ComboBox
+            x:Name="DcsComboBox"
+            Grid.Row="1"
+            Width="70"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsEditable="True"
+            IsReadOnly="True"
+            Text="[DCS]" />
+
+        <ComboBox
+            x:Name="OscComboBox"
+            Grid.Row="2"
+            Width="70"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsEditable="True"
+            IsReadOnly="True"
+            Text="[OSC]" />
+
+        <Button
+            x:Name="DcsOffButton"
+            Grid.Row="4"
+            Width="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="DcsOffButton_Click"
+            Content="OFF" />
+        <Button
+            x:Name="Dcs2VButton"
+            Grid.Row="5"
+            Width="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Dcs2VButton_Click"
+            Content="2V" />
+        <Button
+            x:Name="Dcs8VButton"
+            Grid.Row="6"
+            Width="40"
+            Margin="0,0,0,4"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Click="Dcs8VButton_Click"
+            Content="8V" />
+        <Button
+            x:Name="Dcs1VButton"
+            Grid.Row="7"
+            Width="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Dcs1VButton_Click"
+            Content="1V" />
+        <Button
+            x:Name="Dcs7VButton"
+            Grid.Row="8"
+            Width="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="Dcs7VButton_Click"
+            Content="7V" />
+
 
         <StackPanel
             Grid.Column="1"
@@ -73,40 +136,12 @@
                 VerticalAlignment="Center"
                 IsEditable="True"
                 IsReadOnly="True"
-                SelectedIndex="0">
+                SelectedIndex="0"
+                SelectionChanged="FgNumberComboBox_SelectionChanged">
                 <ComboBoxItem Content="1" />
                 <ComboBoxItem Content="2" />
             </ComboBox>
         </StackPanel>
-        <Button
-            x:Name="ConnectButton"
-            Grid.Column="2"
-            Width="60"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="ConnectButton_Click"
-            Content="接続" />
-        <Button
-            x:Name="ReleaseButton"
-            Grid.Column="3"
-            Width="60"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="ReleaseButton_Click"
-            Content="解除"
-            IsEnabled="False" />
-
-
-        <ComboBox
-            x:Name="DcsComboBox"
-            Grid.Row="1"
-            Width="70"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsEditable="True"
-            IsReadOnly="True"
-            Text="[DCS]" />
-
         <Grid
             x:Name="FgNumberGrid1"
             Grid.Row="1"
@@ -120,7 +155,6 @@
                 IsReadOnly="True"
                 Text="[FG]" />
         </Grid>
-
         <Grid
             x:Name="FgNumberGrid2"
             Grid.Row="1"
@@ -150,6 +184,83 @@
                 Text="[FG2]" />
         </Grid>
 
+        <RadioButton
+            x:Name="DcsOffRadioButton"
+            Grid.Row="4"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Checked="DcsRadioButton_Checked"
+            Content="OFF"
+            Foreground="Gray"
+            GroupName="DcsSettingsGroup"
+            IsEnabled="False"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="DcsRadioButton_Unchecked" />
+        <RadioButton
+            x:Name="Dcs2VRadioButton"
+            Grid.Row="5"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Checked="DcsRadioButton_Checked"
+            Content="2V"
+            Foreground="Gray"
+            GroupName="DcsSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="DcsRadioButton_Unchecked" />
+        <RadioButton
+            x:Name="Dcs8VRadioButton"
+            Grid.Row="6"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Checked="DcsRadioButton_Checked"
+            Content="8V"
+            Foreground="Gray"
+            GroupName="DcsSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="DcsRadioButton_Unchecked" />
+        <RadioButton
+            x:Name="Dcs1VRadioButton"
+            Grid.Row="7"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Checked="DcsRadioButton_Checked"
+            Content="1V"
+            Foreground="Gray"
+            GroupName="DcsSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="DcsRadioButton_Unchecked" />
+        <RadioButton
+            x:Name="Dcs7VRadioButton"
+            Grid.Row="8"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Checked="DcsRadioButton_Checked"
+            Content="7V"
+            Foreground="Gray"
+            GroupName="DcsSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="DcsRadioButton_Unchecked" />
+
+
+        <Button
+            x:Name="ConnectButton"
+            Grid.Column="2"
+            Width="60"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="ConnectButton_Click"
+            Content="接続" />
+
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="1"
@@ -161,6 +272,34 @@
             Content="HotKey"
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="HotKeyChekBox_Unchecked" />
+
+        <Button
+            x:Name="FgOscRotationButton"
+            Grid.Row="4"
+            Grid.RowSpan="5"
+            Grid.Column="2"
+            Width="40"
+            HorizontalAlignment="Center"
+            Click="FgOscRotationButton_Click"
+            IsEnabled="False">
+            <StackPanel>
+                <TextBlock HorizontalAlignment="Center" Text="FG" />
+                <TextBlock HorizontalAlignment="Center" Text="+" />
+                <TextBlock HorizontalAlignment="Center" Text="OSC" />
+            </StackPanel>
+        </Button>
+
+
+        <Button
+            x:Name="ReleaseButton"
+            Grid.Column="3"
+            Width="60"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="ReleaseButton_Click"
+            Content="解除"
+            IsEnabled="False" />
+
         <CheckBox
             x:Name="TopMostCheckBox"
             Grid.Row="1"
@@ -173,16 +312,6 @@
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="TopMostCheckBox_Unchecked" />
 
-
-        <ComboBox
-            x:Name="OscComboBox"
-            Grid.Row="2"
-            Width="70"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsEditable="True"
-            IsReadOnly="True"
-            Text="[OSC]" />
         <Button
             x:Name="InstListButton"
             Grid.Row="2"
@@ -193,105 +322,42 @@
             Click="InstListButton_Click"
             Content="測定器" />
 
-
-        <Button
-            x:Name="DcsOffButton"
-            Grid.Row="4"
-            Width="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="OFF" />
-        <RadioButton
-            x:Name="DcsOffRadioButton"
-            Grid.Row="4"
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="OFF"
-            GroupName="DcsSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
         <RadioButton
             x:Name="FgOscRange0RadioButton"
             Grid.Row="4"
             Grid.Column="3"
             VerticalAlignment="Center"
+            Checked="FgOscRadioButton_Checked"
             Content="OFF"
-            GroupName="FgOscSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
-
-
-        <Button
-            x:Name="Dcs2VButton"
-            Grid.Row="5"
-            Width="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="2V" />
-        <RadioButton
-            x:Name="Dcs2VRadioButton"
-            Grid.Row="5"
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="2V"
-            GroupName="DcsSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
+            Foreground="Gray"
+            GroupName="FgOscSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="FgOscRadioButton_Unchecked" />
         <RadioButton
             x:Name="FgOscRange1RadioButton"
             Grid.Row="5"
             Grid.Column="3"
             VerticalAlignment="Center"
+            Checked="FgOscRadioButton_Checked"
             Content="小流量"
-            GroupName="FgOscSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
-
-
-        <Button
-            x:Name="Dcs8VButton"
-            Grid.Row="6"
-            Width="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="8V" />
-        <RadioButton
-            x:Name="Dcs8VRadioButton"
-            Grid.Row="6"
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="8V"
-            GroupName="DcsSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
+            Foreground="Gray"
+            GroupName="FgOscSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="FgOscRadioButton_Unchecked" />
         <RadioButton
             x:Name="FgOscRange2RadioButton"
             Grid.Row="6"
             Grid.Column="3"
             VerticalAlignment="Center"
+            Checked="FgOscRadioButton_Checked"
             Content="アンプ"
-            GroupName="FgOscSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
-
-
-        <Button
-            x:Name="Dcs1VButton"
-            Grid.Row="7"
-            Width="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="1V" />
-        <RadioButton
-            x:Name="Dcs1VRadioButton"
-            Grid.Row="7"
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="1V"
-            GroupName="DcsSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
+            Foreground="Gray"
+            GroupName="FgOscSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="FgOscRadioButton_Unchecked" />
         <StackPanel
             Grid.Row="7"
             Grid.Column="3"
@@ -302,71 +368,52 @@
                 Grid.Column="3"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
+                Checked="FgOscRadioButton_Checked"
                 Content="パルス"
-                GroupName="FgOscSettings"
-                Style="{StaticResource HiddenIconRadioButtonStyle}" />
+                Foreground="Gray"
+                GroupName="FgOscSettingsGroup"
+                IsHitTestVisible="False"
+                Style="{StaticResource HiddenIconRadioButtonStyle}"
+                Unchecked="FgOscRadioButton_Unchecked" />
             <RadioButton
                 x:Name="FgOscRange4RadioButton"
                 Margin="10,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
+                Checked="FgOscRadioButton_Checked"
                 Content="L"
-                GroupName="FgOscSettings"
-                Style="{StaticResource HiddenIconRadioButtonStyle}" />
+                Foreground="Gray"
+                GroupName="FgOscSettingsGroup"
+                IsHitTestVisible="False"
+                Style="{StaticResource HiddenIconRadioButtonStyle}"
+                Unchecked="FgOscRadioButton_Unchecked" />
             <RadioButton
                 x:Name="FgOscRange5RadioButton"
                 Grid.Column="1"
                 Margin="10,0,0,0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
+                Checked="FgOscRadioButton_Checked"
                 Content="F"
-                GroupName="FgOscSettings"
-                Style="{StaticResource HiddenIconRadioButtonStyle}" />
+                Foreground="Gray"
+                GroupName="FgOscSettingsGroup"
+                IsHitTestVisible="False"
+                Style="{StaticResource HiddenIconRadioButtonStyle}"
+                Unchecked="FgOscRadioButton_Unchecked" />
         </StackPanel>
-
-
-        <Button
-            x:Name="Dcs7VButton"
-            Grid.Row="8"
-            Width="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="7V" />
-        <RadioButton
-            x:Name="Dcs7VRadioButton"
-            Grid.Row="8"
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="7V"
-            GroupName="DcsSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
         <RadioButton
             x:Name="FgOscRange6RadioButton"
             Grid.Row="8"
             Grid.Column="3"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
+            Checked="FgOscRadioButton_Checked"
             Content="大流量"
-            GroupName="FgOscSettings"
-            Style="{StaticResource HiddenIconRadioButtonStyle}" />
-
-
-        <Button
-            x:Name="FgOscRotationButton"
-            Grid.Row="4"
-            Grid.RowSpan="5"
-            Grid.Column="2"
-            Width="40"
-            HorizontalAlignment="Center"
-            Click="InstListButton_Click">
-            <StackPanel>
-                <TextBlock HorizontalAlignment="Center" Text="FG" />
-                <TextBlock HorizontalAlignment="Center" Text="+" />
-                <TextBlock HorizontalAlignment="Center" Text="OSC" />
-            </StackPanel>
-        </Button>
+            Foreground="Gray"
+            GroupName="FgOscSettingsGroup"
+            IsHitTestVisible="False"
+            Style="{StaticResource HiddenIconRadioButtonStyle}"
+            Unchecked="FgOscRadioButton_Unchecked" />
 
 
         <StackPanel
@@ -378,8 +425,10 @@
             <CheckBox
                 x:Name="SerialLockCheckBox"
                 Width="20"
+                Checked="SerialLockCheckBox_Checked"
                 Content="🔒️"
-                Style="{StaticResource {x:Type ToggleButton}}" />
+                Style="{StaticResource {x:Type ToggleButton}}"
+                Unchecked="SerialLockCheckBox_Unchecked" />
             <TextBox
                 x:Name="SerialTextBox"
                 Width="80"
@@ -391,13 +440,13 @@
                 x:Name="SerialBack"
                 Width="20"
                 Margin="10,0,0,0"
-                Click="InstListButton_Click"
+                Click="SerialBack_Click"
                 Content="◀" />
             <Button
                 x:Name="SerialNext"
                 Width="20"
                 Margin="10,0,0,0"
-                Click="InstListButton_Click"
+                Click="SerialNext_Click"
                 Content="▶" />
         </StackPanel>
 
@@ -406,8 +455,9 @@
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
-            Grid.RowSpan="5"
-            Grid.ColumnSpan="3"
+            Grid.Row="2"
+            Grid.RowSpan="8"
+            Grid.ColumnSpan="4"
             Padding="20,20,20,20"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"

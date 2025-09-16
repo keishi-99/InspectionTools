@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="H.InputSimulator" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Tools.Common\Tools.Common.csproj" />
   </ItemGroup>
 
