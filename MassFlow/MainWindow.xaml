@@ -144,7 +144,7 @@
             </Grid.RowDefinitions>
             <ComboBox
                 x:Name="Fg02_1ComboBox"
-                Width="60"
+                Width="70"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsEditable="True"
@@ -153,7 +153,7 @@
             <ComboBox
                 x:Name="Fg02_2ComboBox"
                 Grid.Row="1"
-                Width="60"
+                Width="70"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsEditable="True"
