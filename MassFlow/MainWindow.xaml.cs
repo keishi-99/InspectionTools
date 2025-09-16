@@ -1,11 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Tools.Common;
 using Tools.Common.InstList;
+using WindowsInput;
 using static Tools.Common.Win32Wrapper;
 
 namespace MassFlow {
@@ -48,6 +53,7 @@ namespace MassFlow {
             internal USBDeviceManager UsbDev { get; set; } = new();
             public string Category { get; set; } = string.Empty;
             public string Name { get; set; } = string.Empty;
+            public string Tag { get; set; } = string.Empty;
             public string VisaAddress { get; set; } = string.Empty;
             public int SignalType { get; set; } = 0;
             public int Index { get; set; } = 0;
@@ -57,6 +63,7 @@ namespace MassFlow {
             public void ResetProperties() {
                 UsbDev = new();
                 Name = string.Empty;
+                Tag = string.Empty;
                 Category = string.Empty;
                 VisaAddress = string.Empty;
                 SignalType = 0;
@@ -74,7 +81,6 @@ namespace MassFlow {
 
         internal DataTable _dataTable = new();
 
-        private Dictionary<int, string> _dicSwitchDcs = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchFg = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchRFg = [];
         private Dictionary<int, string> _dicSwitchOsc = [];
@@ -92,6 +98,15 @@ namespace MassFlow {
         private const int MenuItemIdA2L = 32808;
         private const int MenuItemIdA2H = 32809;
         private const int MenuItemIdAnalogTrim = 32815;
+
+        // ラジオボタンリスト
+        private List<RadioButton> DcsRadioButtonsList => [
+            DcsOffRadioButton, Dcs2VRadioButton, Dcs8VRadioButton, Dcs1VRadioButton, Dcs7VRadioButton
+        ];
+        private List<RadioButton> FgOscRadioButtonsList => [
+            FgOscRange0RadioButton, FgOscRange1RadioButton, FgOscRange2RadioButton, FgOscRange3RadioButton,
+            FgOscRange4RadioButton, FgOscRange5RadioButton,FgOscRange6RadioButton
+        ];
 
         // 起動時
         private void LoadEvents() {
@@ -112,8 +127,8 @@ namespace MassFlow {
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             UpdateComboBox(DcsComboBox, DcsList, "電流電圧発生器", [2, 3], "[DCS]");
-            UpdateComboBox(DmmComboBox, DmmList, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            UpdateComboBox(Fg01ComboBox, Fg01List, "ファンクションジェネレータ", [3], "[FG]");
+            UpdateComboBox(DmmComboBox, DmmList, "デジタルマルチメータ", [1, 2], "[DMM]");
+            UpdateComboBox(Fg01ComboBox, Fg01List, "ファンクションジェネレータ", [3, 4], "[FG]");
             UpdateComboBox(Fg02_1ComboBox, Fg02_1List, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(Fg02_2ComboBox, Fg02_2List, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
@@ -429,25 +444,6 @@ namespace MassFlow {
                     """
                 }
             };
-            //_dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3, string text)>
-            //{
-            //    { 0, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-            //    { 1, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-            //    { 2, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-            //    { 3, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-            //    { 4, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-            //    { 5, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-            //    { 6, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-            //    { 7, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-            //    { 8, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-            //    { 9, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-            //    { 10, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
-            //    { 11, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-            //    { 12, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-            //    { 13, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-            //    { 14, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-            //    { 15, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
-            //};
         }
         // 機器初期設定
         private void FormatSet() {
@@ -526,14 +522,17 @@ namespace MassFlow {
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
-                //if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                //    DcsNumberLabel.Text = "00";
-                //    DcsRangeLabel.Text = "OFF";
-                //}
-                //if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRangeLabel.Text = "50m"; }
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    DcsOffRadioButton.IsChecked = true;
+                }
+                if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {
+                    FgOscRotationButton.IsEnabled = true;
+                    FgOscRange0RadioButton.IsChecked = true;
+                }
 
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
+                FgNumberComboBox.IsEnabled = false;
                 Fg01ComboBox.IsEnabled = false;
                 Fg02_1ComboBox.IsEnabled = false;
                 Fg02_2ComboBox.IsEnabled = false;
@@ -549,7 +548,7 @@ namespace MassFlow {
                 VisibleProgressImage(false);
             }
         }
-        // DMMのIDチェック処理
+        // FGのIDチェック処理
         private void CheckFgId() {
             var indices = new[] { _instFg02_1.Index, _instFg02_2.Index }
                 .Where(i => i >= 1); // 未選択(0以下)は無視
@@ -624,56 +623,651 @@ namespace MassFlow {
             HotKeyChekBox.IsChecked = false;
         }
 
+        // DCS切り替え
+        private async void SwitchDcs(int i) {
+            VisibleProgressImage(true);
+            try {
+                if (_instFg01.SettingNumber != 0 || _instFg02_1.SettingNumber != 0 || _instOsc.SettingNumber != 0) {
+                    MessageBox.Show("FG&OSCがONになっています。");
+                    return;
+                }
+
+                var hWnd = IntPtr.Zero;
+                if (i != 0) {
+                    hWnd = FindWindow(null, "マルチ流量計渦 [V01.08]");
+                    SetForegroundWindow(hWnd);
+                }
+
+                await SwitchDcsAsync(_instDcs, i);
+
+                // 非同期処理完了後、UIスレッドでPostMessageを送信
+
+                var menuItemID = i switch {
+                    0 => 0,
+                    1 => MenuItemIdA1L,
+                    2 => MenuItemIdA1H,
+                    3 => MenuItemIdA2L,
+                    4 => MenuItemIdA2H,
+                    _ => throw new ArgumentOutOfRangeException(nameof(i), "無効なメニューアイテムID")
+                };
+                if (hWnd != IntPtr.Zero) {
+                    _ = PostMessage(hWnd, WmCommand, menuItemID, 0);
+                }
+            } catch (Exception ex) {
+                Release();
+                Activate();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        private async Task SwitchDcsAsync(InstClass instClass, int i) {
+            if (string.IsNullOrEmpty(instClass.VisaAddress)) { return; }
+
+            instClass.SettingNumber = i;
+            instClass.InstCommand = instClass.SettingNumber switch {
+                0 => "SVR5,SOV+0,SBY",
+                1 => "SVR5,SOV+2,OPR",
+                2 => "SVR5,SOV+8,OPR",
+                3 => "SVR5,SOV+1,OPR",
+                4 => "SVR5,SOV+7,OPR",
+                _ => string.Empty
+            };
+
+            if (string.IsNullOrEmpty(instClass.InstCommand) || instClass.UsbDev is null) { return; }
+            await ConnectDeviceAsync(instClass);
+
+            // 対応するラジオボタンを選択
+            DcsRadioButtonsList[instClass.SettingNumber].IsChecked = true;
+
+        }
+
+        // FG&OSCローテーション
+        private async void RotationFgOsc(bool isNext) {
+            try {
+                VisibleProgressImage(true);
+
+                if (_instDcs.SettingNumber != 0) {
+                    MessageBox.Show("DCSがONになっています。", "", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Activate();
+                    return;
+                }
+
+                var value = int.Parse(FgNumberComboBox.Text);
+                await (value switch {
+                    1 => Task.Run(() => RotationFgOscAsync(_instFg01, _instOsc, isNext)),
+                    2 => Task.Run(() => RotationFgOscAsync(_instFg02_1, _instFg02_2, _instOsc, isNext)),
+                    _ => Task.CompletedTask // どれにも該当しない場合はすぐに完了するタスク
+                });
+
+                // 対応するラジオボタンを選択
+                FgOscRadioButtonsList[_instOsc.SettingNumber].IsChecked = true;
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                Activate();
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        private async Task RotationFgOscAsync(InstClass instFg, InstClass instOsc, bool isNext) {
+            var fgMaxSettingNumber = _dicSwitchFg.Count;
+            var oscMaxSettingNumber = _dicSwitchOsc.Count;
+
+            instFg.SettingNumber = (instFg.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
+            instOsc.SettingNumber = (instOsc.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+
+            await ConnectAndSendCommand(instFg, GetFgCommand(instFg, isNext));
+            await ConnectAndSendCommand(instOsc, GetOscCommand(instOsc, isNext));
+        }
+        private async Task RotationFgOscAsync(InstClass instFg2_1, InstClass instFg2_2, InstClass instOsc, bool isNext) {
+            var fgMaxSettingNumber = _dicSwitchFg.Count;
+            var oscMaxSettingNumber = _dicSwitchOsc.Count;
+
+            instFg2_1.SettingNumber = (instFg2_1.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
+            instOsc.SettingNumber = (instOsc.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+
+            await ConnectAndSendCommand(instFg2_1, GetFgCommand(instFg2_1, isNext));
+            await ConnectAndSendCommand(instFg2_2, GetFgCommand(instFg2_2, isNext));
+            await ConnectAndSendCommand(instOsc, GetOscCommand(instOsc, isNext));
+        }
+        private string GetFgCommand(InstClass instFg, bool isNext) {
+            var dic = isNext ? _dicSwitchFg : _dicSwitchRFg;
+            var (fg01, fg02, fg03_1, fg03_2) = dic[instFg.SettingNumber];
+
+            return instFg.SignalType switch {
+                2 => instFg.Tag switch {
+                    "FG-1" => fg03_1,
+                    "FG-2" => fg03_2,
+                    _ => string.Empty
+                },
+                3 => fg01,
+                4 => fg02,
+                _ => string.Empty
+            };
+        }
+        private string GetOscCommand(InstClass instOsc, bool isNext) {
+            var dic = isNext ? _dicSwitchOsc : _dicSwitchROsc;
+            return dic[instOsc.SettingNumber];
+        }
+        private static async Task ConnectAndSendCommand(InstClass instClass, string command) {
+            if (!string.IsNullOrEmpty(instClass.VisaAddress) && !string.IsNullOrEmpty(command) && instClass.UsbDev is not null) {
+                instClass.InstCommand = command;
+                await ConnectDeviceAsync(instClass);
+            }
+        }
+
+        // DMM測定値取得
+        private async Task<decimal> ReadDmm(InstClass instClass) {
+            try {
+                VisibleProgressImage(true);
+
+                instClass.InstCommand = instClass.SignalType switch {
+                    1 => string.Empty,
+                    2 => "FETC?",
+                    _ => throw new ApplicationException(),
+                };
+
+                var result = await ConnectDeviceAsync(instClass);
+                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+
+        // OSC測定値取得
+        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+            try {
+                VisibleProgressImage(true);
+
+                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
+                var result = await ConnectDeviceAsync(instClass);
+                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+
+        // Serialロック
+        private void SerialLockToggle() { SerialTextBox.IsReadOnly = SerialLockCheckBox.IsChecked ?? false; }
+        // Serialインクリメント
+        private void SerialIncrement(int i) {
+            try {
+                var serialText = SerialTextBox.Text;
+                if (serialText.Length != 8) {
+                    throw new Exception("シリアル文字数が一致しません。");
+                }
+                var middleDigits = serialText.Substring(4, 3);
+                if (int.TryParse(middleDigits, out var currentValue)) {
+                    currentValue = (currentValue += i) % 1000;
+                    var newValue = currentValue.ToString("000");
+                    var sb = new System.Text.StringBuilder();
+                    sb.Append(serialText.AsSpan(0, 4));
+                    sb.Append(newValue);
+                    sb.Append(serialText.AsSpan(7));
+                    SerialTextBox.Text = sb.ToString();
+                }
+                else {
+                    throw new Exception("シリアルの中間値が数値に変換できません。");
+                }
+            } catch (Exception ex) {
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // キャリブレーション値取得
+        private static (string a1l, string a1h, string a2l, string a2h) GetCalibration() {
+            var hWnd = FindWindow(null, "マルチ流量計渦 [V01.08]");
+            if (hWnd == IntPtr.Zero) { return (string.Empty, string.Empty, string.Empty, string.Empty); }
+
+            var childHandles = FindChildWindows(hWnd);
+
+            var a1l = GetMessageText(childHandles[332], WmGetText, 256);
+            var a1h = GetMessageText(childHandles[342], WmGetText, 256);
+            var a2l = GetMessageText(childHandles[352], WmGetText, 256);
+            var a2h = GetMessageText(childHandles[362], WmGetText, 256);
+
+            return (a1l, a1h, a2l, a2h);
+        }
+        // 受信ボタン実行
+        private static void ReceiveData(IntPtr hWnd) {
+            var childHandles = FindChildWindows(hWnd);
+            _ = PostMessage(childHandles[9], BmClick, 0, 0);    // 受信ボタンクリック
+
+            var hWnd3 = IntPtr.Zero;
+            var timeOut = 0;
+            while (hWnd3 == IntPtr.Zero) {
+                hWnd3 = FindWindow(null, "FMRemote2014");
+                timeOut += 1;
+                Thread.Sleep(100);
+                if (timeOut > 30) {
+                    MessageBox.Show("タイムアウトしました");
+                    return;
+                }
+            }
+            var childHandles2 = FindChildWindows(hWnd3);
+            _ = PostMessage(childHandles2[0], BmClick, 0, 0);    // メッセージウィンドウ「はい」クリック
+        }
+        // アナログトリムオープン
+        private void AnalogTrimOpen(IntPtr hWnd) {
+            if (_isProcessing) { return; }
+            VisibleProgressImage(true);
+            //Application.DoEvents();
+
+            _ = PostMessage(hWnd, WmCommand, MenuItemIdAnalogTrim, 0);
+
+            var hWnd3 = IntPtr.Zero;
+            var timeOut = 0;
+            while (hWnd3 == IntPtr.Zero) {
+                hWnd3 = FindWindow(null, "FMRemote2014");
+                timeOut += 1;
+                Thread.Sleep(100);
+                if (timeOut > 30) {
+                    MessageBox.Show("タイムアウトしました");
+                    VisibleProgressImage(false);
+                    return;
+                }
+            }
+
+            var childHandles = FindChildWindows(hWnd3);
+            _ = PostMessage(childHandles[0], BmClick, 0, 0);    // メッセージウィンドウ「はい」クリック
+
+            var hWnd2 = GetForegroundWindow();
+            if (hWnd2 == IntPtr.Zero) { return; }
+
+            (hWnd2, var windowText) = GetActiveWindow;
+
+            while (windowText != "ANLOG TRIM") {
+                Task.Delay(1000).Wait();
+                (hWnd2, windowText) = GetActiveWindow;
+            }
+
+            Task.Delay(1000).Wait();
+            Activate();
+
+            ActivateAndBringToFront(hWnd);
+
+            var childHandles2 = FindChildWindows(hWnd2);
+            _ = PostMessage(childHandles2[5], WmLButtonDown, 0, 0);    // 入力欄フォーカス
+
+            //Application.DoEvents();
+            VisibleProgressImage(false);
+        }
+        // アナログトリムスタート
+        private void AnalogTrimStart(IntPtr hWnd) {
+            if (_isProcessing) { return; }
+            VisibleProgressImage(true);
+            //Application.DoEvents();
+
+            var childHandles = FindChildWindows(hWnd);
+            _ = PostMessage(childHandles[7], BmClick, 0, 0);    // STARTクリック
+
+            Task.Delay(1000).Wait();
+
+            ActivateAndBringToFront(hWnd);
+
+            _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
+            _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
+
+            //Application.DoEvents();
+            VisibleProgressImage(false);
+        }
+        // アナログトリムクローズ
+        private void AnalogTrimClose(IntPtr hWnd) {
+            if (_isProcessing) { return; }
+            VisibleProgressImage(true);
+            //Application.DoEvents();
+
+            var childHandles = FindChildWindows(hWnd);
+            _ = PostMessage(childHandles[0], BmClick, 0, 0);    // CLOSEクリック
+
+            //Application.DoEvents();
+            VisibleProgressImage(false);
+        }
+        // アナログトリム4mA
+        private void AnalogTrim4mA(IntPtr hWnd) {
+            if (_isProcessing) { return; }
+            VisibleProgressImage(true);
+            //Application.DoEvents();
+
+            var childHandles = FindChildWindows(hWnd);
+            _ = PostMessage(childHandles[2], BmClick, 0, 0);    // 4mAクリック
+
+            Task.Delay(1000).Wait();
+
+            ActivateAndBringToFront(hWnd);
+
+            _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
+            _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
+
+            //Application.DoEvents();
+            VisibleProgressImage(false);
+        }
+        // アナログトリム20mA
+        private void AnalogTrim20mA(IntPtr hWnd) {
+            if (_isProcessing) { return; }
+            VisibleProgressImage(true);
+            //Application.DoEvents();
+
+            var childHandles = FindChildWindows(hWnd);
+            _ = PostMessage(childHandles[3], BmClick, 0, 0);    // 20mAクリック
+
+            Task.Delay(1000).Wait();
+
+            ActivateAndBringToFront(hWnd);
+
+            _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
+            _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
+
+            //Application.DoEvents();
+            VisibleProgressImage(false);
+        }
+        // アクティブウィンドウ取得
+        private static (IntPtr hWnd, string windowText) GetActiveWindow {
+            get {
+                var hWnd = GetForegroundWindow();
+                var windowText = GetWindowText(hWnd);
+
+                return (hWnd, windowText);
+            }
+        }
 
 
+        [GeneratedRegex("^OP-650-10.*xlsm")]
+        private static partial Regex MassFlowRegex();
+        // アナログトリムスタート または OP-650-102をアクティブ
+        private void ActionHotkeyNumAdd() {
+            var (hWnd, windowText) = GetActiveWindow;
+            switch (windowText.ToString()) {
+                case "ANLOG TRIM": {
+                        AnalogTrimStart(hWnd);
+                        break;
+                    }
+                default: {
+                        //すべてのプロセスを列挙する
+                        foreach (var p in Process.GetProcesses()) {// メインウィンドウハンドルが存在し、かつタイトルが空でないことを確認
+                            if (p.MainWindowHandle != IntPtr.Zero && !string.IsNullOrEmpty(p.MainWindowTitle)) {
+                                //"OP-650-102"がメインウィンドウのタイトルに含まれているか調べる
+                                if (MassFlowRegex().IsMatch(p.MainWindowTitle)) {
+                                    //ウィンドウをアクティブにする
+                                    var excelTitle = p.MainWindowTitle;
+                                    var hWnd2 = FindWindow(null, excelTitle);
+                                    ActivateAndBringToFront(hWnd2);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+                    }
+            }
+        }
+        // OP-650-102 をアクティブ
+        private static void ActionHotkeyMinus() {
+            //すべてのプロセスを列挙する
+            foreach (var p in Process.GetProcesses()) {
+                // メインウィンドウハンドルが存在し、かつタイトルが空でないことを確認
+                if (p.MainWindowHandle != IntPtr.Zero && !string.IsNullOrEmpty(p.MainWindowTitle)) {
+                    //"OP-650-102"がメインウィンドウのタイトルに含まれているか調べる
+                    if (MassFlowRegex().IsMatch(p.MainWindowTitle)) {
+                        //ウィンドウをアクティブにする
+                        var excelTitle = p.MainWindowTitle;
+                        var hWnd = FindWindow(null, excelTitle);
+                        ActivateAndBringToFront(hWnd);
+                        break;
+                    }
+                }
+            }
+        }
+        // マルチ流量計渦 [V01.08] をアクティブ
+        private static void ActionHotkeyTilde() {
+            var hWnd = FindWindow(null, "マルチ流量計渦 [V01.08]");
+            ActivateAndBringToFront(hWnd);
+        }
+        // アナログトリムクローズ または マルチ流量計渦 [V01.08]をアクティブ
+        private void ActionHotkeyNumSubtract() {
+            var (hWnd, windowText) = GetActiveWindow;
+            switch (windowText.ToString()) {
+                case "ANLOG TRIM": {
+                        AnalogTrimClose(hWnd);
+                        break;
+                    }
+                default: {
+                        string[] windowTitles = ["FMRemote2014", "マルチ流量計渦 [V01.08]"];
 
+                        foreach (string title in windowTitles) {
+                            IntPtr hWnd2 = FindWindow(null, title);
+                            if (hWnd2 != IntPtr.Zero) {
+                                ActivateAndBringToFront(hWnd2);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+            }
+        }
+        // アナログトリム4mA
+        private void ActionHotkeyNumDivide() {
+            var (hWnd, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "ANLOG TRIM") {
+                AnalogTrim4mA(hWnd);
+            }
+        }
+        // アナログトリム20mA
+        private void ActionHotkeyNumMultiply() {
+            var (hWnd, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "ANLOG TRIM") {
+                AnalogTrim20mA(hWnd);
+            }
+        }
+        // 受信ボタン実行
+        private static void ActionHotkeyAtsign() {
+            var (hWnd, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                ReceiveData(hWnd);
+            }
+        }
+        // Serialインクリメント＆コピー
+        private void ActionHotkeyBracketL() {
+            var (_, windowText) = GetActiveWindow;
+            if (windowText.ToString() != "名前を付けて保存") {
+                return;
+            }
+            if (string.IsNullOrEmpty(SerialTextBox.Text)) {
+                return;
+            }
 
+            var sim = new InputSimulator();
+            Clipboard.SetText(SerialTextBox.Text);
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            SerialIncrement(1);
+        }
+        // キャリブレーション値コピー
+        private async void ActionHotkeySemiColon() {
+            try {
+                VisibleProgressImage(true);
 
+                var (hWnd, windowText) = GetActiveWindow;
+                if (!MassFlowRegex().IsMatch(windowText)) {
+                    return;
+                }
+                (var a1l, var a1h, var a2l, var a2h) = GetCalibration();
+                if (string.IsNullOrEmpty(a1l)) { a1l = "error"; }
+                if (string.IsNullOrEmpty(a1h)) { a1h = "error"; }
+                if (string.IsNullOrEmpty(a2l)) { a2l = "error"; }
+                if (string.IsNullOrEmpty(a2h)) { a2h = "error"; }
 
+                // 各クリップボード操作とキー送信のブロック
+                await PerformClipboardAndSendKeys(a1l);
+                await PerformClipboardAndSendKeys(a1h);
+                await PerformClipboardAndSendKeys(a2l);
+                await PerformClipboardAndSendKeys(a2h);
 
+                static async Task PerformClipboardAndSendKeys(string textToSet) {
+                    await Task.Delay(500);
+                    Clipboard.SetText(textToSet);
+                    var sim = new InputSimulator();
+                    sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                }
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // FG&OSCローテーション
+        private void ActionHotkeyColon() {
+            if (_isProcessing) { return; }
+            RotationFgOsc(false);
+        }
+        private void ActionHotkeyBracketR() {
+            if (_isProcessing) { return; }
+            RotationFgOsc(true);
+        }
+        // DMM値コピー
+        private async void ActionHotkeyPeriod() {
+            if (_isProcessing) { return; }
 
+            var output = await ReadDmm(_instDmm);
+            Clipboard.SetText((output * 1000).ToString("0.0000"));
+            var sim = new InputSimulator();
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+        }
+        // OSC mes1値コピー
+        private async void ActionHotkeySlash() {
+            if (_isProcessing) { return; }
 
+            var output = await ReadOsc(_instOsc, 1);
+            Clipboard.SetText(output.ToString("0.0000"));
+            var sim = new InputSimulator();
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+        }
+        // OSC mes2値コピー
+        private async void ActionHotkeyBackslash() {
+            if (_isProcessing) { return; }
 
+            var output = await ReadOsc(_instOsc, 2);
+            Clipboard.SetText(output.ToString("0.0000"));
+            var sim = new InputSimulator();
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.SHIFT, VirtualKeyCode.INSERT);
+            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+        }
+        // DCS切り替え
+        private async void ActionHotkeyNum0() {
+            var (_, windowText) = GetActiveWindow;
 
+            var sim = new InputSimulator();
 
-
-
-
-
-
-
+            switch (windowText.ToString()) {
+                case "マルチ流量計渦 [V01.08]": {
+                        if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                            await SwitchDcsAsync(_instDcs, 0);
+                        }
+                        break;
+                    }
+                case "FMRemote2014": {
+                        sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+                        return;
+                    }
+                default: {
+                        sim.Keyboard.TextEntry("0");
+                        break;
+                    }
+            }
+        }
+        private void ActionHotkeyNum1() {
+            var (_, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                if (_isProcessing) { return; }
+                SwitchDcs(1);
+                return;
+            }
+            var sim = new InputSimulator();
+            sim.Keyboard.TextEntry("1");
+        }
+        private void ActionHotkeyNum2() {
+            var (_, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                if (_isProcessing) { return; }
+                SwitchDcs(2);
+                return;
+            }
+            var sim = new InputSimulator();
+            sim.Keyboard.TextEntry("2");
+        }
+        private void ActionHotkeyNum3() {
+            var (_, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                if (_isProcessing) { return; }
+                SwitchDcs(3);
+                return;
+            }
+            var sim = new InputSimulator();
+            sim.Keyboard.TextEntry("3");
+        }
+        private void ActionHotkeyNum4() {
+            var (_, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                if (_isProcessing) { return; }
+                SwitchDcs(4);
+                return;
+            }
+            var sim = new InputSimulator();
+            sim.Keyboard.TextEntry("4");
+        }
+        private void ActionHotkeyNum7() {
+            var (hWnd, windowText) = GetActiveWindow;
+            if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
+                AnalogTrimOpen(hWnd);
+                return;
+            }
+            var sim = new InputSimulator();
+            sim.Keyboard.TextEntry("7");
+        }
 
 
         // HotkKeyの登録
         private void SetHotKey() {
             _hotkeys.Clear();
-            if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+
+            _hotkeys.AddRange([
+                new(ModNone,    HotkeyNumAdd,       ActionHotkeyNumAdd),
+                new(ModNone,    HotkeyNumSubtract,  ActionHotkeyNumSubtract),
+                new(ModNone,    HotkeyNumDivide,    ActionHotkeyNumDivide),
+                new(ModNone,    HotkeyNumMultiply,  ActionHotkeyNumMultiply),
+                new(ModNone,    HotkeyMinus,        ActionHotkeyMinus),
+                new(ModNone,    HotkeyTilde,        ActionHotkeyTilde),
+                new(ModNone,    HotkeyAtsign,       ActionHotkeyAtsign),
+                new(ModNone,    HotkeyBracketL,     ActionHotkeyBracketL),
+                new(ModNone,    HotkeySemiColon,    ActionHotkeySemiColon),
+                new(ModNone,    HotkeyNum0,         ActionHotkeyNum0),
+                new(ModNone,    HotkeyNum7,         ActionHotkeyNum7),
+                new(ModNone,    HotkeyNum1,         ActionHotkeyNum1),
+                new(ModNone,    HotkeyNum2,         ActionHotkeyNum2),
+                new(ModNone,    HotkeyNum3,         ActionHotkeyNum3),
+                new(ModNone,    HotkeyNum4,         ActionHotkeyNum4),
+            ]);
+            if (!string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress) || !string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
-                    //new(ModNone, HotkeyColon, ActionHotkeyColon),
-                    //new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
-                    ]);
+                    new(ModNone, HotkeyColon, ActionHotkeyColon),
+                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
+                ]);
             }
-            if (!string.IsNullOrEmpty(_instFg01.VisaAddress)) {
-                _hotkeys.AddRange([
-                    //new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
-                    //    new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
-                    ]);
+            if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                _hotkeys.Add(new(ModNone, HotkeyPeriod, ActionHotkeyPeriod));
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
-                    //new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                    //    new(ModNone, HotkeySlash, ActionHotkeySlash),
-                    //    new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
-                    ]);
+                    new(ModNone, HotkeySlash, ActionHotkeySlash),
+                    new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
+                ]);
             }
-            if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                _hotkeys.AddRange([
-                    //new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
-                    //    new(ModShift, HotkeyAtsign, ActionHotkeyShiftAtsign),
-                    //    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
-                    ]);
-            }
-
 
             var helper = new WindowInteropHelper(this);
             _source = HwndSource.FromHwnd(helper.Handle);
@@ -713,10 +1307,21 @@ namespace MassFlow {
             return childWindows;
         }
 
+        // ウィンドウをアクティブにして最前面に持ってくる
+        private static void ActivateAndBringToFront(IntPtr hWnd) {
+            if (hWnd == IntPtr.Zero) { return; }
 
+            // ウィンドウが最小化されているか確認し、復元する
+            if (IsIconic(hWnd)) {
+                // SW_RESTORE は最小化されたウィンドウを元のサイズに戻し、アクティブにします。
+                ShowWindow(hWnd, SwRestore);
+                // 少し待機することで、ウィンドウが表示されるのを確実にする（必要な場合のみ）
+                System.Threading.Thread.Sleep(50);
+            }
+            SetForegroundWindow(hWnd);
+        }
 
-
-
+        // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
         private void InstListButton_Click(object sender, RoutedEventArgs e) { ShowInstList(); }
@@ -725,6 +1330,47 @@ namespace MassFlow {
         private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
         private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
 
+        private void DcsOffButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(0); }
+        private void Dcs2VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(1); }
+        private void Dcs8VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(2); }
+        private void Dcs1VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(3); }
+        private void Dcs7VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(4); }
 
+        private void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
+            if (_isProcessing) { return; }
+            RotationFgOsc(true);
+        }
+
+        private void DcsRadioButton_Checked(object sender, RoutedEventArgs e) {
+            if (sender is RadioButton checkedRadioButton) {
+                checkedRadioButton.FontWeight = FontWeights.Bold;
+                checkedRadioButton.Foreground = Brushes.Black;
+            }
+        }
+        private void DcsRadioButton_Unchecked(object sender, RoutedEventArgs e) {
+            if (sender is RadioButton checkedRadioButton) {
+                checkedRadioButton.FontWeight = FontWeights.Regular;
+                checkedRadioButton.Foreground = Brushes.Gray;
+            }
+        }
+        private void FgOscRadioButton_Checked(object sender, RoutedEventArgs e) {
+            if (sender is RadioButton checkedRadioButton) {
+                checkedRadioButton.FontWeight = FontWeights.Bold;
+                checkedRadioButton.Foreground = Brushes.Black;
+            }
+        }
+        private void FgOscRadioButton_Unchecked(object sender, RoutedEventArgs e) {
+            if (sender is RadioButton checkedRadioButton) {
+                checkedRadioButton.FontWeight = FontWeights.Regular;
+                checkedRadioButton.Foreground = Brushes.Gray;
+            }
+        }
+
+        private void SerialLockCheckBox_Checked(object sender, RoutedEventArgs e) { SerialLockToggle(); }
+        private void SerialLockCheckBox_Unchecked(object sender, RoutedEventArgs e) { SerialLockToggle(); }
+        private void SerialBack_Click(object sender, RoutedEventArgs e) { SerialIncrement(-1); }
+        private void SerialNext_Click(object sender, RoutedEventArgs e) { SerialIncrement(1); }
+
+        private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
     }
 }
