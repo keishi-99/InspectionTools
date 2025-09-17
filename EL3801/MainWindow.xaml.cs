@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -90,7 +89,7 @@ namespace EL3801 {
         }
         private void InstListImport() {
             const string XmlFilePath = "VisaAddress.xml";
-            if (!File.Exists(XmlFilePath)) {
+            if (!System.IO.File.Exists(XmlFilePath)) {
                 MessageBox.Show($"{XmlFilePath}が見つかりません。");
                 return;
             }
@@ -106,6 +105,7 @@ namespace EL3801 {
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
             if (_dataTable == null) return;
+            collection.Clear();
             collection.Add(name);
 
             foreach (var signalType in signalTypes) {
