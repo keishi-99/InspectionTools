@@ -256,14 +256,16 @@ namespace EL0137 {
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
-                if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRotateRangeTextBox.Text = "OC入力回路"; }
+                if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
+                    OscRotateRangeTextBox.Text = "OC入力回路";
+                    OscRotateButton.IsEnabled = true;
+                }
 
                 DmmComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
                 InstListButton.IsEnabled = false;
-                OscRotateButton.IsEnabled = true;
 
             } catch (Exception ex) {
                 Release();

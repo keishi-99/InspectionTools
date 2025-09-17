@@ -4,13 +4,12 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
-using System.Windows.Threading;
 using Tools.Common;
 using Tools.Common.InstList;
 using WindowsInput;
 using static Tools.Common.Win32Wrapper;
 
-namespace PAF5 {
+namespace PA14 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -37,12 +36,6 @@ namespace PAF5 {
             LoadEvents();
             // Window が完全に作られたあとにハンドルを取得
             Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
-
-            _timer = new DispatcherTimer {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
         }
 
         public class InstClass {
@@ -84,9 +77,6 @@ namespace PAF5 {
 
         private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
-        // タイマー
-        private readonly DispatcherTimer _timer;
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
@@ -105,8 +95,8 @@ namespace PAF5 {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM2]");
+            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM-V]");
+            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM-A]");
             UpdateComboBox(FgComboBox, FgList, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
         }
@@ -159,56 +149,48 @@ namespace PAF5 {
         // 機器設定辞書登録
         private void RegDictionary() {
             _dicSwitchFg = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":FREQ 20;:OUTPUT OFF;*OPC?", "OFF")  },
-                { 1,  (":FREQ 20;:OUTPUT ON;*OPC?", "20")  },
-                { 2, (":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", "200") },
-                { 3, (":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", "2000")  },
-                { 4,  (":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", "6250")  },
-                { 5,  (":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", "5000")  },
-                { 6,  (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000")  },
-                { 7,  (":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", "400") } ,
-                { 8,  (":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", "0.51[min][F]") },
-                { 9,  (":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", "1[min][F]")  },
-                { 10,  (":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", "3.5[min][7]")  },
-                { 11, (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[min][7]")  },
-                { 12, (":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", "33[max][7]") } ,
-                { 13,  (":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", "46[max][7]")  },
-                { 14,  (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[max][F]")  },
-                { 15,  (":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", "8[max][F]")  }
+                { 0,  (":OUTPUT OFF;*OPC?", "OFF")  },
+                { 1,  (":OUTPUT OFF;:FREQ 4;:OUTPUT ON;*OPC?", "4Hz")  },
+                { 2,  (":OUTPUT OFF;:FREQ 40;:OUTPUT ON;*OPC?", "40Hz") },
+                { 3,  (":OUTPUT OFF;:FREQ 4000;:OUTPUT ON;*OPC?", "4kHz")  },
+                { 4,  (":OUTPUT OFF;:FREQ 1300;:OUTPUT ON;*OPC?", "1.3kHz")  },
             };
 
             _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "1")  },
-                { 1,  (":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", "2")  },
-                { 2,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "3")  },
-                { 3,  (":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", "4")  }
+                { 0,  (":TRIGGER:MAIN:LEVEL 0.0E0;:CH1:SCALE 1.0E-1;:HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "1")  },
+                { 1,  (":HORIZONTAL:MAIN:SCALE 5.0E-2;*OPC?", "2")  },
+                { 2,  (":HORIZONTAL:MAIN:SCALE 5.0E-3;*OPC?", "3")  },
+                { 3,  (":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", "4")  },
+                { 4,  (":CH1:SCALE 2.0E0;*OPC?", "5")  },
+                { 5,  (":TRIGGER:MAIN:LEVEL 3.0E0;*OPC?", "6")  },
             };
         }
         // 機器初期設定
         private void FormatSet() {
             _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,R7,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",
+                1 => "*RST,R6,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2000;*OPC?",
                 _ => string.Empty
             };
             _instDmm02.InstCommand = _instDmm02.SignalType switch {
                 1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
+                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 2000;*OPC?",
                 _ => string.Empty,
             };
             _instFg.InstCommand = _instFg.SignalType switch {
-                2 => "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?",
+                2 => "*RST;:FREQ 4;:VOLT 0.4VPP;*OPC?",
                 _ => string.Empty,
             };
             _instOsc.InstCommand = _instOsc.SignalType switch {
                 2 =>
                     """
                     *RST;:HEADER 0;
-                    :ACQUIRE:MODE AVERAGE;
                     :CH1:SCALE 1.0E-1;COUPLING DC;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 2.0E-1;POSITION2 -2.0E-1;
                     :HORIZONTAL:MAIN:SCALE 1.0E-3;
                     :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
+                    :MEASUREMENT:MEAS2:TYPE PERIOD;SOURCE CH1;
+                    :MEASUREMENT:MEAS3:TYPE PWIDTH;SOURCE CH1;
+                    :MEASUREMENT:MEAS4:TYPE MAXIMUM;SOURCE CH1;
                     *OPC?
                     """,
                 _ => string.Empty,
@@ -423,28 +405,30 @@ namespace PAF5 {
 
         }
 
-        // FGローテーション
-        private void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
-            RotationFg(true);
-        }
-        private void ActionHotkeyShiftBracketR() {
-            if (_isProcessing) { return; }
-            RotationFg(false);
-        }
-        private void ActionHotkeyNumMultiply() {
-            if (_isProcessing) { return; }
-            RotationFg(true);
-        }
         // DMM01測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async void ActionHotkeyAtsign() {
             if (_isProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm01);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.00"));
+                sim.Keyboard.TextEntry(output.ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private async void ActionHotkeyNumDivide() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm01);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(output.ToString("0.000"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -453,14 +437,14 @@ namespace PAF5 {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() {
+        private async void ActionHotkeyBracketL() {
             if (_isProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000000).ToString("0.00"));
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -468,17 +452,41 @@ namespace PAF5 {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        private async void ActionHotkeyNumMultiply() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm02);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // FGローテーション
+        private void ActionHotkeyBracketR() {
+            if (_isProcessing) { return; }
+            RotationFg(true);
+        }
+        private void ActionHotkeyNumAdd() {
+            if (_isProcessing) { return; }
+            RotationFg(false);
+        }
         // OSCローテーション
         private void ActionHotkeyColon() {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
-        private void ActionHotkeyNumDivide() {
+        private void ActionHotkeyNumSubtract() {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
         // OSC meas1測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async void ActionHotkeyComma() {
             if (_isProcessing) { return; }
 
             try {
@@ -493,32 +501,84 @@ namespace PAF5 {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        // OSC meas2測定値コピー
+        private async void ActionHotkeyPeriod() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 2);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // OSC meas3測定値コピー
+        private async void ActionHotkeySlash() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 3);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000000).ToString());
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // OSC meas4測定値コピー
+        private async void ActionHotkeyBackslash() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 4);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(output.ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // HotkKeyの登録
         private void SetHotKey() {
             _hotkeys.Clear();
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeySlash, ActionHotkeySlash),
+                    new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                 _hotkeys.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
-                    new(ModShift, HotkeyBracketR, ActionHotkeyShiftBracketR),
-                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
+                    new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
                     new(ModNone, HotkeyColon, ActionHotkeyColon),
+                    new(ModNone, HotkeyNumSubtract, ActionHotkeyNumSubtract),
+                    new(ModNone, HotkeyComma, ActionHotkeyComma),
+                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                    new(ModNone, HotkeySlash, ActionHotkeySlash),
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
-                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
 
@@ -557,7 +617,6 @@ namespace PAF5 {
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
         private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
         private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
-        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
         private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
             if (_isProcessing) { return; }
@@ -567,5 +626,7 @@ namespace PAF5 {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
+
+
     }
 }
