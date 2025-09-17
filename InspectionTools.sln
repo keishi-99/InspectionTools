@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EL1812", "EL1812\EL1812.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EL9100", "EL9100\EL9100.csproj", "{0DECEC29-FE7C-42FE-A39D-415E10A2A6CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PAF5", "PAF5\PAF5.csproj", "{00884D03-E848-4EA6-9077-537AAF6C30C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{0DECEC29-FE7C-42FE-A39D-415E10A2A6CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DECEC29-FE7C-42FE-A39D-415E10A2A6CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DECEC29-FE7C-42FE-A39D-415E10A2A6CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00884D03-E848-4EA6-9077-537AAF6C30C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00884D03-E848-4EA6-9077-537AAF6C30C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00884D03-E848-4EA6-9077-537AAF6C30C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00884D03-E848-4EA6-9077-537AAF6C30C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
