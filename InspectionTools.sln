@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EL9240", "El9240\EL9240.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PA14", "PA14\PA14.csproj", "{A6975B4B-7812-48A7-8BD4-60D580BDFDDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeasuringInstruments", "MeasuringInstruments\MeasuringInstruments.csproj", "{44214205-5FFF-41CD-9E04-014BAC71E795}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstrumentCheck", "InstrumentCheck\InstrumentCheck.csproj", "{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,10 +83,10 @@ Global
 		{A6975B4B-7812-48A7-8BD4-60D580BDFDDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6975B4B-7812-48A7-8BD4-60D580BDFDDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6975B4B-7812-48A7-8BD4-60D580BDFDDD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44214205-5FFF-41CD-9E04-014BAC71E795}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44214205-5FFF-41CD-9E04-014BAC71E795}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44214205-5FFF-41CD-9E04-014BAC71E795}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44214205-5FFF-41CD-9E04-014BAC71E795}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
