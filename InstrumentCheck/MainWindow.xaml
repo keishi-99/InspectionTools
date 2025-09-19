@@ -273,17 +273,17 @@
             SelectionUnit="Cell">
             <DataGrid.Columns>
                 <DataGridTextColumn
-                    Width="70"
+                    Width="*"
                     Binding="{Binding Dmm1}"
                     CanUserResize="False"
                     Header="DMM1" />
                 <DataGridTextColumn
-                    Width="70"
+                    Width="*"
                     Binding="{Binding Dmm2}"
                     CanUserResize="False"
                     Header="DMM2" />
                 <DataGridTextColumn
-                    Width="70"
+                    Width="*"
                     Binding="{Binding Dmm3}"
                     CanUserResize="False"
                     Header="DMM3" />
