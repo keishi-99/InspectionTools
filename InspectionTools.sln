@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PA14", "PA14\PA14.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstrumentCheck", "InstrumentCheck\InstrumentCheck.csproj", "{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PAF5amp", "PAF5amp\PAF5amp.csproj", "{DD425218-2495-4813-8AE6-35828988E5C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD425218-2495-4813-8AE6-35828988E5C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD425218-2495-4813-8AE6-35828988E5C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD425218-2495-4813-8AE6-35828988E5C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD425218-2495-4813-8AE6-35828988E5C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
