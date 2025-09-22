@@ -85,23 +85,12 @@ namespace InstrumentCheck {
             private string _dmm1 = string.Empty;
             private string _dmm2 = string.Empty;
             private string _dmm3 = string.Empty;
-            private string _range = string.Empty;
 
             // INotifyPropertyChangedインターフェースの実装
             public event PropertyChangedEventHandler? PropertyChanged;
 
             protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-
-            public string Range {
-                get => _range;
-                set {
-                    if (_range != value) {
-                        _range = value;
-                        OnPropertyChanged();
-                    }
-                }
             }
 
             public string Dmm1 {
@@ -133,6 +122,8 @@ namespace InstrumentCheck {
                     }
                 }
             }
+
+            public string Range { get; set; } = string.Empty;
         }
 
         // 起動時
