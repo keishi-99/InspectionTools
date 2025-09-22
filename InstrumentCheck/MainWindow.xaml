@@ -289,12 +289,6 @@
                     CanUserResize="False"
                     Header="DMM3" />
             </DataGrid.Columns>
-            <DataGrid.RowHeaderStyle>
-                <Style TargetType="{x:Type DataGridRowHeader}">
-                    <Setter Property="Content" Value="{Binding Range}" />
-                    <Setter Property="Padding" Value="5" />
-                </Style>
-            </DataGrid.RowHeaderStyle>
         </DataGrid>
 
     </Grid>

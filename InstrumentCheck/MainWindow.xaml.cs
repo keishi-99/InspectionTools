@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -17,6 +16,35 @@ namespace InstrumentCheck {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+
+    public class MeasurementRow : INotifyPropertyChanged {
+        private string? _dmm1;
+        private string? _dmm2;
+        private string? _dmm3;
+
+        public string Condition { get; set; } = string.Empty;
+
+        public string? Dmm1 {
+            get => _dmm1;
+            set { _dmm1 = value; OnPropertyChanged(nameof(Dmm1)); }
+        }
+
+        public string? Dmm2 {
+            get => _dmm2;
+            set { _dmm2 = value; OnPropertyChanged(nameof(Dmm2)); }
+        }
+
+        public string? Dmm3 {
+            get => _dmm3;
+            set { _dmm3 = value; OnPropertyChanged(nameof(Dmm3)); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged(string propertyName)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public partial class MainWindow : Window {
 
         private IntPtr _hWnd = IntPtr.Zero;
@@ -81,50 +109,11 @@ namespace InstrumentCheck {
 
         private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
-        public class DmmData : INotifyPropertyChanged {
-            private string _dmm1 = string.Empty;
-            private string _dmm2 = string.Empty;
-            private string _dmm3 = string.Empty;
+        private List<MeasurementRow> _data = [];
 
-            // INotifyPropertyChangedインターフェースの実装
-            public event PropertyChangedEventHandler? PropertyChanged;
-
-            protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-
-            public string Dmm1 {
-                get => _dmm1;
-                set {
-                    if (_dmm1 != value) {
-                        _dmm1 = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-
-            public string Dmm2 {
-                get => _dmm2;
-                set {
-                    if (_dmm2 != value) {
-                        _dmm2 = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-
-            public string Dmm3 {
-                get => _dmm3;
-                set {
-                    if (_dmm3 != value) {
-                        _dmm3 = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-
-            public string Range { get; set; } = string.Empty;
-        }
+        // プロパティ名を配列で管理
+        private readonly string[] _propertyNames = ["Dmm1", "Dmm2", "Dmm3"];
+        private readonly string[] _dmmDataCollection = ["4mA", "12mA", "20mA", "1V", "3V", "5V"];
 
         // 起動時
         private void LoadEvents() {
@@ -132,14 +121,15 @@ namespace InstrumentCheck {
             FormatSet();
             RegDictionary();
 
-            ResultDataGrid.ItemsSource = new ObservableCollection<DmmData>{
-                 new() { Range = "4mA" },
-                 new() { Range = "12mA" },
-                 new() { Range= "20mA"},
-                 new() { Range= "1V"},
-                 new() { Range= "3V"},
-                 new() { Range= "5V"},
+            _data = [.. _dmmDataCollection.Select(c => new MeasurementRow { Condition = c })];
+            ResultDataGrid.ItemsSource = _data;
+
+            // RowHeader に Condition を表示
+            ResultDataGrid.LoadingRow += (s, e) => {
+                if (e.Row.Item is MeasurementRow row)
+                    e.Row.Header = row.Condition;
             };
+
         }
         private void InstListImport() {
             const string XmlFilePath = "VisaAddress.xml";
@@ -264,14 +254,16 @@ namespace InstrumentCheck {
                 ReleaseButton.IsEnabled = true;
                 InstListButton.IsEnabled = false;
 
-                Dcs4mAButton.IsEnabled = true;
-                Dcs12mAButton.IsEnabled = true;
-                Dcs20mAButton.IsEnabled = true;
-                Dcs1VButton.IsEnabled = true;
-                Dcs3VButton.IsEnabled = true;
-                Dcs5VButton.IsEnabled = true;
-                DcsStanbyButton.IsEnabled = true;
-                AutoButton.IsEnabled = true;
+                if (string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    Dcs4mAButton.IsEnabled = true;
+                    Dcs12mAButton.IsEnabled = true;
+                    Dcs20mAButton.IsEnabled = true;
+                    Dcs1VButton.IsEnabled = true;
+                    Dcs3VButton.IsEnabled = true;
+                    Dcs5VButton.IsEnabled = true;
+                    DcsStanbyButton.IsEnabled = true;
+                    AutoButton.IsEnabled = true;
+                }
 
             } catch (Exception ex) {
                 Release();
@@ -507,18 +499,14 @@ namespace InstrumentCheck {
                 4 or 5 => mesValue.ToString("0.0000"),
                 _ => string.Empty,
             };
-            // プロパティ名を配列で管理
-            string[] propertyNames = ["Dmm1", "Dmm2", "Dmm3"];
 
-            // 実行時のコード
-            var dmmDataCollection = (ObservableCollection<DmmData>)ResultDataGrid.ItemsSource;
+            var row = _data.FirstOrDefault(r => r.Condition == _dmmDataCollection[j]);
+            if (row == null) return;
 
-            // iが有効なインデックスであることを確認
-            if (i >= 0 && i < propertyNames.Length) {
-                // プロパティ情報を取得
-                var propertyInfo = typeof(DmmData).GetProperty(propertyNames[i]);
-                // 値を設定
-                propertyInfo?.SetValue(dmmDataCollection[j], value);
+            switch (_propertyNames[i]) {
+                case "Dmm1": row.Dmm1 = value; break;
+                case "Dmm2": row.Dmm2 = value; break;
+                case "Dmm3": row.Dmm3 = value; break;
             }
         }
         // 計測終了処理を行う
