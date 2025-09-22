@@ -270,6 +270,7 @@
             CanUserResizeRows="False"
             CanUserSortColumns="False"
             IsReadOnly="True"
+            RowHeaderWidth="60"
             SelectionUnit="Cell">
             <DataGrid.Columns>
                 <DataGridTextColumn
