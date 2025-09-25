@@ -194,17 +194,17 @@
                 <Button
                     x:Name="MenuRotateBackButton"
                     Width="30"
-                    Margin="0,0,10,0"
+                    Margin="5"
                     HorizontalAlignment="Center"
                     Click="MenuRotateBackButton_Click"
-                    Content="&lt;&lt;" />
+                    Content="◀" />
                 <Button
                     x:Name="MenuRotateNextButton"
                     Width="30"
-                    Margin="10,0,0,0"
+                    Margin="5"
                     HorizontalAlignment="Center"
                     Click="MenuRotateNextButton_Click"
-                    Content="&gt;&gt;" />
+                    Content="▶" />
             </StackPanel>
 
 
@@ -239,18 +239,18 @@
                 <Button
                     x:Name="FgRotateBackButton"
                     Width="30"
-                    Margin="0,0,10,0"
+                    Margin="5"
                     HorizontalAlignment="Center"
                     Click="FgRotateBackButton_Click"
-                    Content="&lt;&lt;"
+                    Content="◀"
                     IsEnabled="False" />
                 <Button
                     x:Name="FgRotateNextButton"
                     Width="30"
-                    Margin="10,0,0,0"
+                    Margin="5"
                     HorizontalAlignment="Center"
                     Click="FgRotateNextButton_Click"
-                    Content="&gt;&gt;"
+                    Content="▶"
                     IsEnabled="False" />
             </StackPanel>
 
