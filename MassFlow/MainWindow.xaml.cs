@@ -802,17 +802,26 @@ namespace MassFlow {
         private void SerialIncrement(int i) {
             try {
                 var serialText = SerialTextBox.Text;
+                if (serialText.Length == 0) {
+                    return;
+                }
                 if (serialText.Length != 8) {
                     throw new Exception("シリアル文字数が一致しません。");
                 }
                 var middleDigits = serialText.Substring(4, 3);
                 if (int.TryParse(middleDigits, out var currentValue)) {
-                    currentValue = (currentValue += i) % 1000;
+                    // 0〜999 の範囲で循環
+                    currentValue = (currentValue + i + 1000) % 1000;
+
+                    // 3桁に0埋め
                     var newValue = currentValue.ToString("000");
+
+                    // 元のシリアル番号を再構築
                     var sb = new System.Text.StringBuilder();
-                    sb.Append(serialText.AsSpan(0, 4));
-                    sb.Append(newValue);
-                    sb.Append(serialText.AsSpan(7));
+                    sb.Append(serialText.AsSpan(0, 4));  // 先頭4文字
+                    sb.Append(newValue);                  // 中間3桁
+                    sb.Append(serialText.AsSpan(7));     // 7文字目以降
+
                     SerialTextBox.Text = sb.ToString();
                 }
                 else {
