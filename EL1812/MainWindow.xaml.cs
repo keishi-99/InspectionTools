@@ -642,7 +642,7 @@ namespace EL1812 {
             CountTextBox.Text = intCount.ToString();
         }
         // OSC切り替え
-        private async void ActionSwitchOscRange(bool isNext) {
+        private void ActionSwitchOscRange(bool isNext) {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -652,7 +652,7 @@ namespace EL1812 {
             // 11.パルス出力幅でのみ有効
             if (_isProcessing) { return; }
 
-            await RotationOscAsync(_instOsc, isNext);
+            RotationOsc(isNext);
         }
         // OSC測定値コピー
         private async void ActionCopyOscValue() {
@@ -740,7 +740,7 @@ namespace EL1812 {
             CountIncrement(1);
         }
         // FG切り替え
-        private async void ActionSwitchFg(bool isNext) {
+        private void ActionSwitchFg(bool isNext) {
             if (_isProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
@@ -756,7 +756,7 @@ namespace EL1812 {
             // FGを使用する項目でのみ有効
             if (_isProcessing) { return; }
 
-            await RotationFgAsync(_instFg, isNext);
+            RotationFg(isNext);
         }
 
         // メニュー切り替え
