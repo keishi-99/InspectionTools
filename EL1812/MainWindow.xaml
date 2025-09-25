@@ -19,7 +19,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="MainGrid01" Margin="10,10,10,10">
+        <Grid x:Name="MainGrid01" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -120,7 +120,7 @@
         <Grid
             x:Name="MainGrid02"
             Grid.Row="1"
-            Margin="10,10,10,10">
+            Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -263,7 +263,7 @@
                 <Button
                     x:Name="FgOutputOnButton"
                     Width="30"
-                    Margin="0,0,10,0"
+                    Margin="0,0,5,0"
                     HorizontalAlignment="Center"
                     Click="FgOutputOnButton_Click"
                     Content="ON"
@@ -271,7 +271,7 @@
                 <Button
                     x:Name="FgOutputOffButton"
                     Width="30"
-                    Margin="10,0,0,0"
+                    Margin="5,0,0,0"
                     HorizontalAlignment="Center"
                     Click="FgOutputOffButton_Click"
                     Content="OFF"
