@@ -186,7 +186,7 @@ namespace MassFlow {
             _dicSwitchFg = new Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)>() {
                 {
                     0,(
-                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 3.0;*WAI;*STB?\r\n",
+                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 3.0;",
                     ":OUTP1:STAT OFF;:SOUR1:VOLT:OFFS 3.0;:OUTP2:STAT OFF;*OPC?",
                     ":OUTP OFF;:VOLT:OFFS 3.0;*OPC?",
                     ":OUTP OFF;*OPC?"
@@ -194,7 +194,7 @@ namespace MassFlow {
                 },
                 {
                     1,(
-                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT ON;",
                     ":OUTP1:STAT ON;:OUTP2:STAT ON;*OPC?",
                     ":OUTP ON;*OPC?",
                     ":OUTP ON;*OPC?"
@@ -202,7 +202,7 @@ namespace MassFlow {
                 },
                 {
                     2,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:OUTP:STAT ON;",
                     ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;*OPC?",
                     ":VOLT 5.0VPP;*OPC?",
                     string.Empty
@@ -210,7 +210,7 @@ namespace MassFlow {
                 },
                 {
                     3,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:VOLT:OFFS 4.0;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:VOLT:OFFS 4.0;:OUTP:STAT ON;",
                     ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:VOLT:OFFS 4.0;*OPC?",
                     ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?",
                     string.Empty
@@ -244,7 +244,7 @@ namespace MassFlow {
             _dicSwitchRFg = new Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)>() {
                 {
                     0,(
-                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;*WAI;*STB?\r\n",
+                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;",
                     ":OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
                     ":OUTP OFF;*OPC?",
                     ":OUTP OFF;*OPC?"
@@ -252,7 +252,7 @@ namespace MassFlow {
                 },
                 {
                     1,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:OUTP:STAT ON;",
                     ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;*OPC?",
                     ":VOLT 0.0VPP;*OPC?",
                     string.Empty
@@ -260,7 +260,7 @@ namespace MassFlow {
                 },
                 {
                     2,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:VOLT:OFFS 3.0;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:VOLT:OFFS 3.0;:OUTP:STAT ON;",
                     ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;:SOUR1:VOLT:OFFS 3.0;*OPC?",
                     ":VOLT 5.0VPP;:VOLT:OFFS 3.0;*OPC?",
                     string.Empty
@@ -292,7 +292,7 @@ namespace MassFlow {
                 },
                 {
                     6,(
-                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 4.0;:OUTP:STAT ON;*WAI;*STB?\r\n",
+                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 4.0;:OUTP:STAT ON;",
                     ":OUTP1:STAT ON;:OUTP2:STAT ON;:SOUR1:VOLT:OFFS 4.0;*OPC?",
                     ":OUTP ON;:VOLT:OFFS 4.0;*OPC?",
                     ":OUTP ON;*OPC?"
@@ -460,7 +460,7 @@ namespace MassFlow {
             };
             // FG
             _instFg01.InstCommand = _instFg01.SignalType switch {
-                3 => "*RST;:CHAN 2;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 2.0;:OUTP:STAT OFF;:CHAN 1;:CHAN:MODE IND;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 3.0;:OUTP:STAT OFF;*WAI;*STB?\r\n",
+                3 => "*RST;:CHAN 2;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 2.0;:OUTP:STAT OFF;:CHAN 1;:CHAN:MODE IND;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 3.0;:OUTP:STAT OFF;",
                 4 => "*RST;:CHAN:MODE IND;:SOUR1:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:FREQ:CW 100HZ;:SOUR1:VOLT:OFFS 3.0;:SOUR2:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR2:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR2:FREQ:CW 100HZ;:SOUR2:VOLT:OFFS 2.0;:OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
                 _ => string.Empty,
             };
@@ -563,17 +563,18 @@ namespace MassFlow {
                 ? ""
                 : instClass.SignalType switch {
                     1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 3 or 4 => await ConnectDeviceVisaAsync(instClass),
+                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
+                    3 => await ConnectDeviceVisaAsync(instClass, false),
                     _ => throw new ApplicationException(),
                 };
         }
         // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass) {
+        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
             return await Task.Run(() => {
                 using var usbDev = new USBDeviceManager();
                 usbDev.OpenDev(instClass.VisaAddress);
                 usbDev.OutputDev(instClass.InstCommand);
-                return usbDev.InputDev();
+                return hasInput ? usbDev.InputDev() : "";
             });
         }
         // ADC接続
