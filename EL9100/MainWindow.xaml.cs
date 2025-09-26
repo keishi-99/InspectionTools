@@ -190,17 +190,18 @@ namespace EL9100 {
                 ? ""
                 : instClass.SignalType switch {
                     1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 3 or 4 => await ConnectDeviceVisaAsync(instClass),
+                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
+                    3 => await ConnectDeviceVisaAsync(instClass, false),
                     _ => throw new ApplicationException(),
                 };
         }
         // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass) {
+        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
             return await Task.Run(() => {
                 using var usbDev = new USBDeviceManager();
                 usbDev.OpenDev(instClass.VisaAddress);
                 usbDev.OutputDev(instClass.InstCommand);
-                return usbDev.InputDev();
+                return hasInput ? usbDev.InputDev() : "";
             });
         }
         // ADC接続

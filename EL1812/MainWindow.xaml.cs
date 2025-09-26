@@ -154,38 +154,38 @@ namespace EL1812 {
             // FG
             _dicSwitchFg = new Dictionary<int, (string cmd, string text)>()
             {
-                { 0, ("SIG 0;OMO 1;BTY 1;FRQ 2E+02;*WAI;*STB?", "00" ) },
-                { 1, ("SIG 1;MRK 79;TRG 1;*WAI;*STB?", "01" ) },
-                { 2, ("MRK 1;TRG 1;*WAI;*STB?", "02" ) },
-                { 3, ("MRK 839;TRG 1;*WAI;*STB?", "03" ) },
-                { 4, ("MRK 1;TRG 1;*WAI;*STB?", "04" ) },
-                { 5, ("MRK 78;TRG 1;*WAI;*STB?", "05" ) },
-                { 6, ("MRK 2;TRG 1;*WAI;*STB?", "06" ) },
-                { 7, ("FRQ 3E+3;MRK 1E+5;TRG 1;*WAI;*STB?", "07" ) },
-                { 8, ("MRK 10;TRG 1;*WAI;*STB?", "08" ) },
-                { 9, ("MRK 1002;TRG 1;*WAI;*STB?", "09" ) },
-                { 10, ("OMO 0;MRK 1;FRQ 10;*WAI;*STB?", "10" ) },
-                { 11, ("SIG 0;*WAI;*STB?", "11" ) },
-                { 12, ("SIG 1;*WAI;*STB?", "12" ) },
-                { 13, ("SIG 0;*WAI;*STB?", "13" ) },
-                { 14, ("SIG 1;*WAI;*STB?", "14" ) },
+                { 0, ("SIG 0;OMO 1;BTY 1;FRQ 2E+02;", "00" ) },
+                { 1, ("SIG 1;MRK 79;TRG 1;", "01" ) },
+                { 2, ("MRK 1;TRG 1;", "02" ) },
+                { 3, ("MRK 839;TRG 1;", "03" ) },
+                { 4, ("MRK 1;TRG 1;", "04" ) },
+                { 5, ("MRK 78;TRG 1;", "05" ) },
+                { 6, ("MRK 2;TRG 1;", "06" ) },
+                { 7, ("FRQ 3E+3;MRK 1E+5;TRG 1;", "07" ) },
+                { 8, ("MRK 10;TRG 1;", "08" ) },
+                { 9, ("MRK 1002;TRG 1;", "09" ) },
+                { 10, ("OMO 0;MRK 1;FRQ 10;", "10" ) },
+                { 11, ("SIG 0;", "11" ) },
+                { 12, ("SIG 1;", "12" ) },
+                { 13, ("SIG 0;", "13" ) },
+                { 14, ("SIG 1;", "14" ) },
             };
             _dicSwitchFgR = new Dictionary<int, (string cmd, string text)> {
-                { 0, ("SIG 0;HIV 4.5;LOV 2.0;FRQ 2E+02;*WAI;*STB?", "00" ) },
-                { 1, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 79;*WAI;*STB?", "01" ) },
-                { 2, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;*WAI;*STB?", "02" ) },
-                { 3, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 839;*WAI;*STB?", "03" ) },
-                { 4, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;*WAI;*STB?", "04" ) },
-                { 5, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 78;*WAI;*STB?", "05" ) },
-                { 6, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 2;*WAI;*STB?", "06" ) },
-                { 7, ("FRQ 3E+3;MRK 1E+5;*WAI;*STB?", "07" ) },
-                { 8, ("FRQ 3E+3;MRK 10;*WAI;*STB?", "08" ) },
-                { 9, ("BTY 1;FRQ 3E+3;MRK 1002;*WAI;*STB?", "09" ) },
-                { 10, ("SIG 1;FRQ 10;*WAI;*STB?", "10" ) },
-                { 11, ("SIG 0;FRQ 10;*WAI;*STB?", "11" )},
-                { 12, ("SIG 1;FRQ 10;*WAI;*STB?", "12" ) },
-                { 13, ("SIG 0;FRQ 10;*WAI;*STB?", "13" ) },
-                { 14, ("SIG 1;MRK 1;BTY 0;FRQ 10;*WAI;*STB?", "14" ) }
+                { 0, ("SIG 0;HIV 4.5;LOV 2.0;FRQ 2E+02;", "00" ) },
+                { 1, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 79;", "01" ) },
+                { 2, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;", "02" ) },
+                { 3, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 839;", "03" ) },
+                { 4, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;", "04" ) },
+                { 5, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 78;", "05" ) },
+                { 6, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 2;", "06" ) },
+                { 7, ("FRQ 3E+3;MRK 1E+5;", "07" ) },
+                { 8, ("FRQ 3E+3;MRK 10;", "08" ) },
+                { 9, ("BTY 1;FRQ 3E+3;MRK 1002;", "09" ) },
+                { 10, ("SIG 1;FRQ 10;", "10" ) },
+                { 11, ("SIG 0;FRQ 10;", "11" )},
+                { 12, ("SIG 1;FRQ 10;", "12" ) },
+                { 13, ("SIG 0;FRQ 10;", "13" ) },
+                { 14, ("SIG 1;MRK 1;BTY 0;FRQ 10;", "14" ) }
             };
             // OSC
             _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
@@ -230,7 +230,7 @@ namespace EL1812 {
             };
             // FG
             _instFg.InstCommand = _instFg.SignalType switch {
-                3 => "*RST;OMO 1;BES 0;BTY 1;FNC 3;TRS 1;TRE 0;BSS 1;BSV -100.0;FRQ 2E+02;HIV 4.5;LOV 2.0;MRK 79;SIG 0;*WAI;*STB?",
+                3 => "*RST;OMO 1;BES 0;BTY 1;FNC 3;TRS 1;TRE 0;BSS 1;BSV -100.0;FRQ 2E+02;HIV 4.5;LOV 2.0;MRK 79;SIG 0;",
                 _ => string.Empty,
             };
             // OSC
@@ -317,17 +317,18 @@ namespace EL1812 {
                 ? ""
                 : instClass.SignalType switch {
                     1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 3 or 4 => await ConnectDeviceVisaAsync(instClass),
+                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
+                    3 => await ConnectDeviceVisaAsync(instClass, false),
                     _ => throw new ApplicationException(),
                 };
         }
         // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass) {
+        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
             return await Task.Run(() => {
                 using var usbDev = new USBDeviceManager();
                 usbDev.OpenDev(instClass.VisaAddress);
                 usbDev.OutputDev(instClass.InstCommand);
-                return usbDev.InputDev();
+                return hasInput ? usbDev.InputDev() : "";
             });
         }
         // ADC接続
@@ -423,7 +424,7 @@ namespace EL1812 {
             }
         }
         private static async Task OutputFgAsync(InstClass instClass, string cmd) {
-            instClass.InstCommand = $"{cmd};*WAI;*STB?";
+            instClass.InstCommand = $"{cmd};";
             await ConnectDeviceAsync(instClass);
         }
         // OSC切り替え
