@@ -623,6 +623,15 @@ namespace MassFlow {
             ReleaseButton.IsEnabled = false;
             InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
+
+            FgOscRadioButtonsList[0].IsChecked = true;
+            Dcs2VButton.IsEnabled = true;
+            Dcs8VButton.IsEnabled = true;
+            Dcs1VButton.IsEnabled = true;
+            Dcs7VButton.IsEnabled = true;
+
+            DcsRadioButtonsList[0].IsChecked = true;
+            FgOscRotationButton.IsEnabled = true;
         }
 
         // DCS切り替え
@@ -642,8 +651,11 @@ namespace MassFlow {
 
                 await SwitchDcsAsync(_instDcs, i);
 
-                // 非同期処理完了後、UIスレッドでPostMessageを送信
+                // 対応するラジオボタンを選択
+                DcsRadioButtonsList[i].IsChecked = true;
+                FgOscRotationButton.IsEnabled = i == 0;
 
+                // 非同期処理完了後、UIスレッドでPostMessageを送信
                 var menuItemID = i switch {
                     0 => 0,
                     1 => MenuItemIdA1L,
@@ -663,7 +675,7 @@ namespace MassFlow {
                 VisibleProgressImage(false);
             }
         }
-        private async Task SwitchDcsAsync(InstClass instClass, int i) {
+        private static async Task SwitchDcsAsync(InstClass instClass, int i) {
             if (string.IsNullOrEmpty(instClass.VisaAddress)) { return; }
 
             instClass.SettingNumber = i;
@@ -678,10 +690,6 @@ namespace MassFlow {
 
             if (string.IsNullOrEmpty(instClass.InstCommand) || instClass.UsbDev is null) { return; }
             await ConnectDeviceAsync(instClass);
-
-            // 対応するラジオボタンを選択
-            DcsRadioButtonsList[instClass.SettingNumber].IsChecked = true;
-
         }
 
         // FG&OSCローテーション
@@ -704,6 +712,10 @@ namespace MassFlow {
 
                 // 対応するラジオボタンを選択
                 FgOscRadioButtonsList[_instOsc.SettingNumber].IsChecked = true;
+                Dcs2VButton.IsEnabled = _instOsc.SettingNumber == 0;
+                Dcs8VButton.IsEnabled = _instOsc.SettingNumber == 0;
+                Dcs1VButton.IsEnabled = _instOsc.SettingNumber == 0;
+                Dcs7VButton.IsEnabled = _instOsc.SettingNumber == 0;
 
             } catch (Exception ex) {
                 Release();
@@ -1165,16 +1177,14 @@ namespace MassFlow {
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // DCS切り替え
-        private async void ActionHotkeyNum0() {
+        private void ActionHotkeyNum0() {
             var (_, windowText) = GetActiveWindow;
 
             var sim = new InputSimulator();
 
             switch (windowText.ToString()) {
                 case "マルチ流量計渦 [V01.08]": {
-                        if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                            await SwitchDcsAsync(_instDcs, 0);
-                        }
+                        SwitchDcs(0);
                         break;
                     }
                 case "FMRemote2014": {
