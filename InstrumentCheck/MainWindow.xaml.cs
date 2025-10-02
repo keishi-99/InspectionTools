@@ -254,7 +254,7 @@ namespace InstrumentCheck {
                 ReleaseButton.IsEnabled = true;
                 InstListButton.IsEnabled = false;
 
-                if (string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     Dcs4mAButton.IsEnabled = true;
                     Dcs12mAButton.IsEnabled = true;
                     Dcs20mAButton.IsEnabled = true;
