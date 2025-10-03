@@ -149,29 +149,29 @@ namespace EL4001 {
         private void RegDictionary() {
             _dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3, string text)>
             {
-                { 0, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-                { 1, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 2, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 3, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 4, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 5, ("SOI+0MA,SBY", "F5R6S0EO0EOC", "OFF") },
-                { 6, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-                { 7, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 8, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-                { 9, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 10, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
-                { 11, ("SOI+22MA,OPR", "F5R6S22.0E-3O1EOC", "22mA") },
-                { 12, ("SOI+20MA,OPR", "F5R6S20.0E-3O1EOC", "20mA") },
-                { 13, ("SOI+12MA,OPR", "F5R6S12.0E-3O1EOC", "12mA") },
-                { 14, ("SOI+4MA,OPR", "F5R6S4.0E-3O1EOC", "4.0mA") },
-                { 15, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1EOC", "3.2mA") },
+                { 0, ("SOI+0MA,SBY", "F5R6S0EO0E", "OFF") },
+                { 1, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
+                { 2, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
+                { 3, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
+                { 4, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
+                { 5, ("SOI+0MA,SBY", "F5R6S0EO0E", "OFF") },
+                { 6, ("SOI+22MA,OPR", "F5R6S22.0E-3O1E", "22mA") },
+                { 7, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
+                { 8, ("SOI+12MA,OPR", "F5R6S12.0E-3O1E", "12mA") },
+                { 9, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
+                { 10, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1E", "3.2mA") },
+                { 11, ("SOI+22MA,OPR", "F5R6S22.0E-3O1E", "22mA") },
+                { 12, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
+                { 13, ("SOI+12MA,OPR", "F5R6S12.0E-3O1E", "12mA") },
+                { 14, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
+                { 15, ("SOI+3.2MA,OPR", "F5R6S3.2E-3O1E", "3.2mA") },
             };
         }
         // 機器初期設定
         private void FormatSet() {
             _instDcs.InstCommand = _instDcs.SignalType switch {
                 2 => "SIR3,SOI+0,SBY,*OPC?",
-                3 => "RCF5R6S0EO0EOC",
+                3 => "RCF5R6S0EO0E",
                 _ => string.Empty,
             };
             _instDmm01.InstCommand = _instDmm01.SignalType switch {
