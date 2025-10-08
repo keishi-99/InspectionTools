@@ -624,14 +624,13 @@ namespace MassFlow {
             InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
 
-            FgOscRadioButtonsList[0].IsChecked = true;
+            DcsRadioButtonsList[0].IsChecked = true;
             Dcs2VButton.IsEnabled = true;
             Dcs8VButton.IsEnabled = true;
             Dcs1VButton.IsEnabled = true;
             Dcs7VButton.IsEnabled = true;
 
-            DcsRadioButtonsList[0].IsChecked = true;
-            FgOscRotationButton.IsEnabled = true;
+            FgOscRadioButtonsList[0].IsChecked = true;
         }
 
         // DCS切り替え
@@ -653,7 +652,12 @@ namespace MassFlow {
 
                 // 対応するラジオボタンを選択
                 DcsRadioButtonsList[i].IsChecked = true;
-                FgOscRotationButton.IsEnabled = i == 0;
+                FgOscRotationButton.IsEnabled = (i == 0) &&
+                    (
+                    !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instOsc.VisaAddress)
+                    );
 
                 // 非同期処理完了後、UIスレッドでPostMessageを送信
                 var menuItemID = i switch {
@@ -712,10 +716,13 @@ namespace MassFlow {
 
                 // 対応するラジオボタンを選択
                 FgOscRadioButtonsList[_instOsc.SettingNumber].IsChecked = true;
-                Dcs2VButton.IsEnabled = _instOsc.SettingNumber == 0;
-                Dcs8VButton.IsEnabled = _instOsc.SettingNumber == 0;
-                Dcs1VButton.IsEnabled = _instOsc.SettingNumber == 0;
-                Dcs7VButton.IsEnabled = _instOsc.SettingNumber == 0;
+
+                bool isSettingZero = _instOsc.SettingNumber == 0;
+                DcsOffButton.IsEnabled = isSettingZero;
+                Dcs2VButton.IsEnabled = isSettingZero;
+                Dcs8VButton.IsEnabled = isSettingZero;
+                Dcs1VButton.IsEnabled = isSettingZero;
+                Dcs7VButton.IsEnabled = isSettingZero;
 
             } catch (Exception ex) {
                 Release();
