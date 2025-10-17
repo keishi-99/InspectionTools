@@ -80,6 +80,7 @@ namespace MassFlow {
 
         internal DataTable _dataTable = new();
 
+        private Dictionary<int, (string cmd2, string cmd3)> _dicSwitchDcs = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchFg = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchRFg = [];
         private Dictionary<int, string> _dicSwitchOsc = [];
@@ -133,7 +134,10 @@ namespace MassFlow {
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
-            if (_dataTable == null) return;
+            if (_dataTable == null) {
+                return;
+            }
+
             collection.Clear();
             collection.Add(name);
 
@@ -182,6 +186,16 @@ namespace MassFlow {
         }
         // 機器設定辞書登録
         private void RegDictionary() {
+            // DCS
+            _dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3)>
+            {
+                { 0, ("SVR5,SOV+0,SBY", "F1R5S0.0O0E") },
+                { 1, ("SVR5,SOV+2,OPR", "F1R5S2.0O1E") },
+                { 2, ("SVR5,SOV+8,OPR", "F1R5S8.0O1E") },
+                { 3, ("SVR5,SOV+1,OPR", "F1R5S1.0O1E") },
+                { 4, ("SVR5,SOV+7,OPR", "F1R5S7.0O1E") },
+            };
+
             // FG
             _dicSwitchFg = new Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)>() {
                 {
@@ -450,6 +464,7 @@ namespace MassFlow {
             // DCS
             _instDcs.InstCommand = _instDcs.SignalType switch {
                 2 => "SVR5,SOV+0,SBY,*OPC?",
+                3 => "RCF1R5S0.0O0E",
                 _ => string.Empty,
             };
             // DMM
@@ -679,17 +694,16 @@ namespace MassFlow {
                 VisibleProgressImage(false);
             }
         }
-        private static async Task SwitchDcsAsync(InstClass instClass, int i) {
+        private async Task SwitchDcsAsync(InstClass instClass, int i) {
             if (string.IsNullOrEmpty(instClass.VisaAddress)) { return; }
 
             instClass.SettingNumber = i;
-            instClass.InstCommand = instClass.SettingNumber switch {
-                0 => "SVR5,SOV+0,SBY",
-                1 => "SVR5,SOV+2,OPR",
-                2 => "SVR5,SOV+8,OPR",
-                3 => "SVR5,SOV+1,OPR",
-                4 => "SVR5,SOV+7,OPR",
-                _ => string.Empty
+            var settingNumber = instClass.SettingNumber;
+
+            instClass.InstCommand = instClass.SignalType switch {
+                2 => _dicSwitchDcs[settingNumber].cmd2,
+                3 => _dicSwitchDcs[settingNumber].cmd3,
+                _ => throw new ApplicationException(),
             };
 
             if (string.IsNullOrEmpty(instClass.InstCommand) || instClass.UsbDev is null) { return; }
