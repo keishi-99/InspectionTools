@@ -529,6 +529,9 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
+
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
 
@@ -555,8 +558,6 @@ namespace InspectionTools.Product {
                     FgOscRange0RadioButton.IsChecked = true;
                 }
 
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
                 FgNumberComboBox.IsEnabled = false;

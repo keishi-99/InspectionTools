@@ -218,6 +218,9 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
+
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
 
@@ -235,8 +238,6 @@ namespace InspectionTools.Product {
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRangeLabel.Text = "50m"; }
 
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
