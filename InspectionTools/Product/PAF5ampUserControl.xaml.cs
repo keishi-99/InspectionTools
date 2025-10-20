@@ -206,6 +206,9 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
+
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
 
@@ -216,8 +219,6 @@ namespace InspectionTools.Product {
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;

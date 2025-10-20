@@ -286,6 +286,9 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
+
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
 
@@ -310,8 +313,6 @@ namespace InspectionTools.Product {
                     OscRotateRangeTextBox.Text = "150u";
                 }
 
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
                 DmmComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
