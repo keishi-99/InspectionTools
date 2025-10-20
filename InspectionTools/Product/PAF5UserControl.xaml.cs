@@ -1,20 +1,19 @@
-﻿using System.Collections.ObjectModel;
+﻿using InspectionTools.Common;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using Tools.Common;
-using Tools.Common.InstList;
 using WindowsInput;
-using static Tools.Common.Win32Wrapper;
+using static InspectionTools.Common.Win32Wrapper;
 
-namespace PAF5 {
+namespace InspectionTools.Product {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// PAF5UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window {
+    public partial class PAF5UserControl : UserControl {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
@@ -28,21 +27,32 @@ namespace PAF5 {
         public ObservableCollection<string> FgList { get; } = [];
         public ObservableCollection<string> OscList { get; } = [];
 
-        public MainWindow() {
+        public PAF5UserControl() {
             InitializeComponent();
             _instDmm01 = new();
             _instDmm02 = new();
             _instFg = new();
             _instOsc = new();
             LoadEvents();
-            // Window が完全に作られたあとにハンドルを取得
-            Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+            }
 
             _timer = new DispatcherTimer {
                 Interval = TimeSpan.FromSeconds(1)
             };
             _timer.Tick += Timer_Tick;
             _timer.Start();
+
+            Loaded += (s, e) => AdjustWindowSizeToUserControl();
+        }
+        private void AdjustWindowSizeToUserControl() {
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
+            }
         }
 
         public class InstClass {
@@ -153,12 +163,6 @@ namespace PAF5 {
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
         }
-        // 機器リスト表示
-        private void ShowInstList() {
-            InstListWindow frm1 = new(_dataTable);
-            frm1.ShowDialog();
-            InstListImport();
-        }
         // 機器設定辞書登録
         private void RegDictionary() {
             _dicSwitchFg = new Dictionary<int, (string cmd, string text)> {
@@ -247,7 +251,6 @@ namespace PAF5 {
                 OscComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
-                InstListButton.IsEnabled = false;
 
             } catch (Exception ex) {
                 Release();
@@ -324,7 +327,6 @@ namespace PAF5 {
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
             FgRotateButton.IsEnabled = false;
             OscRotateButton.IsEnabled = false;
@@ -365,7 +367,6 @@ namespace PAF5 {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
@@ -409,7 +410,6 @@ namespace PAF5 {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
@@ -526,10 +526,13 @@ namespace PAF5 {
                 ]);
             }
 
-
-            var helper = new WindowInteropHelper(this);
-            _source = HwndSource.FromHwnd(helper.Handle);
-            _source.AddHook(HwndHook);
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                var helper = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(helper);
+                _source.AddHook(HwndHook);
+            }
 
             // ホットキーを登録
             foreach (var hotkey in _hotkeys) {
@@ -556,11 +559,16 @@ namespace PAF5 {
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void InstListButton_Click(object sender, RoutedEventArgs e) { ShowInstList(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
         private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
         private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
@@ -571,6 +579,7 @@ namespace PAF5 {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
+
 
     }
 }

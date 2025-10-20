@@ -1,23 +1,17 @@
-﻿<Window
-    x:Class="EL0122FI.MainWindow"
+﻿<UserControl
+    x:Class="InspectionTools.Product.EL9100UserControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Common="clr-namespace:Tools.Common.Tool;assembly=Tools.Common"
+    xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:EL0122FI"
+    xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="EL0122FI"
-    Width="220"
-    Height="260"
-    Icon="/sine.ico"
-    ResizeMode="CanMinimize"
+    Width="250"
+    Height="200"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -34,7 +28,7 @@
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
-            Text="[DMM-V]" />
+            Text="[DMM1]" />
         <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
@@ -43,41 +37,11 @@
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
-            Text="[DMM-A]" />
-
-        <ComboBox
-            x:Name="FgComboBox"
-            Grid.Row="1"
-            Width="80"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsEditable="True"
-            IsReadOnly="True"
-            Text="[FG]" />
-        <ComboBox
-            x:Name="OscComboBox"
-            Grid.Row="1"
-            Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsEditable="True"
-            IsReadOnly="True"
-            Text="[OSC]" />
-
-        <ComboBox
-            x:Name="PsComboBox"
-            Grid.Row="2"
-            Width="80"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsEditable="True"
-            IsReadOnly="True"
-            Text="[DCS]" />
+            Text="[DMM2]" />
 
         <Button
             x:Name="ConnectButton"
-            Grid.Row="3"
+            Grid.Row="1"
             Width="60"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
@@ -85,7 +49,7 @@
             Content="接続" />
         <Button
             x:Name="ReleaseButton"
-            Grid.Row="3"
+            Grid.Row="1"
             Grid.Column="1"
             Width="60"
             HorizontalAlignment="Center"
@@ -96,7 +60,7 @@
 
         <CheckBox
             x:Name="HotKeyChekBox"
-            Grid.Row="4"
+            Grid.Row="2"
             Width="60"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
@@ -106,7 +70,7 @@
             Unchecked="HotKeyChekBox_Unchecked" />
         <CheckBox
             x:Name="TopMostCheckBox"
-            Grid.Row="4"
+            Grid.Row="2"
             Grid.Column="1"
             Width="60"
             HorizontalAlignment="Center"
@@ -116,39 +80,15 @@
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="TopMostCheckBox_Unchecked" />
 
-        <StackPanel Grid.Row="5">
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Text="待機時間(ms)" />
-            <TextBox
-                x:Name="WaitTimeTextBox"
-                Width="60"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                HorizontalContentAlignment="Right"
-                Text="5000" />
-        </StackPanel>
-        <Button
-            x:Name="InstListButton"
-            Grid.Row="5"
-            Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="測定器" />
-
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
-            Grid.Row="1"
-            Grid.RowSpan="4"
-            Grid.ColumnSpan="2"
+            Grid.RowSpan="3"
+            Grid.ColumnSpan="3"
             Padding="20,20,20,20"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Visibility="Collapsed" />
 
     </Grid>
-</Window>
+</UserControl>
