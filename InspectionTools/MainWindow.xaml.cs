@@ -25,6 +25,8 @@ namespace InspectionTools {
             var mainMenu = new MainMenu.MainMenuUserControl();
             mainMenu.PageSelected += OnPageSelected;
             MainMenuContentArea.Content = mainMenu;
+
+            this.Title = "Menu";
         }
 
         private void OnPageSelected(string pageName) {
@@ -56,6 +58,7 @@ namespace InspectionTools {
                     s.SetSubMenuControl(_subMenu);
                 }
 
+                this.Title = pageName;
                 MainMenuContentArea.Content = page;
             }
         }
