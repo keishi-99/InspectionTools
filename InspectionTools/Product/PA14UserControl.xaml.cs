@@ -600,8 +600,8 @@ namespace InspectionTools.Product {
             // 親ウィンドウを取得
             var parentWindow = Window.GetWindow(this);
             if (parentWindow != null) {
-                var helper = new WindowInteropHelper(parentWindow).Handle;
-                _source = HwndSource.FromHwnd(helper);
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(_hWnd);
                 _source.AddHook(HwndHook);
             }
 
