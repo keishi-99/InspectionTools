@@ -8,12 +8,18 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
+using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
     /// PAF5UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class PAF5UserControl : UserControl {
+    public partial class PAF5UserControl : UserControl, ISubMenuAware {
+
+        private MainMenu.SubMenuUserControl? _subMenu;
+        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
+            _subMenu = subMenu;
+        }
 
         private IntPtr _hWnd = IntPtr.Zero;
 
@@ -245,6 +251,8 @@ namespace InspectionTools.Product {
                     OscRotateButton.IsEnabled = true;
                 }
 
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
@@ -321,6 +329,8 @@ namespace InspectionTools.Product {
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
 
+            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _subMenu?.SetButtonEnabled("InstListButton", true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;

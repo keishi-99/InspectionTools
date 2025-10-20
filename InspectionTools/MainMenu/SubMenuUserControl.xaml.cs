@@ -10,6 +10,10 @@ namespace InspectionTools.MainMenu {
 
         public event EventHandler? BackToMainRequested;
 
+        public interface ISubMenuAware {
+            void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu);
+        }
+
         public SubMenuUserControl() {
             InitializeComponent();
         }

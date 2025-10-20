@@ -29,9 +29,7 @@ namespace InspectionTools {
 
         private void OnPageSelected(string pageName) {
 
-            // サブメニューを無効化
             _subMenu?.SetButtonEnabled("ProductListButton", true);
-            _subMenu?.SetButtonEnabled("InstListButton", false);
 
             UserControl? page = pageName switch {
                 "EL0122FI" => new Product.EL0122FIUserControl(),
@@ -53,6 +51,11 @@ namespace InspectionTools {
             };
 
             if (page is not null) {
+
+                if (page is MainMenu.SubMenuUserControl.ISubMenuAware s) {
+                    s.SetSubMenuControl(_subMenu);
+                }
+
                 MainMenuContentArea.Content = page;
             }
         }
