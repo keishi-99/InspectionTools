@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using InspectionTools.Common;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,18 +8,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
-using Tools.Common;
-using Tools.Common.InstList;
 using WindowsInput;
-using static Tools.Common.Win32Wrapper;
+using static InspectionTools.Common.Win32Wrapper;
 
-namespace MassFlow {
+namespace InspectionTools.Product {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// MassFlowUserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window {
+    public partial class MassFlowUserControl : UserControl {
 
-        private IntPtr _hWnd = IntPtr.Zero;
+        private readonly IntPtr _hWnd = IntPtr.Zero;
 
         private readonly InstClass _instDcs;
         private readonly InstClass _instDmm;
@@ -34,7 +33,7 @@ namespace MassFlow {
         public ObservableCollection<string> Fg02_2List { get; } = [];
         public ObservableCollection<string> OscList { get; } = [];
 
-        public MainWindow() {
+        public MassFlowUserControl() {
             InitializeComponent();
             _instDcs = new();
             _instDmm = new();
@@ -44,8 +43,19 @@ namespace MassFlow {
             _instFg02_2 = new();
             _instOsc = new();
             LoadEvents();
-            // Window が完全に作られたあとにハンドルを取得
-            Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+            }
+
+            Loaded += (s, e) => AdjustWindowSizeToUserControl();
+        }
+        private void AdjustWindowSizeToUserControl() {
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
+            }
         }
 
         public class InstClass {
@@ -177,12 +187,6 @@ namespace MassFlow {
             instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
-        }
-        // 機器リスト表示
-        private void ShowInstList() {
-            InstListWindow frm1 = new(_dataTable);
-            frm1.ShowDialog();
-            InstListImport();
         }
         // 機器設定辞書登録
         private void RegDictionary() {
@@ -554,7 +558,6 @@ namespace MassFlow {
                 OscComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
-                InstListButton.IsEnabled = false;
 
             } catch (Exception ex) {
                 Release();
@@ -636,7 +639,6 @@ namespace MassFlow {
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
 
             DcsRadioButtonsList[0].IsChecked = true;
@@ -688,7 +690,6 @@ namespace MassFlow {
                 }
             } catch (Exception ex) {
                 Release();
-                Activate();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
                 VisibleProgressImage(false);
@@ -717,7 +718,6 @@ namespace MassFlow {
 
                 if (_instDcs.SettingNumber != 0) {
                     MessageBox.Show("DCSがONになっています。", "", MessageBoxButton.OK, MessageBoxImage.Error);
-                    Activate();
                     return;
                 }
 
@@ -741,7 +741,6 @@ namespace MassFlow {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
@@ -934,7 +933,6 @@ namespace MassFlow {
             }
 
             Task.Delay(1000).Wait();
-            Activate();
 
             ActivateAndBringToFront(hWnd);
 
@@ -1023,9 +1021,9 @@ namespace MassFlow {
             }
         }
 
-
         [GeneratedRegex("^OP-650-10.*xlsm")]
         private static partial Regex MassFlowRegex();
+
         // アナログトリムスタート または OP-650-102をアクティブ
         private void ActionHotkeyNumAdd() {
             var (hWnd, windowText) = GetActiveWindow;
@@ -1306,9 +1304,13 @@ namespace MassFlow {
                 ]);
             }
 
-            var helper = new WindowInteropHelper(this);
-            _source = HwndSource.FromHwnd(helper.Handle);
-            _source.AddHook(HwndHook);
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                var helper = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(helper);
+                _source.AddHook(HwndHook);
+            }
 
             // ホットキーを登録
             foreach (var hotkey in _hotkeys) {
@@ -1372,11 +1374,16 @@ namespace MassFlow {
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void InstListButton_Click(object sender, RoutedEventArgs e) { ShowInstList(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
 
         private void DcsOffButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(0); }
         private void Dcs2VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(1); }
@@ -1420,6 +1427,7 @@ namespace MassFlow {
         private void SerialNext_Click(object sender, RoutedEventArgs e) { SerialIncrement(1); }
 
         private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { FgPanelVisible(); }
+
 
     }
 }

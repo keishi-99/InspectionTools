@@ -101,7 +101,10 @@ namespace PA14 {
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
-            if (_dataTable == null) return;
+            if (_dataTable == null) {
+                return;
+            }
+
             collection.Clear();
             collection.Add(name);
 
@@ -627,7 +630,6 @@ namespace PA14 {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
-
 
     }
 }

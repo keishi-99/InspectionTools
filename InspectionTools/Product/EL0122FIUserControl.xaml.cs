@@ -1,48 +1,54 @@
-﻿using System.Collections.ObjectModel;
+﻿using InspectionTools.Common;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
-using System.Windows.Threading;
-using Tools.Common;
-using Tools.Common.InstList;
 using WindowsInput;
-using static Tools.Common.Win32Wrapper;
+using static InspectionTools.Common.Win32Wrapper;
 
-namespace PAF5 {
+namespace InspectionTools.Product {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// EL0122FIUserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window {
+    public partial class EL0122FIUserControl : UserControl {
 
-        private IntPtr _hWnd = IntPtr.Zero;
+        private readonly IntPtr _hWnd = IntPtr.Zero;
 
         private readonly InstClass _instDmm01;
         private readonly InstClass _instDmm02;
         private readonly InstClass _instFg;
         private readonly InstClass _instOsc;
+        private readonly InstClass _instPs;
 
         public ObservableCollection<string> Dmm1List { get; } = [];
         public ObservableCollection<string> Dmm2List { get; } = [];
         public ObservableCollection<string> FgList { get; } = [];
         public ObservableCollection<string> OscList { get; } = [];
+        public ObservableCollection<string> PsList { get; } = [];
 
-        public MainWindow() {
+        public EL0122FIUserControl() {
             InitializeComponent();
             _instDmm01 = new();
             _instDmm02 = new();
             _instFg = new();
             _instOsc = new();
+            _instPs = new();
             LoadEvents();
-            // Window が完全に作られたあとにハンドルを取得
-            Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+            }
 
-            _timer = new DispatcherTimer {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
+            Loaded += (s, e) => AdjustWindowSizeToUserControl();
+        }
+        private void AdjustWindowSizeToUserControl() {
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
+            }
         }
 
         public class InstClass {
@@ -75,8 +81,6 @@ namespace PAF5 {
 
         internal DataTable _dataTable = new();
 
-        private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
-        private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
         private readonly List<Hotkey> _hotkeys = [];
         private HwndSource? _source;
 
@@ -84,14 +88,10 @@ namespace PAF5 {
 
         private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
-        // タイマー
-        private readonly DispatcherTimer _timer;
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
             FormatSet();
-            RegDictionary();
         }
         private void InstListImport() {
             const string XmlFilePath = "VisaAddress.xml";
@@ -105,10 +105,11 @@ namespace PAF5 {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM2]");
+            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM-V]");
+            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM-A]");
             UpdateComboBox(FgComboBox, FgList, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
+            UpdateComboBox(PsComboBox, PsList, "パワーサプライ", [2], "[DCS]");
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
             if (_dataTable == null) {
@@ -139,6 +140,7 @@ namespace PAF5 {
             GetVisaAddress(_instDmm02, Dmm02ComboBox);
             GetVisaAddress(_instFg, FgComboBox);
             GetVisaAddress(_instOsc, OscComboBox);
+            GetVisaAddress(_instPs, PsComboBox);
         }
         private void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
             instClass.ResetProperties();
@@ -153,40 +155,6 @@ namespace PAF5 {
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
         }
-        // 機器リスト表示
-        private void ShowInstList() {
-            InstListWindow frm1 = new(_dataTable);
-            frm1.ShowDialog();
-            InstListImport();
-        }
-        // 機器設定辞書登録
-        private void RegDictionary() {
-            _dicSwitchFg = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":FREQ 20;:OUTPUT OFF;*OPC?", "OFF")  },
-                { 1,  (":FREQ 20;:OUTPUT ON;*OPC?", "20")  },
-                { 2, (":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", "200") },
-                { 3, (":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", "2000")  },
-                { 4,  (":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", "6250")  },
-                { 5,  (":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", "5000")  },
-                { 6,  (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000")  },
-                { 7,  (":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", "400") } ,
-                { 8,  (":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", "0.51[min][F]") },
-                { 9,  (":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", "1[min][F]")  },
-                { 10,  (":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", "3.5[min][7]")  },
-                { 11, (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[min][7]")  },
-                { 12, (":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", "33[max][7]") } ,
-                { 13,  (":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", "46[max][7]")  },
-                { 14,  (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[max][F]")  },
-                { 15,  (":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", "8[max][F]")  }
-            };
-
-            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "1")  },
-                { 1,  (":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", "2")  },
-                { 2,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "3")  },
-                { 3,  (":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", "4")  }
-            };
-        }
         // 機器初期設定
         private void FormatSet() {
             _instDmm01.InstCommand = _instDmm01.SignalType switch {
@@ -195,25 +163,31 @@ namespace PAF5 {
                 _ => string.Empty
             };
             _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
+                1 => "*RST,F5,R7,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
                 _ => string.Empty,
             };
             _instFg.InstCommand = _instFg.SignalType switch {
-                2 => "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?",
+                2 => "*RST;:FREQ 50;:VOLT 3.0VPP;:VOLT:OFFS 1.5;:SOUR:FUNC SQU;:OUTPUT ON;*OPC?",
                 _ => string.Empty,
             };
             _instOsc.InstCommand = _instOsc.SignalType switch {
                 2 =>
                     """
                     *RST;:HEADER 0;
-                    :ACQUIRE:MODE AVERAGE;
-                    :CH1:SCALE 1.0E-1;COUPLING DC;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 2.0E-1;POSITION2 -2.0E-1;
-                    :HORIZONTAL:MAIN:SCALE 1.0E-3;
-                    :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
+                    :SELECT:CH1 1;CH2 1;
+                    :CH1:SCALE 1.0E1;POSITION 0.0E0;
+                    :CH2:SCALE 1.0E1;POSITION -3.0E0;
+                    :HORIZONTAL:MAIN:SCALE 5.0E-3;
+                    :TRIGGER:MAIN:LEVEL 4.0E0;
+                    :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
+                    :MEASUREMENT:MEAS2:TYPE PERIod;SOURCE CH1;
                     *OPC?
                     """,
+                _ => string.Empty,
+            };
+            _instPs.InstCommand = _instPs.SignalType switch {
+                2 => "*RST;:VOLT 24;*OPC?",
                 _ => string.Empty,
             };
         }
@@ -228,26 +202,17 @@ namespace PAF5 {
                 CheckDmmId();
                 FormatSet();
 
-                var devices = new[] { _instDmm01, _instDmm02, _instFg, _instOsc };
+                var devices = new[] { _instDmm01, _instDmm02, _instFg, _instOsc, _instPs };
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
-
-                if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
-                    FgRotateRangeTextBox.Text = "OFF";
-                    FgRotateButton.IsEnabled = true;
-                }
-                if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
-                    OscRotateRangeTextBox.Text = "1";
-                    OscRotateButton.IsEnabled = true;
-                }
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
+                PsComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
-                InstListButton.IsEnabled = false;
 
             } catch (Exception ex) {
                 Release();
@@ -317,131 +282,113 @@ namespace PAF5 {
             _instDmm02.ResetProperties();
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
+            _instPs.ResetProperties();
 
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;
+            PsComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
-            FgRotateButton.IsEnabled = false;
-            OscRotateButton.IsEnabled = false;
-            FgRotateRangeTextBox.Text = string.Empty;
-            OscRotateRangeTextBox.Text = string.Empty;
         }
 
         // DMM測定値取得
-        private async Task<decimal> ReadDmm(InstClass instClass) {
-            try {
-                VisibleProgressImage(true);
+        private static async Task<decimal> ReadDmm(InstClass instClass) {
 
-                instClass.InstCommand = instClass.SignalType switch {
-                    1 => string.Empty,
-                    2 => "FETC?",
-                    _ => throw new ApplicationException(),
-                };
+            instClass.InstCommand = instClass.SignalType switch {
+                1 => string.Empty,
+                2 => "FETC?",
+                _ => throw new ApplicationException(),
+            };
 
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+            var result = await ConnectDeviceAsync(instClass);
+            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
 
-                return output;
-
-            } finally {
-                VisibleProgressImage(false);
-            }
-        }
-        // FG切り替え
-        private async void RotationFg(bool isNext) {
-            try {
-                if (string.IsNullOrEmpty(_instFg.VisaAddress)) { return; }
-                VisibleProgressImage(true);
-
-                await RotationFgAsync(_instFg, isNext);
-
-                FgRotateRangeTextBox.Text = _dicSwitchFg[_instFg.SettingNumber].text;
-
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
-            } finally {
-                VisibleProgressImage(false);
-            }
-        }
-        private async Task RotationFgAsync(InstClass instClass, bool isNext) {
-
-            var fgMaxSettingNumber = _dicSwitchFg.Count;
-            _instFg.SettingNumber = (_instFg.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
-
-            instClass.InstCommand = _dicSwitchFg[_instFg.SettingNumber].cmd;
-
-            if (instClass.InstCommand == string.Empty) { return; }
-
-            await ConnectDeviceAsync(instClass);
+            return output;
         }
         // OSC測定値取得
-        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+        private static async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+
+            instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
+            var result = await ConnectDeviceAsync(instClass);
+            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+
+            return output;
+        }
+        // 電源のON-OFF
+        private async Task SwitchDcsAsync(InstClass instClass, string cmd) {
             try {
-                VisibleProgressImage(true);
+                instClass.InstCommand = $":OUTPUT {cmd};*OPC?";
+                await ConnectDeviceAsync(instClass);
 
-                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-                return output;
-
-            } finally {
-                VisibleProgressImage(false);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // OSC切り替え
-        private async void RotationOsc(bool isNext) {
+
+        // 全てのデータを処理するメソッド
+        private async Task ProcessAllDataAsync(int delay) {
+            if (_isProcessing) { return; }
             try {
-                if (string.IsNullOrEmpty(_instOsc.VisaAddress)) { return; }
+                var sim = new InputSimulator();
                 VisibleProgressImage(true);
 
-                await RotationOscAsync(_instOsc, isNext);
+                if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
+                    await SwitchDcsAsync(_instPs, "ON");
+                    await Task.Delay(delay);
+                }
 
-                OscRotateRangeTextBox.Text = _dicSwitchOsc[_instOsc.SettingNumber].text;
+                // DMM01の値を取得
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    var output = await ReadDmm(_instDmm01);
+
+                    sim.Keyboard.TextEntry(output.ToString("0.00"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    await Task.Delay(300);
+                }
+                // DMM02の値を取得
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    var output = await ReadDmm(_instDmm02);
+
+                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    await Task.Delay(300);
+                }
+                // オシロスコープの値を取得
+                if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
+                    var output = await ReadOsc(_instOsc, 1);
+
+                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    await Task.Delay(300);
+
+                    output = await ReadOsc(_instOsc, 2);
+                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    await Task.Delay(300);
+                }
+
+                if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
+                    await SwitchDcsAsync(_instPs, "OFF");
+                }
 
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
         }
-        private async Task RotationOscAsync(InstClass instClass, bool isNext) {
 
-            var oscMaxSettingNumber = _dicSwitchOsc.Count;
-            _instOsc.SettingNumber = (_instOsc.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
-
-            instClass.InstCommand = _dicSwitchOsc[_instOsc.SettingNumber].cmd;
-
-            if (instClass.InstCommand == string.Empty) { return; }
-
-            await ConnectDeviceAsync(instClass);
-
-        }
-
-        // FGローテーション
-        private void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
-            RotationFg(true);
-        }
-        private void ActionHotkeyShiftBracketR() {
-            if (_isProcessing) { return; }
-            RotationFg(false);
-        }
-        private void ActionHotkeyNumMultiply() {
-            if (_isProcessing) { return; }
-            RotationFg(true);
-        }
         // DMM01測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async void ActionHotkeyColon() {
             if (_isProcessing) { return; }
 
             try {
@@ -457,14 +404,14 @@ namespace PAF5 {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() {
+        private async void ActionHotkeyBracketR() {
             if (_isProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000000).ToString("0.00"));
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -472,24 +419,15 @@ namespace PAF5 {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // OSCローテーション
-        private void ActionHotkeyColon() {
-            if (_isProcessing) { return; }
-            RotationOsc(true);
-        }
-        private void ActionHotkeyNumDivide() {
-            if (_isProcessing) { return; }
-            RotationOsc(true);
-        }
-        // OSC meas1測定値コピー
-        private async void ActionHotkeyBackslash() {
+        // OSC1測定値コピー
+        private async void ActionHotkeySlash() {
             if (_isProcessing) { return; }
 
             try {
                 var output = await ReadOsc(_instOsc, 1);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -497,39 +435,86 @@ namespace PAF5 {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        // OSC2測定値コピー
+        private async void ActionHotkeyBackslash() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 2);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // 電源ON-OFF
+        private async void ActionHotkeyAtsign() {
+            await SwitchDcsAsync(_instPs, "ON");
+        }
+        private async void ActionHotkeyBracketL() {
+            await SwitchDcsAsync(_instPs, "OFF");
+        }
+        // 一連の処理
+        private async void ActionHotkeyComma() {
+            if (int.TryParse(WaitTimeTextBox.Text, out var delay)) {
+                await ProcessAllDataAsync(delay);
+            }
+            else {
+                MessageBox.Show("数値に変換できません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private async void ActionHotkeyNumAdd() {
+            if (int.TryParse(WaitTimeTextBox.Text, out var delay)) {
+                await ProcessAllDataAsync(delay);
+            }
+            else {
+                MessageBox.Show("数値に変換できません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // HotkKeyの登録
         private void SetHotKey() {
             _hotkeys.Clear();
+
+            _hotkeys.AddRange([
+                new(ModNone, HotkeyComma, ActionHotkeyComma),
+                new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
+            ]);
+
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                    new(ModNone, HotkeyColon, ActionHotkeyColon),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeySlash, ActionHotkeySlash),
-                ]);
-            }
-            if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
-                _hotkeys.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
-                    new(ModShift, HotkeyBracketR, ActionHotkeyShiftBracketR),
-                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyColon, ActionHotkeyColon),
+                    new(ModNone, HotkeySlash, ActionHotkeySlash),
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
-                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
+                ]);
+            }
+            if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
+                _hotkeys.AddRange([
+                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
+                    new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
                 ]);
             }
 
-
-            var helper = new WindowInteropHelper(this);
-            _source = HwndSource.FromHwnd(helper.Handle);
-            _source.AddHook(HwndHook);
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                var helper = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(helper);
+                _source.AddHook(HwndHook);
+            }
 
             // ホットキーを登録
             foreach (var hotkey in _hotkeys) {
@@ -556,21 +541,17 @@ namespace PAF5 {
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void InstListButton_Click(object sender, RoutedEventArgs e) { ShowInstList(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
-        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
 
-        private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
-            RotationFg(true);
-        }
-        private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
-            RotationOsc(true);
-        }
 
     }
 }

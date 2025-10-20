@@ -6,11 +6,20 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <ApplicationIcon>sine.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="sine.ico" />
+    <COMReference Include="VisaComLib">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>15</VersionMinor>
+      <VersionMajor>5</VersionMajor>
+      <Guid>db8cbf00-d6d3-11d4-aa51-00a024ee30bd</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>

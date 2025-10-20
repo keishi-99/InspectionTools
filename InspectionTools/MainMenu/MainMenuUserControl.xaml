@@ -1,0 +1,81 @@
+﻿<UserControl
+    x:Class="InspectionTools.MainMenu.MainMenuUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
+        <StackPanel VerticalAlignment="Top" Orientation="Vertical">
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL0122_Click"
+                Content="EL0122" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL0122FI_Click"
+                Content="EL0122FI" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL0137_Click"
+                Content="EL0137" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL1812_Click"
+                Content="EL1812" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL3801_Click"
+                Content="EL3801" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL4001_Click"
+                Content="EL4001" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL9100_Click"
+                Content="EL9100" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL9240_Click"
+                Content="EL9240" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Top" Orientation="Vertical">
+            <Button
+                Width="100"
+                Margin="5"
+                Click="PA14_Click"
+                Content="PA14" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="PAF5_Click"
+                Content="PAF5" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="PAF5amp_Click"
+                Content="PAF5amp" />
+        </StackPanel>
+        <StackPanel VerticalAlignment="Top" Orientation="Vertical">
+            <Button
+                Width="100"
+                Margin="5"
+                Click="DFPDX_Click"
+                Content="DFPDX" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="MassFlow_Click"
+                Content="MassFlow" />
+
+        </StackPanel>
+    </StackPanel>
+
+</UserControl>

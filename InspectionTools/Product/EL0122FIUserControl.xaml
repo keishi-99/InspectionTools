@@ -1,16 +1,13 @@
-﻿<Window
-    x:Class="EL0122FI.MainWindow"
+﻿<UserControl
+    x:Class="InspectionTools.Product.EL0122FIUserControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Common="clr-namespace:Tools.Common.Tool;assembly=Tools.Common"
+    xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:EL0122FI"
+    xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="EL0122FI"
     Width="220"
     Height="260"
-    Icon="/sine.ico"
-    ResizeMode="CanMinimize"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
@@ -129,15 +126,6 @@
                 HorizontalContentAlignment="Right"
                 Text="5000" />
         </StackPanel>
-        <Button
-            x:Name="InstListButton"
-            Grid.Row="5"
-            Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Click="InstListButton_Click"
-            Content="測定器" />
 
 
         <Common:WaitingCircle
@@ -151,4 +139,4 @@
             Visibility="Collapsed" />
 
     </Grid>
-</Window>
+</UserControl>

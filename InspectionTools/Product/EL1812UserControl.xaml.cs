@@ -1,21 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿using InspectionTools.Common;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
-using Tools.Common;
-using Tools.Common.InstList;
 using WindowsInput;
-using static Tools.Common.Win32Wrapper;
+using static InspectionTools.Common.Win32Wrapper;
 
-namespace EL1812 {
+namespace InspectionTools.Product {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// EL1812UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window {
+    public partial class EL1812UserControl : UserControl {
 
-        private IntPtr _hWnd = IntPtr.Zero;
+        private readonly IntPtr _hWnd = IntPtr.Zero;
 
         private readonly InstClass _instDmm;
         private readonly InstClass _instFg;
@@ -25,15 +24,26 @@ namespace EL1812 {
         public ObservableCollection<string> FgList { get; } = [];
         public ObservableCollection<string> OscList { get; } = [];
 
-        public MainWindow() {
+        public EL1812UserControl() {
             InitializeComponent();
             _instDmm = new();
             _instDmm = new();
             _instFg = new();
             _instOsc = new();
             LoadEvents();
-            // Window が完全に作られたあとにハンドルを取得
-            Loaded += (s, e) => { _hWnd = new WindowInteropHelper(this).Handle; };
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+            }
+
+            Loaded += (s, e) => AdjustWindowSizeToUserControl();
+        }
+        private void AdjustWindowSizeToUserControl() {
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
+            }
         }
 
         public class InstClass {
@@ -145,12 +155,6 @@ namespace EL1812 {
             instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
-        }
-        // 機器リスト表示
-        private void ShowInstList() {
-            InstListWindow frm1 = new(_dataTable);
-            frm1.ShowDialog();
-            InstListImport();
         }
         // 機器設定辞書登録
         private void RegDictionary() {
@@ -305,7 +309,6 @@ namespace EL1812 {
                 OscComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
-                InstListButton.IsEnabled = false;
 
             } catch (Exception ex) {
                 Release();
@@ -371,7 +374,6 @@ namespace EL1812 {
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            InstListButton.IsEnabled = true;
             HotKeyChekBox.IsChecked = false;
             FgRotateBackButton.IsEnabled = false;
             FgRotateNextButton.IsEnabled = false;
@@ -394,7 +396,6 @@ namespace EL1812 {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
@@ -443,7 +444,6 @@ namespace EL1812 {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                Activate();
             } finally {
                 VisibleProgressImage(false);
             }
@@ -868,9 +868,13 @@ namespace EL1812 {
                 ]);
             }
 
-            var helper = new WindowInteropHelper(this);
-            _source = HwndSource.FromHwnd(helper.Handle);
-            _source.AddHook(HwndHook);
+            // 親ウィンドウを取得
+            var parentWindow = Window.GetWindow(this);
+            if (parentWindow != null) {
+                var helper = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(helper);
+                _source.AddHook(HwndHook);
+            }
 
             // ホットキーを登録
             foreach (var hotkey in _hotkeys) {
@@ -906,15 +910,19 @@ namespace EL1812 {
             return childWindows;
         }
 
-
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void InstListButton_Click(object sender, RoutedEventArgs e) { ShowInstList(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Topmost = true; }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Topmost = false; }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
 
         private void OscRotationButton_Click(object sender, RoutedEventArgs e) {
             if (_isProcessing) { return; }
@@ -953,6 +961,7 @@ namespace EL1812 {
         private void CountNext_Click(object sender, RoutedEventArgs e) { CountIncrement(1); }
         private void CountLockCheckBox_Checked(object sender, RoutedEventArgs e) { CountLockToggle(); }
         private void CountLockCheckBox_Unchecked(object sender, RoutedEventArgs e) { CountLockToggle(); }
+
 
     }
 }
