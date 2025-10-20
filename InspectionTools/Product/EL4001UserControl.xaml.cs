@@ -7,12 +7,18 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
+using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
     /// EL4001UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL4001UserControl : UserControl {
+    public partial class EL4001UserControl : UserControl, ISubMenuAware {
+
+        private MainMenu.SubMenuUserControl? _subMenu;
+        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
+            _subMenu = subMenu;
+        }
 
         private readonly IntPtr _hWnd = IntPtr.Zero;
 
@@ -229,6 +235,8 @@ namespace InspectionTools.Product {
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRangeLabel.Text = "50m"; }
 
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
@@ -305,6 +313,8 @@ namespace InspectionTools.Product {
             _instDmm02.ResetProperties();
             _instOsc.ResetProperties();
 
+            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _subMenu?.SetButtonEnabled("InstListButton", true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;

@@ -7,12 +7,18 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
+using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
     /// EL9240UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL9240UserControl : UserControl {
+    public partial class EL9240UserControl : UserControl, ISubMenuAware {
+
+        private MainMenu.SubMenuUserControl? _subMenu;
+        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
+            _subMenu = subMenu;
+        }
 
         private readonly IntPtr _hWnd = IntPtr.Zero;
 
@@ -193,6 +199,8 @@ namespace InspectionTools.Product {
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
@@ -269,6 +277,8 @@ namespace InspectionTools.Product {
             _instDmm02.ResetProperties();
             _instOsc.ResetProperties();
 
+            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _subMenu?.SetButtonEnabled("InstListButton", true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;

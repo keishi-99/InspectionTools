@@ -10,12 +10,18 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
+using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
     /// MassFlowUserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class MassFlowUserControl : UserControl {
+    public partial class MassFlowUserControl : UserControl, ISubMenuAware {
+
+        private MainMenu.SubMenuUserControl? _subMenu;
+        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
+            _subMenu = subMenu;
+        }
 
         private readonly IntPtr _hWnd = IntPtr.Zero;
 
@@ -549,6 +555,8 @@ namespace InspectionTools.Product {
                     FgOscRange0RadioButton.IsChecked = true;
                 }
 
+                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _subMenu?.SetButtonEnabled("InstListButton", false);
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
                 FgNumberComboBox.IsEnabled = false;
@@ -630,6 +638,8 @@ namespace InspectionTools.Product {
             _instFg02_2.ResetProperties();
             _instOsc.ResetProperties();
 
+            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _subMenu?.SetButtonEnabled("InstListButton", true);
             DcsComboBox.IsEnabled = true;
             DmmComboBox.IsEnabled = true;
             FgNumberComboBox.IsEnabled = true;
