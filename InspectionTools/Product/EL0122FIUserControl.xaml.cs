@@ -20,7 +20,7 @@ namespace InspectionTools.Product {
             _subMenu = subMenu;
         }
 
-        private readonly IntPtr _hWnd = IntPtr.Zero;
+        private IntPtr _hWnd = IntPtr.Zero;
 
         private readonly InstClass _instDmm01;
         private readonly InstClass _instDmm02;
@@ -522,8 +522,8 @@ namespace InspectionTools.Product {
             // 親ウィンドウを取得
             var parentWindow = Window.GetWindow(this);
             if (parentWindow != null) {
-                var helper = new WindowInteropHelper(parentWindow).Handle;
-                _source = HwndSource.FromHwnd(helper);
+                _hWnd = new WindowInteropHelper(parentWindow).Handle;
+                _source = HwndSource.FromHwnd(_hWnd);
                 _source.AddHook(HwndHook);
             }
 
