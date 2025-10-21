@@ -74,7 +74,7 @@ namespace InspectionTools.Common {
             // 一旦、Dictionary<string, List<Dictionary<string, string>>> で読み込む
             var rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
 
-            s_helpTexts = new Dictionary<string, (string[] Keys, string[] Descriptions)>();
+            s_helpTexts = [];
 
             if (rawData == null) {
                 return;
