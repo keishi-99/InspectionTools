@@ -336,7 +336,7 @@ namespace InspectionTools.Product {
                 var sim = new InputSimulator();
                 sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                 await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -352,7 +352,7 @@ namespace InspectionTools.Product {
                 var sim = new InputSimulator();
                 sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                 await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

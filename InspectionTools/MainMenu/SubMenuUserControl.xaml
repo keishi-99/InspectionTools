@@ -13,15 +13,18 @@
         Orientation="Horizontal">
         <Button
             x:Name="ProductListButton"
-            Width="100"
             Margin="5"
             Click="ProductListButton_Click"
             Content="製品選択" />
         <Button
             x:Name="InstListButton"
-            Width="100"
             Margin="5"
             Click="InstListButton_Click"
             Content="測定器" />
+        <Button
+            x:Name="HelpButton"
+            Margin="5"
+            Click="HelpButton_Click"
+            Content="ヘルプ" />
     </StackPanel>
 </UserControl>
