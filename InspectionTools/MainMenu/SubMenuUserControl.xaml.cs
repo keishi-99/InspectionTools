@@ -9,6 +9,7 @@ namespace InspectionTools.MainMenu {
     public partial class SubMenuUserControl : UserControl {
 
         public event EventHandler? BackToMainRequested;
+        public event EventHandler? HelpButtonClicked;
 
         public interface ISubMenuAware {
             void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu);
@@ -41,8 +42,7 @@ namespace InspectionTools.MainMenu {
 
         // ボタン名を指定して有効/無効を切り替えるメソッド
         public void SetButtonEnabled(string buttonName, bool isEnabled) {
-            var button = FindName(buttonName) as Button;
-            if (button != null) {
+            if (FindName(buttonName) is Button button) {
                 button.IsEnabled = isEnabled;
             }
         }
@@ -53,6 +53,9 @@ namespace InspectionTools.MainMenu {
         }
         private void InstListButton_Click(object sender, RoutedEventArgs e) {
             ShowInstList();
+        }
+        private void HelpButton_Click(object sender, RoutedEventArgs e) {
+            HelpButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
 

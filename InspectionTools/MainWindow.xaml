@@ -6,22 +6,52 @@
     xmlns:local="clr-namespace:InspectionTools"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
-    Width="400"
-    Height="400"
     Icon="/sine.ico"
     ResizeMode="CanMinimize"
     SizeToContent="WidthAndHeight"
     mc:Ignorable="d">
-    <Grid>
+    <Grid x:Name="MainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Border BorderBrush="Gray" BorderThickness="0,0,0,1">
-            <ContentControl x:Name="SubMenuContentArea" Height="30" />
+            <ContentControl x:Name="SubMenuContentArea" />
         </Border>
 
         <ContentControl x:Name="MainMenuContentArea" Grid.Row="1" />
+
+
+        <!--  右側: ヘルプパネル（初期非表示）  -->
+        <ScrollViewer
+            x:Name="HotKeyHelpScrollViewer"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            Height="0"
+            Background="#EEE"
+            BorderBrush="#CCC"
+            BorderThickness="1,0,0,0"
+            Visibility="Visible">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    x:Name="HelpTextBlock1"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    x:Name="HelpTextBlock2"
+                    Grid.Column="1"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>

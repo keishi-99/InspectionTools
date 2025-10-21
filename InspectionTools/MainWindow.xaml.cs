@@ -7,10 +7,14 @@ namespace InspectionTools {
     /// </summary>
     public partial class MainWindow : Window {
 
+        private bool _isHelpVisible = false;
+        private string _pageName = string.Empty;
+
         private MainMenu.SubMenuUserControl? _subMenu;
 
         public MainWindow() {
             InitializeComponent();
+            Common.HelpManager.LoadHelpFile("help.json");
             ShowMainMenu();
         }
 
@@ -18,6 +22,7 @@ namespace InspectionTools {
 
             _subMenu = new MainMenu.SubMenuUserControl();
             _subMenu.BackToMainRequested += (_, __) => ShowMainMenu();
+            _subMenu.HelpButtonClicked += OnHelpButtonClicked;
             _subMenu.SetButtonEnabled("ProductListButton", false);
             _subMenu.SetButtonEnabled("InstListButton", true);
             SubMenuContentArea.Content = _subMenu;
@@ -27,6 +32,13 @@ namespace InspectionTools {
             MainMenuContentArea.Content = mainMenu;
 
             this.Title = "Menu";
+            _pageName = "MainMenu";
+            if (_isHelpVisible) {
+                var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
+                HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
+                HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
+            }
+            HotKeyHelpScrollViewer.Height = mainMenu.Height + (_subMenu?.Height ?? 0);
         }
 
         private void OnPageSelected(string pageName) {
@@ -54,12 +66,33 @@ namespace InspectionTools {
 
             if (page is not null) {
 
-                if (page is MainMenu.SubMenuUserControl.ISubMenuAware s) {
-                    s.SetSubMenuControl(_subMenu);
-                }
-
                 this.Title = pageName;
+                _pageName = pageName;
                 MainMenuContentArea.Content = page;
+
+                if (_isHelpVisible) {
+                    var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
+                    HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
+                    HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
+                }
+                HotKeyHelpScrollViewer.Height = page.Height + (_subMenu?.ActualHeight ?? 0);
+            }
+        }
+        private void OnHelpButtonClicked(object? sender, EventArgs e) {
+            _isHelpVisible = !_isHelpVisible;
+
+            var margin = _isHelpVisible ? new Thickness(10) : new Thickness(0);
+            HelpTextBlock1.Margin = margin;
+            HelpTextBlock2.Margin = margin;
+
+            if (_isHelpVisible) {
+                var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
+                HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
+                HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
+            }
+            else {
+                HelpTextBlock1.Text = string.Empty;
+                HelpTextBlock2.Text = string.Empty;
             }
         }
 
