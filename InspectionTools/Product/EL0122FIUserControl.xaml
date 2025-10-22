@@ -101,17 +101,6 @@
             Content="HotKey"
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="HotKeyChekBox_Unchecked" />
-        <CheckBox
-            x:Name="TopMostCheckBox"
-            Grid.Row="4"
-            Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Checked="TopMostCheckBox_Checked"
-            Content="最前面"
-            Style="{StaticResource {x:Type ToggleButton}}"
-            Unchecked="TopMostCheckBox_Unchecked" />
 
         <StackPanel Grid.Row="5">
             <TextBlock

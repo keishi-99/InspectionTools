@@ -476,14 +476,6 @@ namespace InspectionTools.Product {
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
-            var parentWindow = Window.GetWindow(this);
-            parentWindow.Topmost = true;
-        }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            var parentWindow = Window.GetWindow(this);
-            parentWindow.Topmost = false;
-        }
 
 
     }

@@ -57,6 +57,14 @@ namespace InspectionTools.MainMenu {
         private void HelpButton_Click(object sender, RoutedEventArgs e) {
             HelpButtonClicked?.Invoke(this, EventArgs.Empty);
         }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
 
 
     }
