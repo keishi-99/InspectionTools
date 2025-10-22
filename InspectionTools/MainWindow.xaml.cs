@@ -70,6 +70,10 @@ namespace InspectionTools {
                 _pageName = pageName;
                 MainMenuContentArea.Content = page;
 
+                if (page is MainMenu.SubMenuUserControl.ISubMenuAware s) {
+                    s.SetSubMenuControl(_subMenu);
+                }
+
                 if (_isHelpVisible) {
                     var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
                     HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
