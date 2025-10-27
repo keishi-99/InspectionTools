@@ -3,9 +3,12 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows;
 using System.Windows.Interop;
-using Tesseract;
+using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
+using Windows.Storage.Streams;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
@@ -309,7 +312,7 @@ namespace InspectionTools.Product {
         }
 
         // OCR処理
-        private void Capture() {
+        private async void Capture() {
             var captureWindow = new ScreenCaptureWindow();
             using Bitmap? captured = captureWindow.Capture();
             if (captured == null) {
@@ -320,7 +323,7 @@ namespace InspectionTools.Product {
             // 画像ファイルをOCRを実行
             string ocrResult;
             try {
-                ocrResult = PerformOCR(captured);
+                ocrResult = await PerformOCR(captured);
             } finally {
                 captured.Dispose();
             }
@@ -328,23 +331,38 @@ namespace InspectionTools.Product {
             // 結果を表示
             OcrResult.Text = ocrResult;
         }
-        private static string PerformOCR(Bitmap image) {
+        private async static Task<string> PerformOCR(Bitmap image) {
             try {
-                // tessdata フォルダパス
-                string tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
+                // 画像ファイルをバイト配列として読み込む
+                //byte[] imageBytes = File.ReadAllBytes(image);
+                byte[] imageBytes;
+                using (var ms = new MemoryStream()) {
+                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    imageBytes = ms.ToArray();
+                }
 
-                // OCRエンジン初期化
-                using var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
+                // バイト配列をIBufferに変換
+                IBuffer buffer = imageBytes.AsBuffer();
 
-                using var ms = new MemoryStream();
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
+                // IBufferからSoftwareBitmapに変換
+                SoftwareBitmap softwareBitmap;
+                using (var stream = new InMemoryRandomAccessStream()) {
+                    await stream.WriteAsync(buffer);
+                    stream.Seek(0);
+                    var decoder = await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(stream);
+                    softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+                }
 
-                using var pix = Pix.LoadFromMemory(ms.ToArray());
-                using var page = engine.Process(pix);
+                // OCRエンジンを初期化
+                OcrEngine ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages();
 
-                return page.GetText()?.Trim() ?? "";
+                // 画像をOCRにかけ、結果を取得
+                OcrResult ocrResult = await ocrEngine.RecognizeAsync(softwareBitmap);
 
+                // 認識結果をテキストに変換
+                string recognizedText = ocrResult.Lines.Select(line => line.Text).Aggregate((current, next) => current + Environment.NewLine + next);
+
+                return recognizedText;
             } catch (Exception ex) {
                 return "OCRエラー: " + ex.Message;
             }
