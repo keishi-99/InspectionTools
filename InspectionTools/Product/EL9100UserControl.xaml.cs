@@ -2,9 +2,14 @@
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
+using Windows.Storage.Streams;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
@@ -301,6 +306,48 @@ namespace InspectionTools.Product {
 
             } finally {
                 VisibleProgressImage(false);
+            }
+        }
+
+        // OCR処理
+        private void Capture() {
+            var captureWindow = new ScreenCaptureWindow();
+            using Bitmap? captured = captureWindow.Capture();
+            if (captured == null) {
+                OcrResult.Text = "キャプチャがキャンセルされました。";
+                return;
+            }
+
+            // 画像ファイルをOCRを実行
+            string ocrResult;
+            try {
+                ocrResult = PerformOCR(captured);
+            } finally {
+                captured.Dispose();
+            }
+
+            // 結果を表示
+            OcrResult.Text = ocrResult;
+        }
+        private static string PerformOCR(Bitmap image) {
+            try {
+                // tessdata フォルダパス
+                string tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
+
+                // OCRエンジン初期化
+                using var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
+
+                using var ms = new MemoryStream();
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Position = 0;
+
+                using var pix = Pix.LoadFromMemory(ms.ToArray());
+                using var page = engine.Process(pix);
+
+                return page.GetText()?.Trim() ?? "";
+
+            } catch (Exception ex) {
+                return "OCRエラー: " + ex.Message;
             }
         }
 
