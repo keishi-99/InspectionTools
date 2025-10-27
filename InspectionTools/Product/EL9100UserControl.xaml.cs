@@ -2,16 +2,12 @@
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
-using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
-using Tesseract;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
-using ComboBox = System.Windows.Controls.ComboBox;
-using MessageBox = System.Windows.MessageBox;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
@@ -308,48 +304,6 @@ namespace InspectionTools.Product {
             }
         }
 
-        // OCR処理
-        private void Capture() {
-            var captureWindow = new ScreenCaptureWindow();
-            using Bitmap? captured = captureWindow.Capture();
-            if (captured == null) {
-                OcrResult.Text = "キャプチャがキャンセルされました。";
-                return;
-            }
-
-            // 画像ファイルをOCRを実行
-            string ocrResult;
-            try {
-                ocrResult = PerformOCR(captured);
-            } finally {
-                captured.Dispose();
-            }
-
-            // 結果を表示
-            OcrResult.Text = ocrResult;
-        }
-        private static string PerformOCR(Bitmap image) {
-            try {
-                // tessdata フォルダパス
-                string tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
-
-                // OCRエンジン初期化
-                using var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
-
-                using var ms = new MemoryStream();
-                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
-
-                using var pix = Pix.LoadFromMemory(ms.ToArray());
-                using var page = engine.Process(pix);
-
-                return page.GetText()?.Trim() ?? "";
-
-            } catch (Exception ex) {
-                return "OCRエラー: " + ex.Message;
-            }
-        }
-
         // DMM01測定値コピー
         private async void ActionHotkeyBracketR() {
             if (_isProcessing) { return; }
@@ -470,7 +424,6 @@ namespace InspectionTools.Product {
         // イベントハンドラ
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void OcrButton_Click(object sender, RoutedEventArgs e) { Capture(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 

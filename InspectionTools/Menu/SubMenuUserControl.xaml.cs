@@ -1,8 +1,6 @@
 ﻿using System.Data;
 using System.Windows;
-using Button = System.Windows.Controls.Button;
-using MessageBox = System.Windows.MessageBox;
-using UserControl = System.Windows.Controls.UserControl;
+using System.Windows.Controls;
 
 namespace InspectionTools.MainMenu {
     /// <summary>
