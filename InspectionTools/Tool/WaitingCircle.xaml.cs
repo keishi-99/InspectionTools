@@ -1,14 +1,14 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using Color = System.Windows.Media.Color;
 
 namespace InspectionTools.Tool {
     /// <summary>
     /// WaitingCircle.xaml の相互作用ロジック
     /// </summary>
-    public partial class WaitingCircle : System.Windows.Controls.UserControl {
+    public partial class WaitingCircle : UserControl {
         public static readonly DependencyProperty s_circleColorProperty =
             DependencyProperty.Register(
                 "CircleColor", // プロパティ名を指定
