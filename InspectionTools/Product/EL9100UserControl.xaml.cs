@@ -13,6 +13,7 @@ using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
 using ComboBox = System.Windows.Controls.ComboBox;
+using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
