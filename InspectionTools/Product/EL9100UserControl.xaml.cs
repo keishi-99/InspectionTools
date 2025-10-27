@@ -320,7 +320,9 @@ namespace InspectionTools.Product {
             // 画像ファイルをOCRを実行
             string ocrResult;
             try {
-                ocrResult = PerformOCR(captured);
+                var returnOcr = PerformOCR(captured);
+                ocrResult = returnOcr.Replace(" ", string.Empty);
+                //ocrResult = new string([.. returnOcr.Where(c => !char.IsWhiteSpace(c))]);
             } finally {
                 captured.Dispose();
             }
