@@ -7,11 +7,12 @@
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="250"
-    Height="200"
+    Height="250"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
         <Grid.RowDefinitions>
+            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -68,6 +69,25 @@
             Content="HotKey"
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="HotKeyChekBox_Unchecked" />
+
+        <Button
+            x:Name="OcrButton"
+            Grid.Row="2"
+            Grid.Column="1"
+            Width="60"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Click="OcrButton_Click"
+            Content="OCR" />
+
+        <TextBox
+            x:Name="OcrResult"
+            Grid.Row="3"
+            Grid.ColumnSpan="2"
+            Margin="10,5,10,5"
+            HorizontalAlignment="Stretch"
+            IsReadOnly="True"
+            TextWrapping="Wrap" />
 
 
         <Common:WaitingCircle
