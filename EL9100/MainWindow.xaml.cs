@@ -90,7 +90,10 @@ namespace EL9100 {
             UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM2]");
         }
         private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
-            if (_dataTable == null) return;
+            if (_dataTable == null) {
+                return;
+            }
+
             collection.Clear();
             collection.Add(name);
 
@@ -328,7 +331,7 @@ namespace EL9100 {
                 var output = await ReadDmm(_instDmm02);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output).ToString("0.00"));
+                sim.Keyboard.TextEntry(output.ToString("0.00"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
