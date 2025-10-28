@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstrumentCheck", "InstrumentCheck\InstrumentCheck.csproj", "{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InspectionTools", "InspectionTools\InspectionTools.csproj", "{C2073705-93A4-47D1-958B-AAB137469B78}"
 EndProject
 Global
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CBDDDBD3-18E5-469A-B17B-CF606E48CE3E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C2073705-93A4-47D1-958B-AAB137469B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2073705-93A4-47D1-958B-AAB137469B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2073705-93A4-47D1-958B-AAB137469B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
