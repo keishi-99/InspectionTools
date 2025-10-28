@@ -35,8 +35,4 @@
     <PackageReference Include="Tesseract" Version="5.2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Tools.Common\Tools.Common.csproj" />
-  </ItemGroup>
-
 </Project>
