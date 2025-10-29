@@ -44,6 +44,7 @@ namespace InspectionTools {
         private void OnPageSelected(string pageName) {
 
             _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _subMenu?.SetButtonEnabled("InstListButton", false);
 
             UserControl? page = pageName switch {
                 "EL0122FI" => new Product.EL0122FIUserControl(),
