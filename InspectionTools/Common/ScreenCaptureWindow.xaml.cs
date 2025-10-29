@@ -12,6 +12,9 @@ namespace InspectionTools.Common {
 
         private System.Windows.Point _position;
         private bool _trimEnable = false;
+        private string? _model = null;
+        private int _captureWidth = 0;
+        private int _captureHeight = 0;
 
         private Bitmap? _capturedImage;
 
@@ -19,7 +22,14 @@ namespace InspectionTools.Common {
             InitializeComponent();
         }
 
-        public Bitmap? Capture() {
+        public Bitmap? Capture(string? model = null, int width = 0, int height = 0) {
+            _model = model;
+
+            (_captureWidth, _captureHeight) = model switch {
+                "EL9100" => (width, height),
+                _ => (0, 0),
+            };
+
             // モーダルで開く
             ShowDialog();
 
@@ -70,7 +80,15 @@ namespace InspectionTools.Common {
             path.ReleaseMouseCapture();
 
             // 画面キャプチャ
-            _capturedImage = CaptureScreen(point);
+
+            switch (_model) {
+                case "EL9100":
+                    _capturedImage = CaptureScreenEL9100(point);
+                    break;
+                default:
+                    _capturedImage = CaptureScreen(point);
+                    break;
+            }
 
             // アプリケーションの終了
             this.Close();
@@ -88,8 +106,14 @@ namespace InspectionTools.Common {
             // 現在座標を取得
             var point = e.GetPosition(path);
 
-            // キャプチャ領域枠の描画
-            DrawStroke(point);
+            switch (_model) {
+                case "EL9100":
+                    DrawStrokeEL9100(point);
+                    break;
+                default:
+                    DrawStroke(point);
+                    break;
+            }
         }
 
         private void DrawStroke(System.Windows.Point point) {
@@ -111,6 +135,34 @@ namespace InspectionTools.Common {
             var y = start.Y < end.Y ? (int)start.Y : (int)end.Y;
             var width = (int)Math.Abs(end.X - start.X);
             var height = (int)Math.Abs(end.Y - start.Y);
+            if (width == 0 || height == 0) {
+                return null;
+            }
+
+            // スクリーンイメージの取得
+            var bmp = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            using var graph = System.Drawing.Graphics.FromImage(bmp);
+            // 画面をコピーする
+            graph.CopyFromScreen(new System.Drawing.Point(x, y), new System.Drawing.Point(), bmp.Size);
+
+            return bmp;
+        }
+
+        private void DrawStrokeEL9100(System.Windows.Point point) {
+            // 矩形の描画
+            var x = point.X;
+            var y = point.Y;
+            var width = Math.Abs(_captureWidth);
+            var height = Math.Abs(_captureHeight);
+            this.ScreenArea.Geometry2 = new RectangleGeometry(new Rect(x, y, width, height));
+        }
+        private Bitmap? CaptureScreenEL9100(System.Windows.Point point) {
+
+            // キャプチャエリアの取得
+            var x = (int)point.X;
+            var y = (int)point.Y;
+            var width = Math.Abs(_captureWidth);
+            var height = Math.Abs(_captureHeight);
             if (width == 0 || height == 0) {
                 return null;
             }
