@@ -168,7 +168,6 @@ namespace InspectionTools.Product {
         private async void ConnectInstAsync() {
             try {
                 _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
 
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -254,7 +253,6 @@ namespace InspectionTools.Product {
             _instDmm02.ResetProperties();
 
             _subMenu?.SetButtonEnabled("ProductListButton", true);
-            _subMenu?.SetButtonEnabled("InstListButton", true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
@@ -337,21 +335,19 @@ namespace InspectionTools.Product {
 
                 // OCRエンジンの初期化（日本語＋英語）
 
-                using (var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default))
+                using var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
 
-                using (var ms = new MemoryStream()) {
-                    // Bitmap → メモリストリーム（PNG形式）
-                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                    ms.Position = 0;
+                using var ms = new MemoryStream();
+                // Bitmap → メモリストリーム（PNG形式）
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Position = 0;
 
-                    // MemoryStream → Pix に変換
-                    using (var pix = Pix.LoadFromMemory(ms.ToArray()))
-                    using (var page = engine.Process(pix)) {
-                        // 認識結果のテキストを取得
-                        string text = page.GetText();
-                        return text.Trim();
-                    }
-                }
+                // MemoryStream → Pix に変換
+                using var pix = Pix.LoadFromMemory(ms.ToArray());
+                using var page = engine.Process(pix);
+                // 認識結果のテキストを取得
+                string text = page.GetText();
+                return text.Trim();
             } catch (Exception ex) {
                 return $"OCRエラー: {ex.Message}";
             }

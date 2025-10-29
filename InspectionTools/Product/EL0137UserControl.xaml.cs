@@ -262,7 +262,6 @@ namespace InspectionTools.Product {
         private async void ConnectInstAsync() {
             try {
                 _subMenu?.SetButtonEnabled("ProductListButton", false);
-                _subMenu?.SetButtonEnabled("InstListButton", false);
 
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -343,7 +342,6 @@ namespace InspectionTools.Product {
             _instOsc.ResetProperties();
 
             _subMenu?.SetButtonEnabled("ProductListButton", true);
-            _subMenu?.SetButtonEnabled("InstListButton", true);
             DmmComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
