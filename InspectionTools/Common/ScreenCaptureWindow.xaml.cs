@@ -79,8 +79,10 @@ namespace InspectionTools.Common {
             this.Cursor = System.Windows.Input.Cursors.Arrow;
             path.ReleaseMouseCapture();
 
-            // 画面キャプチャ
+            // 点線を隠す
+            SelectionBorder.Visibility = Visibility.Collapsed;
 
+            // 画面キャプチャ
             switch (_model) {
                 case "EL9100":
                     _capturedImage = CaptureScreenEL9100(point);
@@ -123,6 +125,12 @@ namespace InspectionTools.Common {
             var width = Math.Abs(point.X - _position.X);
             var height = Math.Abs(point.Y - _position.Y);
             this.ScreenArea.Geometry2 = new RectangleGeometry(new Rect(x, y, width, height));
+
+            // 枠線を点線で描く
+            SelectionBorder.Data = new RectangleGeometry(new Rect(x - 1, y - 1, width + 2, height + 2));
+            if (SelectionBorder.Visibility != Visibility.Visible) {
+                SelectionBorder.Visibility = Visibility.Visible;
+            }
         }
 
         private Bitmap? CaptureScreen(System.Windows.Point point) {
@@ -155,6 +163,12 @@ namespace InspectionTools.Common {
             var width = Math.Abs(_captureWidth);
             var height = Math.Abs(_captureHeight);
             this.ScreenArea.Geometry2 = new RectangleGeometry(new Rect(x, y, width, height));
+
+            // 枠線を点線で描く
+            SelectionBorder.Data = new RectangleGeometry(new Rect(x - 1, y - 1, width + 2, height + 2));
+            if (SelectionBorder.Visibility != Visibility.Visible) {
+                SelectionBorder.Visibility = Visibility.Visible;
+            }
         }
         private Bitmap? CaptureScreenEL9100(System.Windows.Point point) {
 
