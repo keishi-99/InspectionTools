@@ -31,5 +31,13 @@
                 <CombinedGeometry x:Name="ScreenArea" GeometryCombineMode="Xor" />
             </Path.Data>
         </Path>
+        <!--  枠線用（点線）  -->
+        <Path
+            x:Name="SelectionBorder"
+            Stroke="White"
+            StrokeDashArray="4 2"
+            StrokeDashCap="Round"
+            StrokeThickness="2"
+            Visibility="Collapsed" />
     </Canvas>
 </Window>
