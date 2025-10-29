@@ -311,7 +311,7 @@ namespace InspectionTools.Product {
         // OCR処理
         private void Capture() {
             var captureWindow = new ScreenCaptureWindow();
-            using Bitmap? captured = captureWindow.Capture();
+            using Bitmap? captured = captureWindow.Capture("EL9100", 150, 30);
             if (captured == null) {
                 OcrResult.Text = "キャプチャがキャンセルされました。";
                 return;
