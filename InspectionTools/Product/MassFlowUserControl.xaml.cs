@@ -30,7 +30,7 @@ namespace InspectionTools.Product {
         private IntPtr _hWnd = IntPtr.Zero;
 
         private readonly InstClass _instDcs;
-        private readonly InstClass _instDmm;
+        private readonly DmmInstClass _instDmm;
         private readonly InstClass _instFg01;
         private readonly InstClass _instFg02_1;
         private readonly InstClass _instFg02_2;
@@ -94,6 +94,16 @@ namespace InspectionTools.Product {
                 // UsbDevの解放処理
                 UsbDev?.Dispose();
             }
+        }
+        // DMM用クラス
+        public class DmmInstClass : InstClass {
+            public DmmMode CurrentMode { get; set; } = DmmMode.None;
+        }
+        public enum DmmMode {
+            None,
+            DCV,
+            DCI,
+            RES
         }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)

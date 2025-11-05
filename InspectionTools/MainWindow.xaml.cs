@@ -57,6 +57,7 @@ namespace InspectionTools {
                 "EL9240" => new Product.EL9240UserControl(),
 
                 "PA14" => new Product.PA14UserControl(),
+                "PA25" => new Product.PA25UserControl(),
                 "PAF5amp" => new Product.PAF5ampUserControl(),
                 "PAF5" => new Product.PAF5UserControl(),
 

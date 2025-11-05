@@ -25,7 +25,7 @@ namespace InspectionTools.Product {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
-        private readonly InstClass _instDmm;
+        private readonly DmmInstClass _instDmm;
         private readonly InstClass _instOsc;
 
         public ObservableCollection<string> DmmList { get; } = [];
@@ -81,6 +81,16 @@ namespace InspectionTools.Product {
                 // UsbDevの解放処理
                 UsbDev?.Dispose();
             }
+        }
+        // DMM用クラス
+        public class DmmInstClass : InstClass {
+            public DmmMode CurrentMode { get; set; } = DmmMode.None;
+        }
+        public enum DmmMode {
+            None,
+            DCV,
+            DCI,
+            RES
         }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
@@ -432,13 +442,47 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        private async void ActionHotkeyNumDivide() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000000).ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
         // OSCローテーション
         private void ActionHotkeyBracketR() {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
+        private void ActionHotkeyNumMultiply() {
+            if (_isProcessing) { return; }
+            RotationOsc(true);
+        }
         // OSC meas1測定値コピー
         private async void ActionHotkeySlash() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 1);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private async void ActionHotkeyNumSubtract() {
             if (_isProcessing) { return; }
 
             try {
@@ -469,6 +513,21 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        private async void ActionHotkeyNumAdd() {
+            if (_isProcessing) { return; }
+
+            try {
+                var output = await ReadOsc(_instOsc, 2);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // HotkKeyの登録
         private void SetHotKey() {
@@ -476,13 +535,17 @@ namespace InspectionTools.Product {
             if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                 _hotkeys.AddRange([
                     new(ModNone, HotkeyColon, ActionHotkeyColon),
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                     new(ModNone, HotkeySlash, ActionHotkeySlash),
+                    new(ModNone, HotkeyNumSubtract, ActionHotkeyNumSubtract),
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
+                    new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
                 ]);
             }
 

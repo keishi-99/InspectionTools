@@ -13,9 +13,9 @@ using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
-    /// DFPDXUserControl.xaml の相互作用ロジック
+    /// PA25UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class DFPDXUserControl : UserControl, ISubMenuAware {
+    public partial class PA25UserControl : UserControl, ISubMenuAware {
 
         private MainMenu.SubMenuUserControl? _subMenu;
         public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
@@ -24,23 +24,17 @@ namespace InspectionTools.Product {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
-        private readonly DmmInstClass _instDmm01;
-        private readonly DmmInstClass _instDmm02;
-        private readonly DmmInstClass _instDmm03;
+        private readonly DmmInstClass _instDmm;
         private readonly InstClass _instFg;
         private readonly InstClass _instOsc;
 
-        public ObservableCollection<string> Dmm1List { get; } = [];
-        public ObservableCollection<string> Dmm2List { get; } = [];
-        public ObservableCollection<string> Dmm3List { get; } = [];
+        public ObservableCollection<string> DmmList { get; } = [];
         public ObservableCollection<string> FgList { get; } = [];
         public ObservableCollection<string> OscList { get; } = [];
 
-        public DFPDXUserControl() {
+        public PA25UserControl() {
             InitializeComponent();
-            _instDmm01 = new();
-            _instDmm02 = new();
-            _instDmm03 = new();
+            _instDmm = new();
             _instFg = new();
             _instOsc = new();
             LoadEvents();
@@ -84,6 +78,7 @@ namespace InspectionTools.Product {
                 UsbDev?.Dispose();
             }
         }
+        // DMM用クラス
         public class DmmInstClass : InstClass {
             public DmmMode CurrentMode { get; set; } = DmmMode.None;
         }
@@ -100,6 +95,8 @@ namespace InspectionTools.Product {
 
         private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
+        private Dictionary<int, (string cmd, string text)> _dicSwitchROsc = [];
+
         private readonly List<Hotkey> _hotkeys = [];
         private HwndSource? _source;
 
@@ -125,9 +122,7 @@ namespace InspectionTools.Product {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(Dmm01ComboBox, Dmm1List, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            UpdateComboBox(Dmm02ComboBox, Dmm2List, "デジタルマルチメータ", [1, 2], "[DMM2]");
-            UpdateComboBox(Dmm03ComboBox, Dmm3List, "デジタルマルチメータ", [1, 2], "[DMM3]");
+            UpdateComboBox(DmmComboBox, DmmList, "デジタルマルチメータ", [1, 2], "[DMM]");
             UpdateComboBox(FgComboBox, FgList, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
         }
@@ -156,9 +151,7 @@ namespace InspectionTools.Product {
 
         // 選択した機器のVisaAddressを取得
         private void SelectInst() {
-            GetVisaAddress(_instDmm01, Dmm01ComboBox);
-            GetVisaAddress(_instDmm02, Dmm02ComboBox);
-            GetVisaAddress(_instDmm03, Dmm03ComboBox);
+            GetVisaAddress(_instDmm, DmmComboBox);
             GetVisaAddress(_instFg, FgComboBox);
             GetVisaAddress(_instOsc, OscComboBox);
         }
@@ -175,70 +168,233 @@ namespace InspectionTools.Product {
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
         }
-        // 機器設定辞書登録
-        private void RegDictionary() {
-            _dicSwitchFg = new Dictionary<int, (string cmd, string text)>
-            {
-                { 0, (":FREQ 4000;:OUTPUT OFF;*OPC?", "OFF") },
-                { 1, (":FREQ 4000;:OUTPUT ON;*OPC?", "4000") },
-                { 2, (":OUTPUT OFF;*OPC?", "OFF") },
-                { 3, (":OUTPUT OFF;:FREQ 5;:OUTPUT ON;*OPC?", "5") },
-                { 4, (":OUTPUT OFF;:FREQ 100;:OUTPUT ON;*OPC?", "100") },
-                { 5, (":OUTPUT OFF;:FREQ 4000;:OUTPUT ON;*OPC?", "4000")},
-                { 6, (":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", "6250") },
-                { 7, (":OUTPUT OFF;:FREQ 4000;:OUTPUT ON;*OPC?", "4000") },
-                { 8, (":OUTPUT OFF;:FREQ 100;:OUTPUT ON;*OPC?", "100") },
-                { 9, (":OUTPUT OFF;:FREQ 60;:OUTPUT ON;*OPC?", "60") },
-                { 10, (":OUTPUT OFF;:FREQ 72;:OUTPUT ON;*OPC?", "72") }
-            };
-
-            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)>
-            {
-                { 0, (":HORIZONTAL:MAIN:SCALE 1.0E-3;:CH1:SCALE 1.0E-1;:TRIGGER:MAIN:LEVEL 0.0E0;*OPC?", "1[6]") },
-                { 1, (":HORIZONTAL:MAIN:SCALE 5.0E-2;*OPC?", "2[7-1]") },
-                { 2, (":HORIZONTAL:MAIN:SCALE 2.5E-3;*OPC?", "3[7-2]") },
-                { 3, (":HORIZONTAL:MAIN:SCALE 1.0E-4;:CH1:SCALE 1.0E-1;*OPC?", "4[7-3]") },
-                { 4, (":HORIZONTAL:MAIN:SCALE 1.0E-4;:CH1:SCALE 5.0E-1;*OPC?", "5[8]") },
-                { 5, (":HORIZONTAL:MAIN:SCALE 2.5E-3;:CH1:SCALE 2.0E0;:TRIGGER:MAIN:LEVEL 0.0E0;*OPC?", "6[9]") },
-                { 6, (":HORIZONTAL:MAIN:SCALE 2.5E-4;:CH1:SCALE 2.0E0;:TRIGGER:MAIN:LEVEL 1.2E0;*OPC?", "7[10]") },
-                { 7, (":HORIZONTAL:MAIN:SCALE 5.0E-4;:CH1:SCALE 1.0E0;:TRIGGER:MAIN:LEVEL 1.2E0;*OPC?", "8[11]") }
-            };
-        }
         // 機器初期設定
         private void FormatSet() {
-            _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
-                _ => string.Empty,
-            };
-            _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
-                _ => string.Empty,
-            };
-            _instDmm03.InstCommand = _instDmm03.SignalType switch {
+            _instDmm.InstCommand = _instDmm.SignalType switch {
                 1 => "*RST,F1,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?",
+                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?",
                 _ => string.Empty,
             };
             _instFg.InstCommand = _instFg.SignalType switch {
-                2 => "*RST;:OUTPUT OFF;:FREQ 4000;:VOLT 0.44VPP;*OPC?",
+                2 => "*RST;:FREQ 1;:VOLT 0.44VPP;*OPC?",
                 _ => string.Empty,
             };
             _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 => """
+                2 =>
+                    """
                     *RST;:HEADER 0;
-                    :ACQUIRE:MODE SAMPLE;NUMAVG 16;
-                    :CH1:SCALE 1.0E-1;COUPLING DC;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 2.0E-1;POSITION2 -2.0E-1;
-                    :HORIZONTAL:MAIN:SCALE 1.0E-3;
-                    :TRIGGER:MAIN:LEVEL 0.0E0;
-                    :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH1;
-                    :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH1;
-                    :MEASUREMENT:MEAS3:TYPE NWIDTH;SOURCE CH1;
+                    :CH1:SCALE 1.0E-1;
+                    :TRIGGER:MAIN:LEVEL 3.0E-1;
+                    :CURSOR:FUNCTION VBArs;SELECT:SOURCE CH1;:CURSOR:VBArs:POSITION1 -1.34E-3;POSITION2 1.16E-3;
+                    :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
+                    :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;
                     *OPC?
                     """,
                 _ => string.Empty,
+            };
+        }
+        // 機器設定辞書登録
+        private void RegDictionary() {
+            _dicSwitchFg = new Dictionary<int, (string cmd, string text)> {
+                { 0, (":FREQ 1;:OUTPUT OFF;*OPC?", "OFF") },
+                { 1, (":OUTPUT OFF;:FREQ 27;:OUTPUT ON;*OPC?", "27") },
+                { 2, (":OUTPUT OFF;:FREQ 29;:OUTPUT ON;*OPC?", "29") },
+                { 3, (":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", "400") },
+                { 4, (":OUTPUT OFF;:FREQ 1;:OUTPUT ON;*OPC?", "1") },
+                { 5, (":OUTPUT OFF;:FREQ 10;:OUTPUT ON;*OPC?", "10") },
+                { 6, (":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", "200") },
+                { 7, (":OUTPUT OFF;:FREQ 1;*OPC?", "OFF") } ,
+                { 8, (":OUTPUT OFF;:FREQ 2200;:OUTPUT ON;*OPC?", "2200") } ,
+                { 9, (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000") } ,
+                { 10, (":OUTPUT OFF;:FREQ 1;*OPC?", "OFF") } ,
+                { 11, (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000") } ,
+                { 12, (":OUTPUT OFF;:FREQ 1;*OPC?", "OFF") } ,
+                { 13, (":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", "6250") } ,
+                { 14, (":OUTPUT OFF;:FREQ 3800;:OUTPUT ON;*OPC?", "3800") },
+                { 15, (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000") },
+            };
+
+            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
+                { 0,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-4;
+                        :CH1:SCALE 1.0E-1;COUPLING DC;
+                        :TRIGGER:MAIN:LEVEL 3.0E-1;
+                        *OPC?
+                        """,
+                        "1")  },
+                { 1,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-1;
+                        *OPC?
+                        """,
+                        "2")  },
+                { 2,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-2;
+                        *OPC?
+                        """,
+                        "3")  },
+                { 3,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 1.0E-3;
+                        *OPC?
+                        """,
+                        "4")  },
+                { 4,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-4;
+                        :CH1:SCALE 2.0E0;
+                        :TRIGGER:MAIN:LEVEL 3.84E0;
+                        :MEASUREMENT:MEAS1:TYPE PERIOD;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "5")  },
+                { 5,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-5;
+                        :CH1:SCALE 1.0E1;
+                        :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "6")  },
+                { 6,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-2;
+                        :CH1:SCALE 2.0E0;
+                        :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
+                        :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "7")  },
+                { 7,  (
+                        """                        
+                        :MEASUREMENT:MEAS1:TYPE MINIMUM;SOURCE CH1;
+                        :MEASUREMENT:MEAS2:TYPE NONE;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "8")  },
+                { 8,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 1.0E-2;                        
+                        :CH1:SCALE 2.0E-2;COUPLING AC;
+                        :TRIGGER:MAIN:LEVEL 1.69E-1;
+                        :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "9")  },
+                { 9,  (
+                        """
+                        :CH1:COUPLING DC;
+                        *OPC?
+                        """,
+                        "10")  },
+                { 10,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.50E-4;  
+                        :CH1:SCALE 1.0E0;
+                        :TRIGGER:MAIN:LEVEL 3.84E0;
+                        *OPC?
+                        """,
+                        "11")  },
+                { 11,  (
+                        """
+                        :CH1:SCALE 1.0E-1;COUPLING AC;
+                        :TRIGGER:MAIN:LEVEL 8.44E-1;
+                        *OPC?
+                        """,
+                        "12")  },
+            };
+
+            _dicSwitchROsc = new Dictionary<int, (string cmd, string text)> {
+                { 0,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-4;
+                        *OPC?
+                        """,
+                        "1")  },
+                { 1,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-1;
+                        *OPC?
+                        """,
+                        "2")  },
+                { 2,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-2;
+                        *OPC?
+                        """,
+                        "3")  },
+                { 3,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 1.0E-3;
+                        :CH1:SCALE 1.0E-1;COUPLING DC;
+                        :TRIGGER:MAIN:LEVEL 3.0E-1;
+                        :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;
+                        
+                        *OPC?
+                        """,
+                        "4")  },
+                { 4,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.5E-4;
+                        :CH1:SCALE 2.0E0;
+                        :MEASUREMENT:MEAS1:TYPE PERIOD;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "5")  },
+                { 5,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-5;
+                        :CH1:SCALE 1.0E1;
+                        :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
+                        :MEASUREMENT:MEAS2:TYPE NONE;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "6")  },
+                { 6,  (
+                        """
+                        :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
+                        :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "7")  },
+                { 7,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 5.0E-2;
+                        :CH1:SCALE 2.0E0;
+                        :TRIGGER:MAIN:LEVEL 3.84E0;
+                        :MEASUREMENT:MEAS1:TYPE MINIMUM;SOURCE CH1;
+                        *OPC?
+                        """,
+                        "8")  },
+                { 8,  (
+                        """
+                        :CH1:SCALE 2.0E-2;COUPLING AC;
+                        *OPC?
+                        """,
+                        "9")  },
+                { 9,  (
+                        """
+                        :CH1:COUPLING DC;
+                        *OPC?
+                        """,
+                        "10")  },
+                { 10,  (
+                        """
+                        :CH1:SCALE 1.0E0;
+                        :TRIGGER:MAIN:LEVEL 3.84E0;
+                        *OPC?
+                        """,
+                        "11")  },
+                { 11,  (
+                        """
+                        :HORIZONTAL:MAIN:SCALE 2.50E-4;
+                        :CH1:SCALE 1.0E-1;COUPLING AC;
+                        :TRIGGER:MAIN:LEVEL 8.44E-1;
+                        *OPC?
+                        """,
+                        "12")  },
             };
         }
 
@@ -251,25 +407,27 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                CheckDmmId();
                 FormatSet();
 
-                var devices = new[] { _instDmm01, _instDmm02, _instDmm03, _instFg, _instOsc };
+                var devices = new[] { _instDmm, _instFg, _instOsc };
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = DmmMode.DCV;
+                }
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateRangeTextBox.Text = "OFF";
                     FgRotateButton.IsEnabled = true;
+                    FgRotateRButton.IsEnabled = true;
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                     OscRotateRangeTextBox.Text = "1";
                     OscRotateButton.IsEnabled = true;
+                    OscRotateRButton.IsEnabled = true;
                 }
 
-                Dmm01ComboBox.IsEnabled = false;
-                Dmm02ComboBox.IsEnabled = false;
-                Dmm03ComboBox.IsEnabled = false;
+                DmmComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
@@ -280,15 +438,6 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー");
             } finally {
                 VisibleProgressImage(false);
-            }
-        }
-        // DMMのIDチェック処理
-        private void CheckDmmId() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index, _instDmm03.Index }
-                .Where(i => i >= 1); // 未選択(0以下)は無視
-
-            if (indices.Count() != indices.Distinct().Count()) {
-                throw new Exception("同じ測定器が選択されています。");
             }
         }
         // デバイス接続
@@ -339,29 +488,51 @@ namespace InspectionTools.Product {
         private void Release() {
             VisibleProgressImage(false);
 
-            _instDmm01.ResetProperties();
-            _instDmm02.ResetProperties();
-            _instDmm03.ResetProperties();
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
 
             _subMenu?.SetButtonEnabled("ProductListButton", true);
-            Dmm01ComboBox.IsEnabled = true;
-            Dmm02ComboBox.IsEnabled = true;
-            Dmm03ComboBox.IsEnabled = true;
+            DmmComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
             HotKeyChekBox.IsChecked = false;
             FgRotateButton.IsEnabled = false;
+            FgRotateRButton.IsEnabled = false;
             OscRotateButton.IsEnabled = false;
+            OscRotateRButton.IsEnabled = false;
             FgRotateRangeTextBox.Text = string.Empty;
             OscRotateRangeTextBox.Text = string.Empty;
         }
 
+        // DMM切り替え
+        private async Task SwitchDmm(DmmInstClass instClass, string func) {
+            try {
+                VisibleProgressImage(true);
+
+                (instClass.InstCommand, instClass.CurrentMode) = func switch {
+                    "DCI" => instClass.SignalType switch {
+                        1 => ("*RST,F5,R6,*OPC?", DmmMode.DCI),
+                        2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 1E-1;*OPC?", DmmMode.DCI),
+                        _ => throw new ApplicationException(),
+                    },
+                    "DCV" => instClass.SignalType switch {
+                        1 => ("*RST,F1,R6,*OPC?", DmmMode.DCV),
+                        2 => ("*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", DmmMode.DCV),
+                        _ => throw new ApplicationException(),
+                    },
+                    _ => throw new ApplicationException(),
+                };
+
+                await ConnectDeviceAsync(instClass);
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
         // DMM測定値取得
-        private async Task<decimal> ReadDmm(InstClass instClass) {
+        private async Task<decimal> ReadDmm(DmmInstClass instClass) {
             try {
                 VisibleProgressImage(true);
 
@@ -408,21 +579,6 @@ namespace InspectionTools.Product {
 
             await ConnectDeviceAsync(instClass);
         }
-        // OSC測定値取得
-        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
-            try {
-                VisibleProgressImage(true);
-
-                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-                return output;
-
-            } finally {
-                VisibleProgressImage(false);
-            }
-        }
         // OSC切り替え
         private async void RotationOsc(bool isNext) {
             try {
@@ -445,48 +601,67 @@ namespace InspectionTools.Product {
             var oscMaxSettingNumber = _dicSwitchOsc.Count;
             _instOsc.SettingNumber = (_instOsc.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
 
-            instClass.InstCommand = _dicSwitchOsc[_instOsc.SettingNumber].cmd;
+            var dic = isNext ? _dicSwitchOsc : _dicSwitchROsc;
+            instClass.InstCommand = dic[_instOsc.SettingNumber].cmd;
 
             if (instClass.InstCommand == string.Empty) { return; }
 
             await ConnectDeviceAsync(instClass);
 
         }
+        // OSC測定値取得
+        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+            try {
+                VisibleProgressImage(true);
 
-        // FGローテーション
-        private void ActionHotkeyAtsign() {
-            if (_isProcessing) { return; }
-            RotationFg(true);
+                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
+                var result = await ConnectDeviceAsync(instClass);
+                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
         }
-        private void ActionHotkeyShiftAtsign() {
+
+        // DMM切替(DCV)
+        private async void ActionHotkeyComma() {
             if (_isProcessing) { return; }
-            RotationFg(false);
+
+            try {
+                await SwitchDmm(_instDmm, "DCV");
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
-        // DMM01測定値コピー
+        // DMM切替(DCI)
         private async void ActionHotkeyPeriod() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadDmm(_instDmm01);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                await SwitchDmm(_instDmm, "DCI");
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // DMM02測定値コピー
+        // DMM01測定値コピー
         private async void ActionHotkeySlash() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadDmm(_instDmm02);
+                var output = await ReadDmm(_instDmm);
+
+                var value = _instDmm.CurrentMode switch {
+                    DmmMode.DCV => output.ToString("0.0000"),
+                    DmmMode.DCI => (output * 1000).ToString("0.0000"),
+                    _ => output.ToString(""),
+                };
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                sim.Keyboard.TextEntry(value);
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -494,42 +669,103 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // DMM03測定値コピー
+
+        // FGローテーション
+        private void ActionHotkeyBracketR() {
+            if (_isProcessing) { return; }
+            RotationFg(true);
+        }
+        private void ActionHotkeyShiftBracketR() {
+            if (_isProcessing) { return; }
+            RotationFg(false);
+        }
+        private void ActionHotkeyNumMultiply() {
+            if (_isProcessing) { return; }
+            RotationFg(true);
+        }
+
+        // OSCローテーション
+        private void ActionHotkeyColon() {
+            if (_isProcessing) { return; }
+            RotationOsc(true);
+        }
+        private void ActionHotkeyShiftColon() {
+            if (_isProcessing) { return; }
+            RotationOsc(false);
+        }
+        private void ActionHotkeyNumDivide() {
+            if (_isProcessing) { return; }
+            RotationOsc(true);
+        }
+
+        // OSC meas測定値コピー
         private async void ActionHotkeyBackslash() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadDmm(_instDmm03);
+                var meas = _instOsc.SettingNumber switch {
+                    4 or 5 or 7 => 1,
+                    6 => 2,
+                    _ => 0,
+                };
+                if (meas == 0) { return; }
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                for (var i = 1; i <= meas; i++) {
+                    var output = await ReadOsc(_instOsc, i);
+
+                    var sim = new InputSimulator();
+                    var value = _instOsc.SettingNumber switch {
+                        4 => output * 1000,
+                        5 => output * 1000000,
+                        7 => output,
+                        6 => i switch {
+                            1 => output * 1000,
+                            2 => output,
+                            _ => output,
+                        },
+                        _ => output,
+                    };
+                    sim.Keyboard.TextEntry(value.ToString("0.000"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                }
+
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // OSCローテーション
-        private void ActionHotkeyBracketL() {
-            if (_isProcessing) { return; }
-            RotationOsc(true);
-        }
-        private void ActionHotkeyShiftracketL() {
-            if (_isProcessing) { return; }
-            RotationOsc(false);
-        }
-        // OSC meas1測定値コピー
-        private async void ActionHotkeyBracketR() {
+        private async void ActionHotkeyNumAdd() {
             if (_isProcessing) { return; }
 
             try {
-                var output = await ReadOsc(_instOsc, 1);
+                var meas = _instOsc.SettingNumber switch {
+                    4 or 5 or 7 => 1,
+                    6 => 2,
+                    _ => 0,
+                };
+                if (meas == 0) { return; }
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                for (var i = 1; i <= meas; i++) {
+                    var output = await ReadOsc(_instOsc, i);
+
+                    var sim = new InputSimulator();
+                    var value = _instOsc.SettingNumber switch {
+                        4 => output * 1000,
+                        5 => output * 1000000,
+                        7 => output,
+                        6 => i switch {
+                            1 => output * 1000,
+                            2 => output,
+                            _ => output,
+                        },
+                        _ => output,
+                    };
+                    sim.Keyboard.TextEntry(value.ToString("0.000"));
+                    await Task.Delay(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                }
+
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -539,32 +775,27 @@ namespace InspectionTools.Product {
         // HotkKeyの登録
         private void SetHotKey() {
             _hotkeys.Clear();
-            if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+            if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                 _hotkeys.AddRange([
+                    new(ModNone, HotkeyComma, ActionHotkeyComma),
                     new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                ]);
-            }
-            if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
-                _hotkeys.AddRange([
                     new(ModNone, HotkeySlash, ActionHotkeySlash),
-                ]);
-            }
-            if (!string.IsNullOrEmpty(_instDmm03.VisaAddress)) {
-                _hotkeys.AddRange([
-                    new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
-                    new(ModShift, HotkeyAtsign, ActionHotkeyShiftAtsign)
+                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
+                    new(ModShift, HotkeyBracketR, ActionHotkeyShiftBracketR),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                 _hotkeys.AddRange([
-                    new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
-                    new(ModShift, HotkeyBracketL, ActionHotkeyShiftracketL),
-                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR)
+                    new(ModNone, HotkeyColon, ActionHotkeyColon),
+                    new(ModShift, HotkeyColon, ActionHotkeyShiftColon),
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
+                    new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
+                    new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
                 ]);
             }
 
@@ -608,11 +839,18 @@ namespace InspectionTools.Product {
             if (_isProcessing) { return; }
             RotationFg(true);
         }
+        private void FgRotateRButton_Click(object sender, RoutedEventArgs e) {
+            if (_isProcessing) { return; }
+            RotationFg(false);
+        }
         private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
             if (_isProcessing) { return; }
             RotationOsc(true);
         }
-
+        private void OscRotateRButton_Click(object sender, RoutedEventArgs e) {
+            if (_isProcessing) { return; }
+            RotationOsc(false);
+        }
 
     }
 }
