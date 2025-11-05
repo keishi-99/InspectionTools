@@ -24,7 +24,7 @@ namespace InspectionTools.Product {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
-        private readonly InstClass _instDmm;
+        private readonly DmmInstClass _instDmm;
         private readonly InstClass _instFg;
         private readonly InstClass _instOsc;
 
@@ -80,6 +80,16 @@ namespace InspectionTools.Product {
                 // UsbDevの解放処理
                 UsbDev?.Dispose();
             }
+        }
+        // DMM用クラス
+        public class DmmInstClass : InstClass {
+            public DmmMode CurrentMode { get; set; } = DmmMode.None;
+        }
+        public enum DmmMode {
+            None,
+            DCV,
+            DCI,
+            RES
         }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
@@ -760,6 +770,7 @@ namespace InspectionTools.Product {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
+            // FGを使用する項目でのみ有効
             var windowText = GetWindowText(foregroundWindow);
             if (windowText is
                 not "バッチ動作" and
@@ -767,11 +778,21 @@ namespace InspectionTools.Product {
                 not "警報" and
                 not "パルス出力幅"
                 ) { return; }
-
-            // FGを使用する項目でのみ有効
-            if (_isProcessing) { return; }
-
             RotationFg(isNext);
+        }
+        // OASC+FG切り替え
+        private void ActionSwitchFgOsc(bool isNext) {
+            if (_isProcessing) { return; }
+            var foregroundWindow = GetForegroundWindow();
+            if (foregroundWindow == IntPtr.Zero) { return; }
+
+            // パルス出力幅 でのみ有効
+            var windowText = GetWindowText(foregroundWindow);
+            if (windowText is
+                not "パルス出力幅"
+                ) { return; }
+            RotationFg(isNext);
+            RotationOsc(isNext);
         }
 
         // メニュー切り替え
@@ -811,7 +832,7 @@ namespace InspectionTools.Product {
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             ActionSwitchFg(true);
         }
-        private async void ActionHotkeyNum3() {
+        private void ActionHotkeyNum3() {
             if (_isProcessing) { return; }
 
             var sim = new InputSimulator();
@@ -820,6 +841,7 @@ namespace InspectionTools.Product {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
+            // FGを使用する項目でのみ有効
             var windowText = GetWindowText(foregroundWindow);
             if (windowText is
                 not "バッチ動作" and
@@ -827,13 +849,7 @@ namespace InspectionTools.Product {
                 not "警報" and
                 not "パルス出力幅"
                 ) { return; }
-
-            // FGを使用する項目でのみ有効
-            await RotationFgAsync(_instFg, true);
-            await RotationOscAsync(_instOsc, true);
-            //await Task.Run(() => SwitchFgAsync(_instFg, true));
-            //await Task.Run(() => SwitchOscAsync(_instOsc, true));
-
+            ActionSwitchFgOsc(true);
         }
 
         // HotkKeyの登録

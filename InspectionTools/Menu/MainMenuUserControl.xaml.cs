@@ -45,6 +45,9 @@ namespace InspectionTools.MainMenu {
         private void PA14_Click(object sender, RoutedEventArgs e) {
             PageSelected?.Invoke("PA14");
         }
+        private void PA25_Click(object sender, RoutedEventArgs e) {
+            PageSelected?.Invoke("PA25");
+        }
         private void PAF5amp_Click(object sender, RoutedEventArgs e) {
             PageSelected?.Invoke("PAF5amp");
         }
