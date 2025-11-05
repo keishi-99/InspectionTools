@@ -28,10 +28,6 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg;
         private readonly OscInstClass _instOsc;
 
-        public ObservableCollection<string> DmmList { get; } = [];
-        public ObservableCollection<string> FgList { get; } = [];
-        public ObservableCollection<string> OscList { get; } = [];
-
         public PA25UserControl() {
             InitializeComponent();
             _instDmm = new();
@@ -86,17 +82,16 @@ namespace InspectionTools.Product {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(DmmComboBox, DmmList, "デジタルマルチメータ", [1, 2], "[DMM]");
-            UpdateComboBox(FgComboBox, FgList, "ファンクションジェネレータ", [2], "[FG]");
-            UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
+            UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
+            UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [2], "[FG]");
+            UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
         }
-        private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
+        private void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
             if (_dataTable == null) {
                 return;
             }
 
-            collection.Clear();
-            collection.Add(name);
+            var collection = new List<string> { name };
 
             foreach (var signalType in signalTypes) {
                 var rows = _dataTable.Select($"Category = '{category}' AND SignalType = {signalType}");

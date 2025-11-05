@@ -36,13 +36,6 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg02_2;
         private readonly OscInstClass _instOsc;
 
-        public ObservableCollection<string> DcsList { get; } = [];
-        public ObservableCollection<string> DmmList { get; } = [];
-        public ObservableCollection<string> Fg01List { get; } = [];
-        public ObservableCollection<string> Fg02_1List { get; } = [];
-        public ObservableCollection<string> Fg02_2List { get; } = [];
-        public ObservableCollection<string> OscList { get; } = [];
-
         public MassFlowUserControl() {
             InitializeComponent();
             _instDcs = new();
@@ -118,20 +111,19 @@ namespace InspectionTools.Product {
             _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(DcsComboBox, DcsList, "電流電圧発生器", [2, 3], "[DCS]");
-            UpdateComboBox(DmmComboBox, DmmList, "デジタルマルチメータ", [1, 2], "[DMM]");
-            UpdateComboBox(Fg01ComboBox, Fg01List, "ファンクションジェネレータ", [3, 4], "[FG]");
-            UpdateComboBox(Fg02_1ComboBox, Fg02_1List, "ファンクションジェネレータ", [2], "[FG]");
-            UpdateComboBox(Fg02_2ComboBox, Fg02_2List, "ファンクションジェネレータ", [2], "[FG]");
-            UpdateComboBox(OscComboBox, OscList, "オシロスコープ", [2], "[OSC]");
+            UpdateComboBox(DcsComboBox, "電流電圧発生器", [2, 3], "[DCS]");
+            UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
+            UpdateComboBox(Fg01ComboBox, "ファンクションジェネレータ", [3, 4], "[FG]");
+            UpdateComboBox(Fg02_1ComboBox, "ファンクションジェネレータ", [2], "[FG]");
+            UpdateComboBox(Fg02_2ComboBox, "ファンクションジェネレータ", [2], "[FG]");
+            UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
         }
-        private void UpdateComboBox(ComboBox comboBox, ObservableCollection<string> collection, string category, List<int> signalTypes, string name) {
+        private void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
             if (_dataTable == null) {
                 return;
             }
 
-            collection.Clear();
-            collection.Add(name);
+            var collection = new List<string> { name };
 
             foreach (var signalType in signalTypes) {
                 var rows = _dataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
