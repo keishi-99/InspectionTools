@@ -24,11 +24,11 @@ namespace InspectionTools.Product {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
+        private readonly DcsInstClass _instDcs;
         private readonly DmmInstClass _instDmm01;
         private readonly DmmInstClass _instDmm02;
-        private readonly InstClass _instFg;
-        private readonly InstClass _instOsc;
-        private readonly InstClass _instPs;
+        private readonly FgInstClass _instFg;
+        private readonly OscInstClass _instOsc;
 
         public ObservableCollection<string> Dmm1List { get; } = [];
         public ObservableCollection<string> Dmm2List { get; } = [];
@@ -42,7 +42,7 @@ namespace InspectionTools.Product {
             _instDmm02 = new();
             _instFg = new();
             _instOsc = new();
-            _instPs = new();
+            _instDcs = new();
             LoadEvents();
             // 親ウィンドウを取得
             var parentWindow = Window.GetWindow(this);
@@ -57,42 +57,6 @@ namespace InspectionTools.Product {
             if (parentWindow != null) {
                 parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
             }
-        }
-
-        public class InstClass {
-            internal USBDeviceManager UsbDev { get; set; } = new();
-            public string Category { get; set; } = string.Empty;
-            public string Name { get; set; } = string.Empty;
-            public string VisaAddress { get; set; } = string.Empty;
-            public int SignalType { get; set; } = 0;
-            public int Index { get; set; } = 0;
-            public string InstCommand { get; set; } = string.Empty;
-            public int SettingNumber { get; set; } = 0;
-
-            public void ResetProperties() {
-                UsbDev = new();
-                Name = string.Empty;
-                Category = string.Empty;
-                VisaAddress = string.Empty;
-                SignalType = 0;
-                Index = 0;
-                InstCommand = string.Empty;
-                SettingNumber = 0;
-            }
-            public void Dispose() {
-                // UsbDevの解放処理
-                UsbDev?.Dispose();
-            }
-        }
-        // DMM用クラス
-        public class DmmInstClass : InstClass {
-            public DmmMode CurrentMode { get; set; } = DmmMode.None;
-        }
-        public enum DmmMode {
-            None,
-            DCV,
-            DCI,
-            RES
         }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
@@ -158,7 +122,7 @@ namespace InspectionTools.Product {
             GetVisaAddress(_instDmm02, Dmm02ComboBox);
             GetVisaAddress(_instFg, FgComboBox);
             GetVisaAddress(_instOsc, OscComboBox);
-            GetVisaAddress(_instPs, PsComboBox);
+            GetVisaAddress(_instDcs, PsComboBox);
         }
         private void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
             instClass.ResetProperties();
@@ -204,7 +168,7 @@ namespace InspectionTools.Product {
                     """,
                 _ => string.Empty,
             };
-            _instPs.InstCommand = _instPs.SignalType switch {
+            _instDcs.InstCommand = _instDcs.SignalType switch {
                 2 => "*RST;:VOLT 24;*OPC?",
                 _ => string.Empty,
             };
@@ -222,7 +186,7 @@ namespace InspectionTools.Product {
                 CheckDmmId();
                 FormatSet();
 
-                var devices = new[] { _instDmm01, _instDmm02, _instFg, _instOsc, _instPs };
+                InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc, _instDcs];
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -302,7 +266,7 @@ namespace InspectionTools.Product {
             _instDmm02.ResetProperties();
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
-            _instPs.ResetProperties();
+            _instDcs.ResetProperties();
 
             _subMenu?.SetButtonEnabled("ProductListButton", true);
             Dmm01ComboBox.IsEnabled = true;
@@ -357,8 +321,8 @@ namespace InspectionTools.Product {
                 var sim = new InputSimulator();
                 VisibleProgressImage(true);
 
-                if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
-                    await SwitchDcsAsync(_instPs, "ON");
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    await SwitchDcsAsync(_instDcs, "ON");
                     await Task.Delay(delay);
                 }
 
@@ -396,8 +360,8 @@ namespace InspectionTools.Product {
                     await Task.Delay(300);
                 }
 
-                if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
-                    await SwitchDcsAsync(_instPs, "OFF");
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    await SwitchDcsAsync(_instDcs, "OFF");
                 }
 
             } catch (Exception ex) {
@@ -474,10 +438,10 @@ namespace InspectionTools.Product {
         }
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instPs, "ON");
+            await SwitchDcsAsync(_instDcs, "ON");
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instPs, "OFF");
+            await SwitchDcsAsync(_instDcs, "OFF");
         }
         // 一連の処理
         private async void ActionHotkeyComma() {
@@ -522,7 +486,7 @@ namespace InspectionTools.Product {
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
                 ]);
             }
-            if (!string.IsNullOrEmpty(_instPs.VisaAddress)) {
+            if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                 _hotkeys.AddRange([
                     new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
                     new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),

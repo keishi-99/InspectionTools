@@ -29,12 +29,12 @@ namespace InspectionTools.Product {
 
         private IntPtr _hWnd = IntPtr.Zero;
 
-        private readonly InstClass _instDcs;
+        private readonly DcsInstClass _instDcs;
         private readonly DmmInstClass _instDmm;
-        private readonly InstClass _instFg01;
-        private readonly InstClass _instFg02_1;
-        private readonly InstClass _instFg02_2;
-        private readonly InstClass _instOsc;
+        private readonly FgInstClass _instFg01;
+        private readonly FgInstClass _instFg02_1;
+        private readonly FgInstClass _instFg02_2;
+        private readonly OscInstClass _instOsc;
 
         public ObservableCollection<string> DcsList { get; } = [];
         public ObservableCollection<string> DmmList { get; } = [];
@@ -66,44 +66,6 @@ namespace InspectionTools.Product {
             if (parentWindow != null) {
                 parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
             }
-        }
-
-        public class InstClass {
-            internal USBDeviceManager UsbDev { get; set; } = new();
-            public string Category { get; set; } = string.Empty;
-            public string Name { get; set; } = string.Empty;
-            public string Tag { get; set; } = string.Empty;
-            public string VisaAddress { get; set; } = string.Empty;
-            public int SignalType { get; set; } = 0;
-            public int Index { get; set; } = 0;
-            public string InstCommand { get; set; } = string.Empty;
-            public int SettingNumber { get; set; } = 0;
-
-            public void ResetProperties() {
-                UsbDev = new();
-                Name = string.Empty;
-                Tag = string.Empty;
-                Category = string.Empty;
-                VisaAddress = string.Empty;
-                SignalType = 0;
-                Index = 0;
-                InstCommand = string.Empty;
-                SettingNumber = 0;
-            }
-            public void Dispose() {
-                // UsbDevの解放処理
-                UsbDev?.Dispose();
-            }
-        }
-        // DMM用クラス
-        public class DmmInstClass : InstClass {
-            public DmmMode CurrentMode { get; set; } = DmmMode.None;
-        }
-        public enum DmmMode {
-            None,
-            DCV,
-            DCI,
-            RES
         }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)

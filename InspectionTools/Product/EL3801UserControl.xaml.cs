@@ -60,42 +60,6 @@ namespace InspectionTools.Product {
             }
         }
 
-        public class InstClass {
-            internal USBDeviceManager UsbDev { get; set; } = new();
-            public string Category { get; set; } = string.Empty;
-            public string Name { get; set; } = string.Empty;
-            public string VisaAddress { get; set; } = string.Empty;
-            public int SignalType { get; set; } = 0;
-            public int Index { get; set; } = 0;
-            public string InstCommand { get; set; } = string.Empty;
-            public int SettingNumber { get; set; } = 0;
-
-            public void ResetProperties() {
-                UsbDev = new();
-                Name = string.Empty;
-                Category = string.Empty;
-                VisaAddress = string.Empty;
-                SignalType = 0;
-                Index = 0;
-                InstCommand = string.Empty;
-                SettingNumber = 0;
-            }
-            public void Dispose() {
-                // UsbDevの解放処理
-                UsbDev?.Dispose();
-            }
-        }
-        // DMM用クラス
-        public class DmmInstClass : InstClass {
-            public DmmMode CurrentMode { get; set; } = DmmMode.None;
-        }
-        public enum DmmMode {
-            None,
-            DCV,
-            DCI,
-            RES
-        }
-
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
 
         internal DataTable _dataTable = new();
@@ -204,7 +168,7 @@ namespace InspectionTools.Product {
                 CheckDmmId();
                 FormatSet();
 
-                var devices = new[] { _instDmm01, _instDmm02, _instDmm03 };
+                InstClass[] devices = [_instDmm01, _instDmm02, _instDmm03];
                 var tasks = devices.Select(device => ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
