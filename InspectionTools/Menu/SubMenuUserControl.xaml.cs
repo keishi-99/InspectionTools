@@ -13,12 +13,26 @@ namespace InspectionTools.MainMenu {
         public event EventHandler? BackToMainRequested;
         public event EventHandler? HelpButtonClicked;
 
+        public static DataTable VisaAddressDataTable { get; set; } = new();
+
         public interface ISubMenuAware {
             void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu);
         }
 
         public SubMenuUserControl() {
             InitializeComponent();
+            LoadEvents();
+        }
+
+        private static void LoadEvents() {
+            const string XmlFilePath = "VisaAddress.xml";
+            if (!System.IO.File.Exists(XmlFilePath)) {
+                MessageBox.Show($"{XmlFilePath}が見つかりません。");
+                return;
+            }
+            using DataSet dataSet = new();
+            dataSet.ReadXml(XmlFilePath);
+            VisaAddressDataTable = dataSet.Tables[0];
         }
 
         // MainMenu表示
@@ -28,18 +42,10 @@ namespace InspectionTools.MainMenu {
 
         // 機器リスト表示
         private static void ShowInstList() {
-            const string XmlFilePath = "VisaAddress.xml";
-            if (!System.IO.File.Exists(XmlFilePath)) {
-                MessageBox.Show($"{XmlFilePath}が見つかりません。");
-                return;
-            }
 
-            using DataSet dataSet = new();
-            dataSet.ReadXml("VisaAddress.xml");
-            DataTable dataTable = dataSet.Tables[0];
-
-            Common.InstListWindow frm1 = new(dataTable);
+            Common.InstListWindow frm1 = new();
             frm1.ShowDialog();
+            LoadEvents();
         }
 
         // ボタン名を指定して有効/無効を切り替えるメソッド

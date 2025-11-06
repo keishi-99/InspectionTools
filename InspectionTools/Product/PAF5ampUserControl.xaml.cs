@@ -1,5 +1,4 @@
 ﻿using InspectionTools.Common;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Windows;
@@ -53,8 +52,6 @@ namespace InspectionTools.Product {
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
 
-        internal DataTable _dataTable = new();
-
         private Dictionary<int, string> _dicSwitchFg = [];
         private Dictionary<int, string> _dicSwitchOsc = [];
 
@@ -72,15 +69,6 @@ namespace InspectionTools.Product {
             RegDictionary();
         }
         private void InstListImport() {
-            const string XmlFilePath = "VisaAddress.xml";
-            if (!System.IO.File.Exists(XmlFilePath)) {
-                MessageBox.Show($"{XmlFilePath}が見つかりません。");
-                return;
-            }
-
-            using DataSet dataSet = new();
-            dataSet.ReadXml("VisaAddress.xml");
-            _dataTable = dataSet.Tables[0];
 
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             UpdateComboBox(DcsComboBox, "パワーサプライ", [2], "[DCS]");
@@ -88,15 +76,15 @@ namespace InspectionTools.Product {
             UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [2], "[FG]");
             UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
         }
-        private void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
-            if (_dataTable == null) {
+        private static void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
+            if (VisaAddressDataTable == null) {
                 return;
             }
 
             var collection = new List<string> { name };
 
             foreach (var signalType in signalTypes) {
-                var rows = _dataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
+                var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
                 foreach (var d in rows) {
                     collection.Add(d["Name"].ToString() ?? string.Empty);
                 }
@@ -117,7 +105,7 @@ namespace InspectionTools.Product {
             GetVisaAddress(_instFg, FgComboBox);
             GetVisaAddress(_instOsc, OscComboBox);
         }
-        private void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
+        private static void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
             instClass.ResetProperties();
 
             instClass.Name = comboBox.Text;
@@ -125,7 +113,7 @@ namespace InspectionTools.Product {
 
             if (instClass.Index <= 0) { return; }
 
-            var dRows = _dataTable.Select($"Name = '{instClass.Name}'");
+            var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
             instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
             instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;

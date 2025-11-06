@@ -1,5 +1,5 @@
-﻿using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Common {
     /// <summary>
@@ -7,16 +7,14 @@ namespace InspectionTools.Common {
     /// </summary>
     public partial class InstListWindow : Window {
 
-        private readonly DataTable _dataTable;
-
-        public InstListWindow(DataTable dataTable) {
+        public InstListWindow() {
             InitializeComponent();
-            _dataTable = dataTable;
-            InstListGrid.ItemsSource = _dataTable.DefaultView;
+            InstListGrid.ItemsSource = VisaAddressDataTable.DefaultView;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e) {
-            _dataTable.WriteXml("VisaAddress.xml");
+            VisaAddressDataTable.WriteXml("VisaAddress.xml");
+            Close();
         }
     }
 }
