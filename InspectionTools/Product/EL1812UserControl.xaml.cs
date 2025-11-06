@@ -21,26 +21,12 @@ namespace InspectionTools.Product {
             _subMenu = subMenu;
         }
 
-        private IntPtr _hWnd = IntPtr.Zero;
-
-        private readonly DmmInstClass _instDmm;
-        private readonly FgInstClass _instFg;
-        private readonly OscInstClass _instOsc;
+        private readonly DmmInstClass _instDmm = new();
+        private readonly FgInstClass _instFg = new();
+        private readonly OscInstClass _instOsc = new();
 
         public EL1812UserControl() {
             InitializeComponent();
-            _instDmm = new();
-            _instDmm = new();
-            _instFg = new();
-            _instOsc = new();
-            LoadEvents();
-            // 親ウィンドウを取得
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                _hWnd = new WindowInteropHelper(parentWindow).Handle;
-            }
-
-            Loaded += (s, e) => AdjustWindowSizeToUserControl();
         }
         private void AdjustWindowSizeToUserControl() {
             var parentWindow = Window.GetWindow(this);
@@ -54,8 +40,6 @@ namespace InspectionTools.Product {
         private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchFgR = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
-        private readonly List<Hotkey> _hotkeys = [];
-        private HwndSource? _source;
 
         private volatile bool _isProcessing = false;
 
@@ -70,6 +54,7 @@ namespace InspectionTools.Product {
             FormatSet();
             RegDictionary();
             RegMenuTitle();
+            AdjustWindowSizeToUserControl();
         }
         private void InstListImport() {
 
@@ -798,9 +783,9 @@ namespace InspectionTools.Product {
 
         // HotkKeyの登録
         private void SetHotKey() {
-            _hotkeys.Clear();
+            MainWindow.HotkeysList.Clear();
 
-            _hotkeys.AddRange([
+            MainWindow.HotkeysList.AddRange([
                 new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
                 new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
                 new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
@@ -811,7 +796,7 @@ namespace InspectionTools.Product {
                 new(ModNone, HotkeyNumSubtract, ActionHotkeyNumSubtract),
             ]);
             if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
-                _hotkeys.AddRange([
+                MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackslash),
                     new(ModShift, HotkeyBackslash, ActionHotkeyShiftBackslash),
                     new(ModNone, HotkeyNum5, ActionHotkeyNum5),
@@ -819,13 +804,13 @@ namespace InspectionTools.Product {
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
-                _hotkeys.AddRange([
+                MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeySemiColon, ActionHotkeySemiColon),
                     new(ModNone, HotkeyNum9,ActionHotkeyNum9),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
-                _hotkeys.AddRange([
+                MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
                     new(ModNone, HotkeyColon, ActionHotkeyColon),
                     new(ModNone, HotkeyNum1, ActionHotkeyNum1),
@@ -833,36 +818,31 @@ namespace InspectionTools.Product {
                 ]);
             }
             if (!string.IsNullOrEmpty(_instFg.VisaAddress) && !string.IsNullOrEmpty(_instOsc.VisaAddress)) {
-                _hotkeys.AddRange([
+                MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyNum2, ActionHotkeyNum2),
                     new(ModNone, HotkeyNum3, ActionHotkeyNum3),
                 ]);
             }
 
-            // 親ウィンドウを取得
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                _hWnd = new WindowInteropHelper(parentWindow).Handle;
-                _source = HwndSource.FromHwnd(_hWnd);
-                _source.AddHook(HwndHook);
-            }
+            MainWindow.Source = HwndSource.FromHwnd(MainWindow.HWnd);
+            MainWindow.Source.AddHook(HwndHook);
 
             // ホットキーを登録
-            foreach (var hotkey in _hotkeys) {
-                RegisterHotKey(_hWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
+            foreach (var hotkey in MainWindow.HotkeysList) {
+                RegisterHotKey(MainWindow.HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
             }
         }
-        private void ClearHotKey() {
-            foreach (var hotkey in _hotkeys) {
-                UnregisterHotKey(_hWnd, hotkey.Id);
+        private static void ClearHotKey() {
+            foreach (var hotkey in MainWindow.HotkeysList) {
+                UnregisterHotKey(MainWindow.HWnd, hotkey.Id);
             }
-            _hotkeys.Clear();
+            MainWindow.HotkeysList.Clear();
         }
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
             if (msg == WmHotKey) {
                 int id = wParam.ToInt32();
 
-                var hotkey = _hotkeys.FirstOrDefault(h => h.Id == id);
+                var hotkey = MainWindow.HotkeysList.FirstOrDefault(h => h.Id == id);
                 hotkey?.Action.Invoke(); // ホットキーに設定されたアクションを実行
                 handled = true;
             }
@@ -882,6 +862,7 @@ namespace InspectionTools.Product {
         }
 
         // イベントハンドラ
+        private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }

@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.Reflection.Metadata;
+using System.Windows;
+using System.Windows.Interop;
+using static InspectionTools.Common.Win32Wrapper;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools {
@@ -10,12 +13,18 @@ namespace InspectionTools {
         private bool _isHelpVisible = false;
         private string _pageName = string.Empty;
 
+        public static IntPtr HWnd { get; set; }
+        public static HwndSource? Source { get; set; }
+        public static List<Hotkey> HotkeysList { get; set; } = [];
+
         private MainMenu.SubMenuUserControl? _subMenu;
 
         public MainWindow() {
             InitializeComponent();
             Common.HelpManager.LoadHelpFile("help.json");
             ShowMainMenu();
+            // Window が完全に作られたあとにハンドルを取得
+            Loaded += (s, e) => { HWnd = new WindowInteropHelper(this).Handle; };
         }
 
         private void ShowMainMenu() {
