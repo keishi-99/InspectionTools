@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="250"
     Height="250"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
@@ -15,7 +16,7 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
-            <RowDefinition Height="2*"/>
+            <RowDefinition Height="2*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
