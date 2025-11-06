@@ -17,6 +17,10 @@ namespace InspectionTools {
         public static HwndSource? Source { get; set; }
         public static List<Hotkey> HotkeysList { get; set; } = [];
 
+        public static bool IsProcessing { get; set; } = false;
+
+        public static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
+
         private MainMenu.SubMenuUserControl? _subMenu;
 
         public MainWindow() {
@@ -108,6 +112,13 @@ namespace InspectionTools {
             else {
                 HelpTextBlock1.Text = string.Empty;
                 HelpTextBlock2.Text = string.Empty;
+            }
+        }
+
+
+        public static void AdjustWindowSizeToUserControl(Window parentWindow) {
+            if (parentWindow != null) {
+                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
             }
         }
 

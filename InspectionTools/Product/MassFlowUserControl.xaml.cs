@@ -36,12 +36,6 @@ namespace InspectionTools.Product {
         public MassFlowUserControl() {
             InitializeComponent();
         }
-        private void AdjustWindowSizeToUserControl() {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
-        }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
 
@@ -50,10 +44,6 @@ namespace InspectionTools.Product {
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchRFg = [];
         private Dictionary<int, string> _dicSwitchOsc = [];
         private Dictionary<int, string> _dicSwitchROsc = [];
-
-        private volatile bool _isProcessing = false;
-
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         // FMRemoteのメニューアイテムID
         private const int MenuItemIdA1L = 32806;
@@ -76,7 +66,8 @@ namespace InspectionTools.Product {
             InstListImport();
             FormatSet();
             RegDictionary();
-            AdjustWindowSizeToUserControl();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
 
@@ -105,7 +96,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            _isProcessing = isVisible;
+            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -543,7 +534,7 @@ namespace InspectionTools.Product {
         }
         // ADC接続
         private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+            await MainWindow.s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -561,7 +552,7 @@ namespace InspectionTools.Product {
                 }
                 return rcvDt;
             } finally {
-                s_semaphore.Release();
+                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -847,7 +838,7 @@ namespace InspectionTools.Product {
         }
         // アナログトリムオープン
         private void AnalogTrimOpen(IntPtr hWnd) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
             //Application.DoEvents();
 
@@ -891,7 +882,7 @@ namespace InspectionTools.Product {
         }
         // アナログトリムスタート
         private void AnalogTrimStart(IntPtr hWnd) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
             //Application.DoEvents();
 
@@ -910,7 +901,7 @@ namespace InspectionTools.Product {
         }
         // アナログトリムクローズ
         private void AnalogTrimClose(IntPtr hWnd) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
             //Application.DoEvents();
 
@@ -922,7 +913,7 @@ namespace InspectionTools.Product {
         }
         // アナログトリム4mA
         private void AnalogTrim4mA(IntPtr hWnd) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
             //Application.DoEvents();
 
@@ -941,7 +932,7 @@ namespace InspectionTools.Product {
         }
         // アナログトリム20mA
         private void AnalogTrim20mA(IntPtr hWnd) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
             //Application.DoEvents();
 
@@ -1109,16 +1100,16 @@ namespace InspectionTools.Product {
         }
         // FG&OSCローテーション
         private void ActionHotkeyColon() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFgOsc(false);
         }
         private void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFgOsc(true);
         }
         // DMM値コピー
         private async void ActionHotkeyPeriod() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadDmm(_instDmm);
             var sim = new InputSimulator();
@@ -1126,7 +1117,7 @@ namespace InspectionTools.Product {
         }
         // OSC mes1値コピー
         private async void ActionHotkeySlash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 1);
             var sim = new InputSimulator();
@@ -1135,7 +1126,7 @@ namespace InspectionTools.Product {
         }
         // OSC mes2値コピー
         private async void ActionHotkeyBackslash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 2);
             var sim = new InputSimulator();
@@ -1166,7 +1157,7 @@ namespace InspectionTools.Product {
         private void ActionHotkeyNum1() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (_isProcessing) { return; }
+                if (MainWindow.IsProcessing) { return; }
                 SwitchDcs(1);
                 return;
             }
@@ -1176,7 +1167,7 @@ namespace InspectionTools.Product {
         private void ActionHotkeyNum2() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (_isProcessing) { return; }
+                if (MainWindow.IsProcessing) { return; }
                 SwitchDcs(2);
                 return;
             }
@@ -1186,7 +1177,7 @@ namespace InspectionTools.Product {
         private void ActionHotkeyNum3() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (_isProcessing) { return; }
+                if (MainWindow.IsProcessing) { return; }
                 SwitchDcs(3);
                 return;
             }
@@ -1196,7 +1187,7 @@ namespace InspectionTools.Product {
         private void ActionHotkeyNum4() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (_isProcessing) { return; }
+                if (MainWindow.IsProcessing) { return; }
                 SwitchDcs(4);
                 return;
             }
@@ -1327,7 +1318,7 @@ namespace InspectionTools.Product {
         private void Dcs7VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(4); }
 
         private void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFgOsc(true);
         }
 

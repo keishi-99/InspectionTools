@@ -28,22 +28,12 @@ namespace InspectionTools.Product {
         public EL1812UserControl() {
             InitializeComponent();
         }
-        private void AdjustWindowSizeToUserControl() {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
-        }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
 
         private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchFgR = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
-
-        private volatile bool _isProcessing = false;
-
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         private int _rotateMenuNumber = 0;
         private List<string> _listRotateMenuTitle = [];
@@ -54,7 +44,8 @@ namespace InspectionTools.Product {
             FormatSet();
             RegDictionary();
             RegMenuTitle();
-            AdjustWindowSizeToUserControl();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
 
@@ -80,7 +71,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            _isProcessing = isVisible;
+            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -288,7 +279,7 @@ namespace InspectionTools.Product {
         }
         // ADC接続
         private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+            await MainWindow.s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -306,7 +297,7 @@ namespace InspectionTools.Product {
                 }
                 return rcvDt;
             } finally {
-                s_semaphore.Release();
+                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -604,7 +595,7 @@ namespace InspectionTools.Product {
             if (windowText != "パルス出力幅") { return; }
 
             // 11.パルス出力幅でのみ有効
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             RotationOsc(isNext);
         }
@@ -617,7 +608,7 @@ namespace InspectionTools.Product {
             if (windowText != "パルス出力幅") { return; }
 
             // 11.パルス出力幅でのみ有効
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
@@ -642,7 +633,7 @@ namespace InspectionTools.Product {
             if (windowText != "発信器電源電圧") { return; }
 
             // 5.発信器電源電圧でのみ有効
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.BACK);
@@ -695,7 +686,7 @@ namespace InspectionTools.Product {
         }
         // FG切り替え
         private void ActionSwitchFg(bool isNext) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -711,7 +702,7 @@ namespace InspectionTools.Product {
         }
         // OSC+FG切り替え
         private void ActionSwitchFgOsc(bool isNext) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -762,7 +753,7 @@ namespace InspectionTools.Product {
             ActionSwitchFg(true);
         }
         private void ActionHotkeyNum3() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
@@ -869,27 +860,27 @@ namespace InspectionTools.Product {
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         private void OscRotationButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationOsc(true);
         }
         private void FgRotateBackButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFg(false);
         }
         private void FgRotateNextButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFg(true);
         }
         private void FgOutputOnButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             OutputFg("SIG 1");
         }
         private void FgOutputOffButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             OutputFg("SIG 0");
         }
         private void FgTriggerButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             OutputFg("TRG 1");
         }
 

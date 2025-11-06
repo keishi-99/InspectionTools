@@ -29,28 +29,19 @@ namespace InspectionTools.Product {
         public PA14UserControl() {
             InitializeComponent();
         }
-        private void AdjustWindowSizeToUserControl() {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
-        }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
 
         private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
 
-        private volatile bool _isProcessing = false;
-
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
             FormatSet();
             RegDictionary();
-            AdjustWindowSizeToUserControl();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
 
@@ -77,7 +68,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            _isProcessing = isVisible;
+            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -223,7 +214,7 @@ namespace InspectionTools.Product {
         }
         // ADC接続
         private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+            await MainWindow.s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -241,7 +232,7 @@ namespace InspectionTools.Product {
                 }
                 return rcvDt;
             } finally {
-                s_semaphore.Release();
+                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -363,7 +354,7 @@ namespace InspectionTools.Product {
 
         // DMM01測定値コピー
         private async void ActionHotkeyAtsign() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm01);
@@ -378,7 +369,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyNumDivide() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm01);
@@ -394,7 +385,7 @@ namespace InspectionTools.Product {
         }
         // DMM02測定値コピー
         private async void ActionHotkeyBracketL() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -409,7 +400,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyNumMultiply() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -425,25 +416,25 @@ namespace InspectionTools.Product {
         }
         // FGローテーション
         private void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFg(true);
         }
         private void ActionHotkeyNumAdd() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFg(false);
         }
         // OSCローテーション
         private void ActionHotkeyColon() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationOsc(true);
         }
         private void ActionHotkeyNumSubtract() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationOsc(true);
         }
         // OSC meas1測定値コピー
         private async void ActionHotkeyComma() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadOsc(_instOsc, 1);
@@ -459,7 +450,7 @@ namespace InspectionTools.Product {
         }
         // OSC meas2測定値コピー
         private async void ActionHotkeyPeriod() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadOsc(_instOsc, 2);
@@ -475,7 +466,7 @@ namespace InspectionTools.Product {
         }
         // OSC meas3測定値コピー
         private async void ActionHotkeySlash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadOsc(_instOsc, 3);
@@ -491,7 +482,7 @@ namespace InspectionTools.Product {
         }
         // OSC meas4測定値コピー
         private async void ActionHotkeyBackslash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadOsc(_instOsc, 4);
@@ -571,11 +562,11 @@ namespace InspectionTools.Product {
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationFg(true);
         }
         private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
             RotationOsc(true);
         }
 

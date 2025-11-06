@@ -26,24 +26,15 @@ namespace InspectionTools.Product {
         public EL0122UserControl() {
             InitializeComponent();
         }
-        private void AdjustWindowSizeToUserControl() {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
-        }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
-        private volatile bool _isProcessing = false;
-
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         // 起動時
         private void LoadEvents() {
             InstListImport();
             FormatSet();
-            AdjustWindowSizeToUserControl();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
 
@@ -67,7 +58,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            _isProcessing = isVisible;
+            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -146,7 +137,7 @@ namespace InspectionTools.Product {
         }
         // ADC接続
         private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+            await MainWindow.s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -164,7 +155,7 @@ namespace InspectionTools.Product {
                 }
                 return rcvDt;
             } finally {
-                s_semaphore.Release();
+                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -204,7 +195,7 @@ namespace InspectionTools.Product {
 
         // DMM測定値コピー
         private async void ActionHotkeySlash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm);
@@ -219,7 +210,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyBackslash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm);
@@ -234,7 +225,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyNumDivide() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm);
@@ -249,7 +240,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyNumMultiply() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm);

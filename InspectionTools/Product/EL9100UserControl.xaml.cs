@@ -29,24 +29,15 @@ namespace InspectionTools.Product {
         public EL9100UserControl() {
             InitializeComponent();
         }
-        private void AdjustWindowSizeToUserControl() {
-            var parentWindow = Window.GetWindow(this);
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
-        }
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
-        private volatile bool _isProcessing = false;
-
-        private static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         // 起動時
         private void LoadEvents() {
             InstListImport();
             FormatSet();
-            AdjustWindowSizeToUserControl();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
 
@@ -71,7 +62,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            _isProcessing = isVisible;
+            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -167,7 +158,7 @@ namespace InspectionTools.Product {
         }
         // ADC接続
         private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+            await MainWindow.s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -185,7 +176,7 @@ namespace InspectionTools.Product {
                 }
                 return rcvDt;
             } finally {
-                s_semaphore.Release();
+                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -299,7 +290,7 @@ namespace InspectionTools.Product {
 
         // DMM01測定値コピー
         private async void ActionHotkeyBracketR() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm01);
@@ -315,7 +306,7 @@ namespace InspectionTools.Product {
         }
         // DMM02測定値コピー
         private async void ActionHotkeySlash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -330,7 +321,7 @@ namespace InspectionTools.Product {
             }
         }
         private async void ActionHotkeyBackslash() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -346,7 +337,7 @@ namespace InspectionTools.Product {
         }
         // DMM2切替(DCI)
         private async void ActionHotkeyAtsign() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 await SwitchDmm2(_instDmm02, "DCI");
@@ -357,7 +348,7 @@ namespace InspectionTools.Product {
         }
         // DMM2切替(DCV)
         private async void ActionHotkeyBracketL() {
-            if (_isProcessing) { return; }
+            if (MainWindow.IsProcessing) { return; }
 
             try {
                 await SwitchDmm2(_instDmm02, "DCV");
