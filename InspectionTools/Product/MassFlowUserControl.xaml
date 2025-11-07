@@ -11,18 +11,6 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <Style x:Key="HiddenIconRadioButtonStyle" TargetType="RadioButton">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <ContentPresenter />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
-
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -195,11 +183,8 @@
             VerticalAlignment="Center"
             Checked="DcsRadioButton_Checked"
             Content="OFF"
-            Foreground="Gray"
             GroupName="DcsSettingsGroup"
-            IsEnabled="False"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="DcsRadioButton_Unchecked" />
         <RadioButton
             x:Name="Dcs2VRadioButton"
@@ -211,7 +196,6 @@
             Foreground="Gray"
             GroupName="DcsSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="DcsRadioButton_Unchecked" />
         <RadioButton
             x:Name="Dcs8VRadioButton"
@@ -223,7 +207,6 @@
             Foreground="Gray"
             GroupName="DcsSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="DcsRadioButton_Unchecked" />
         <RadioButton
             x:Name="Dcs1VRadioButton"
@@ -235,7 +218,6 @@
             Foreground="Gray"
             GroupName="DcsSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="DcsRadioButton_Unchecked" />
         <RadioButton
             x:Name="Dcs7VRadioButton"
@@ -247,7 +229,6 @@
             Foreground="Gray"
             GroupName="DcsSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="DcsRadioButton_Unchecked" />
 
 
@@ -270,7 +251,6 @@
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"
-            Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="HotKeyChekBox_Unchecked" />
 
         <Button
@@ -304,37 +284,37 @@
             x:Name="FgOscRange0RadioButton"
             Grid.Row="4"
             Grid.Column="3"
+            HorizontalAlignment="Left"
             VerticalAlignment="Center"
             Checked="FgOscRadioButton_Checked"
             Content="OFF"
             Foreground="Gray"
             GroupName="FgOscSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="FgOscRadioButton_Unchecked" />
         <RadioButton
             x:Name="FgOscRange1RadioButton"
             Grid.Row="5"
             Grid.Column="3"
+            HorizontalAlignment="Left"
             VerticalAlignment="Center"
             Checked="FgOscRadioButton_Checked"
             Content="小流量"
             Foreground="Gray"
             GroupName="FgOscSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="FgOscRadioButton_Unchecked" />
         <RadioButton
             x:Name="FgOscRange2RadioButton"
             Grid.Row="6"
             Grid.Column="3"
+            HorizontalAlignment="Left"
             VerticalAlignment="Center"
             Checked="FgOscRadioButton_Checked"
             Content="アンプ"
             Foreground="Gray"
             GroupName="FgOscSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="FgOscRadioButton_Unchecked" />
         <StackPanel
             Grid.Row="7"
@@ -351,7 +331,6 @@
                 Foreground="Gray"
                 GroupName="FgOscSettingsGroup"
                 IsHitTestVisible="False"
-                Style="{StaticResource HiddenIconRadioButtonStyle}"
                 Unchecked="FgOscRadioButton_Unchecked" />
             <RadioButton
                 x:Name="FgOscRange4RadioButton"
@@ -363,7 +342,6 @@
                 Foreground="Gray"
                 GroupName="FgOscSettingsGroup"
                 IsHitTestVisible="False"
-                Style="{StaticResource HiddenIconRadioButtonStyle}"
                 Unchecked="FgOscRadioButton_Unchecked" />
             <RadioButton
                 x:Name="FgOscRange5RadioButton"
@@ -376,7 +354,6 @@
                 Foreground="Gray"
                 GroupName="FgOscSettingsGroup"
                 IsHitTestVisible="False"
-                Style="{StaticResource HiddenIconRadioButtonStyle}"
                 Unchecked="FgOscRadioButton_Unchecked" />
         </StackPanel>
         <RadioButton
@@ -390,7 +367,6 @@
             Foreground="Gray"
             GroupName="FgOscSettingsGroup"
             IsHitTestVisible="False"
-            Style="{StaticResource HiddenIconRadioButtonStyle}"
             Unchecked="FgOscRadioButton_Unchecked" />
 
 
@@ -402,10 +378,9 @@
             Orientation="Horizontal">
             <CheckBox
                 x:Name="SerialLockCheckBox"
-                Width="20"
+                Width="25"
                 Checked="SerialLockCheckBox_Checked"
                 Content="🔒️"
-                Style="{StaticResource {x:Type ToggleButton}}"
                 Unchecked="SerialLockCheckBox_Unchecked" />
             <TextBox
                 x:Name="SerialTextBox"

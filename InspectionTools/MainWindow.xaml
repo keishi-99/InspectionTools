@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:InspectionTools"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
+    Background="{StaticResource AppBackgroundBrush}"
     Icon="/sine.ico"
     ResizeMode="CanMinimize"
     SizeToContent="WidthAndHeight"

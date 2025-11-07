@@ -78,7 +78,6 @@
                 VerticalAlignment="Center"
                 Checked="HotKeyChekBox_Checked"
                 Content="HotKey"
-                Style="{StaticResource {x:Type ToggleButton}}"
                 Unchecked="HotKeyChekBox_Unchecked" />
 
 
@@ -268,10 +267,9 @@
                 Orientation="Horizontal">
                 <CheckBox
                     x:Name="SerialLockCheckBox"
-                    Width="20"
+                    Width="25"
                     Checked="SerialLockCheckBox_Checked"
                     Content="🔒️"
-                    Style="{StaticResource {x:Type ToggleButton}}"
                     Unchecked="SerialLockCheckBox_Unchecked" />
                 <TextBox
                     x:Name="SerialTextBox"
@@ -303,10 +301,9 @@
                 Orientation="Horizontal">
                 <CheckBox
                     x:Name="CountLockCheckBox"
-                    Width="20"
+                    Width="25"
                     Checked="CountLockCheckBox_Checked"
                     Content="🔒️"
-                    Style="{StaticResource {x:Type ToggleButton}}"
                     Unchecked="CountLockCheckBox_Unchecked" />
                 <TextBox
                     x:Name="CountTextBox"

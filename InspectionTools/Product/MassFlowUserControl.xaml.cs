@@ -503,10 +503,13 @@ namespace InspectionTools.Product {
             HotKeyChekBox.IsChecked = false;
 
             DcsRadioButtonsList[0].IsChecked = true;
+            DcsOffButton.IsEnabled = true;
             Dcs2VButton.IsEnabled = true;
             Dcs8VButton.IsEnabled = true;
             Dcs1VButton.IsEnabled = true;
             Dcs7VButton.IsEnabled = true;
+
+            FgOscRotationButton.IsEnabled = false;
 
             FgOscRadioButtonsList[0].IsChecked = true;
         }
