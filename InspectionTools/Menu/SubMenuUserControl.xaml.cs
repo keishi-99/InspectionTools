@@ -13,8 +13,6 @@ namespace InspectionTools.MainMenu {
         public event EventHandler? BackToMainRequested;
         public event EventHandler? HelpButtonClicked;
 
-        public static DataTable VisaAddressDataTable { get; set; } = new();
-
         public interface ISubMenuAware {
             void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu);
         }
@@ -32,7 +30,7 @@ namespace InspectionTools.MainMenu {
             }
             using DataSet dataSet = new();
             dataSet.ReadXml(XmlFilePath);
-            VisaAddressDataTable = dataSet.Tables[0];
+            MainWindow.VisaAddressDataTable = dataSet.Tables[0];
         }
 
         // MainMenu表示

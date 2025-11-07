@@ -1,12 +1,9 @@
 ﻿using InspectionTools.Common;
 using System.Data;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Interop;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
-using ComboBox = System.Windows.Controls.ComboBox;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -29,8 +26,6 @@ namespace InspectionTools.Product {
             InitializeComponent();
         }
 
-        private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
         private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchFgR = [];
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
@@ -48,26 +43,10 @@ namespace InspectionTools.Product {
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
-
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
-            UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [3], "[FG]");
-            UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
-        }
-        private static void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
-            if (VisaAddressDataTable == null) {
-                return;
-            }
-
-            var collection = new List<string> { name };
-
-            foreach (var signalType in signalTypes) {
-                var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
-                foreach (var d in rows) {
-                    collection.Add(d["Name"].ToString() ?? string.Empty);
-                }
-            }
-            comboBox.ItemsSource = collection;
+            MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
+            MainWindow.UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [3], "[FG]");
+            MainWindow.UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
@@ -78,22 +57,9 @@ namespace InspectionTools.Product {
 
         // 選択した機器のVisaAddressを取得
         private void SelectInst() {
-            GetVisaAddress(_instDmm, DmmComboBox);
-            GetVisaAddress(_instFg, FgComboBox);
-            GetVisaAddress(_instOsc, OscComboBox);
-        }
-        private static void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
-            instClass.ResetProperties();
-
-            instClass.Name = comboBox.Text;
-            instClass.Index = comboBox.SelectedIndex;
-
-            if (instClass.Index <= 0) { return; }
-
-            var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
-            instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
-            instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
-            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
+            MainWindow.GetVisaAddress(_instDmm, DmmComboBox);
+            MainWindow.GetVisaAddress(_instFg, FgComboBox);
+            MainWindow.GetVisaAddress(_instOsc, OscComboBox);
         }
         // 機器設定辞書登録
         private void RegDictionary() {
@@ -228,7 +194,7 @@ namespace InspectionTools.Product {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm, _instFg, _instOsc];
-                var tasks = devices.Select(device => ConnectDeviceAsync(device));
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
@@ -257,49 +223,6 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        // デバイス接続
-        private static async Task<string> ConnectDeviceAsync(InstClass instClass) {
-            return instClass.Index < 1
-                ? ""
-                : instClass.SignalType switch {
-                    1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
-                    3 => await ConnectDeviceVisaAsync(instClass, false),
-                    _ => throw new ApplicationException(),
-                };
-        }
-        // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            return await Task.Run(() => {
-                using var usbDev = new USBDeviceManager();
-                usbDev.OpenDev(instClass.VisaAddress);
-                usbDev.OutputDev(instClass.InstCommand);
-                return hasInput ? usbDev.InputDev() : "";
-            });
-        }
-        // ADC接続
-        private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await MainWindow.s_semaphore.WaitAsync();
-            try {
-                uint hDev = 0;
-                var rcvDt = "";
-                uint rcvLen = 50;
-                var id = uint.Parse(instClass.VisaAddress);
-                try {
-                    if (AusbWrapper.Start(TimeOut) != 0 || AusbWrapper.Open(ref hDev, id) != 0) { throw new Exception("開始できません"); }
-                    if (!string.IsNullOrEmpty(instClass.InstCommand)) {
-                        if (AusbWrapper.Write(hDev, instClass.InstCommand) != 0) { throw new Exception("コマンドの送信に失敗しました"); }
-                    }
-                    if (AusbWrapper.Read(hDev, ref rcvDt, ref rcvLen) != 0) { throw new Exception("メッセージの受信に失敗しました"); }
-                } finally {
-                    _ = AusbWrapper.Close(hDev);
-                    _ = AusbWrapper.End();
-                }
-                return rcvDt;
-            } finally {
-                MainWindow.s_semaphore.Release();
-            }
-        }
 
         // 解除
         private void Release() {
@@ -325,14 +248,22 @@ namespace InspectionTools.Product {
         }
 
         // FG切り替え
-        private async void RotationFg(bool isNext) {
+        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
             try {
-                if (string.IsNullOrEmpty(_instFg.VisaAddress)) { return; }
+                if (string.IsNullOrEmpty(fgInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                await RotationFgAsync(_instFg, isNext);
+                var fgMaxSettingNumber = _dicSwitchFg.Count;
+                fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
 
-                FgRotateRangeTextBox.Text = _dicSwitchFg[_instFg.SettingNumber].text;
+                var dic = isNext ? _dicSwitchFg : _dicSwitchFgR;
+                fgInstClass.InstCommand = dic[fgInstClass.SettingNumber].cmd;
+
+                if (fgInstClass.InstCommand == string.Empty) { return; }
+
+                await MainWindow.RotationFgAsync(fgInstClass);
+
+                FgRotateRangeTextBox.Text = _dicSwitchFg[fgInstClass.SettingNumber].text;
 
             } catch (Exception ex) {
                 Release();
@@ -340,18 +271,6 @@ namespace InspectionTools.Product {
             } finally {
                 VisibleProgressImage(false);
             }
-        }
-        private async Task RotationFgAsync(InstClass instClass, bool isNext) {
-
-            var fgMaxSettingNumber = _dicSwitchFg.Count;
-            _instFg.SettingNumber = (_instFg.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
-
-            var dic = isNext ? _dicSwitchFg : _dicSwitchFgR;
-            instClass.InstCommand = dic[_instFg.SettingNumber].cmd;
-
-            if (instClass.InstCommand == string.Empty) { return; }
-
-            await ConnectDeviceAsync(instClass);
         }
         // FG 出力ON/OFF
         private async void OutputFg(string cmd) {
@@ -368,19 +287,26 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private static async Task OutputFgAsync(InstClass instClass, string cmd) {
-            instClass.InstCommand = $"{cmd};";
-            await ConnectDeviceAsync(instClass);
+        private static async Task OutputFgAsync(FgInstClass fgInstClass, string cmd) {
+            fgInstClass.InstCommand = $"{cmd};";
+            await MainWindow.ConnectDeviceAsync(fgInstClass);
         }
         // OSC切り替え
-        private async void RotationOsc(bool isNext) {
+        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
             try {
-                if (string.IsNullOrEmpty(_instOsc.VisaAddress)) { return; }
+                if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                await RotationOscAsync(_instOsc, isNext);
+                var oscMaxSettingNumber = _dicSwitchOsc.Count;
+                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
 
-                OscRotateRangeTextBox.Text = _dicSwitchOsc[_instOsc.SettingNumber].text;
+                oscInstClass.InstCommand = _dicSwitchOsc[oscInstClass.SettingNumber].cmd;
+
+                if (oscInstClass.InstCommand == string.Empty) { return; }
+
+                await MainWindow.RotationOscAsync(oscInstClass);
+
+                OscRotateRangeTextBox.Text = _dicSwitchOsc[oscInstClass.SettingNumber].text;
 
             } catch (Exception ex) {
                 Release();
@@ -389,31 +315,12 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private async Task RotationOscAsync(InstClass instClass, bool isNext) {
-
-            var oscMaxSettingNumber = _dicSwitchOsc.Count;
-            _instOsc.SettingNumber = (_instOsc.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
-
-            instClass.InstCommand = _dicSwitchOsc[_instOsc.SettingNumber].cmd;
-
-            if (instClass.InstCommand == string.Empty) { return; }
-
-            await ConnectDeviceAsync(instClass);
-
-        }
         // DMM測定値取得
-        private async Task<decimal> ReadDmm(InstClass instClass) {
+        private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
             try {
                 VisibleProgressImage(true);
 
-                instClass.InstCommand = instClass.SignalType switch {
-                    1 => string.Empty,
-                    2 => "FETC?",
-                    _ => throw new ApplicationException(),
-                };
-
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+                var output = await MainWindow.ReadDmm(dmmInstClass);
 
                 return output;
 
@@ -422,13 +329,11 @@ namespace InspectionTools.Product {
             }
         }
         // OSC測定値取得
-        private async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+        private async Task<decimal> ReadOsc(OscInstClass oscInstClass, int meas) {
             try {
                 VisibleProgressImage(true);
 
-                instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+                var output = await MainWindow.ReadOsc(oscInstClass, meas);
 
                 return output;
 
@@ -597,7 +502,7 @@ namespace InspectionTools.Product {
             // 11.パルス出力幅でのみ有効
             if (MainWindow.IsProcessing) { return; }
 
-            RotationOsc(isNext);
+            RotationOsc(_instOsc, isNext);
         }
         // OSC測定値コピー
         private async void ActionCopyOscValue() {
@@ -698,7 +603,7 @@ namespace InspectionTools.Product {
                 not "警報" and
                 not "パルス出力幅"
                 ) { return; }
-            RotationFg(isNext);
+            RotationFg(_instFg, isNext);
         }
         // OSC+FG切り替え
         private void ActionSwitchFgOsc(bool isNext) {
@@ -711,8 +616,8 @@ namespace InspectionTools.Product {
             if (windowText is
                 not "パルス出力幅"
                 ) { return; }
-            RotationFg(isNext);
-            RotationOsc(isNext);
+            RotationFg(_instFg, isNext);
+            RotationOsc(_instOsc, isNext);
         }
 
         // メニュー切り替え
@@ -772,7 +677,7 @@ namespace InspectionTools.Product {
             ActionSwitchFgOsc(true);
         }
 
-        // HotkKeyの登録
+        // HotKeyの登録
         private void SetHotKey() {
             MainWindow.HotkeysList.Clear();
 
@@ -815,29 +720,10 @@ namespace InspectionTools.Product {
                 ]);
             }
 
-            MainWindow.Source = HwndSource.FromHwnd(MainWindow.HWnd);
-            MainWindow.Source.AddHook(HwndHook);
-
-            // ホットキーを登録
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                RegisterHotKey(MainWindow.HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
-            }
+            MainWindow.SetHotKey();
         }
         private static void ClearHotKey() {
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                UnregisterHotKey(MainWindow.HWnd, hotkey.Id);
-            }
-            MainWindow.HotkeysList.Clear();
-        }
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
-            if (msg == WmHotKey) {
-                int id = wParam.ToInt32();
-
-                var hotkey = MainWindow.HotkeysList.FirstOrDefault(h => h.Id == id);
-                hotkey?.Action.Invoke(); // ホットキーに設定されたアクションを実行
-                handled = true;
-            }
-            return IntPtr.Zero;
+            MainWindow.ClearHotKey();
         }
 
         // 特定の親ウィンドウに属するすべての子ウィンドウのハンドルを取得するメソッド
@@ -861,15 +747,15 @@ namespace InspectionTools.Product {
 
         private void OscRotationButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(true);
+            RotationOsc(_instOsc, true);
         }
         private void FgRotateBackButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(false);
+            RotationFg(_instFg, false);
         }
         private void FgRotateNextButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(true);
+            RotationFg(_instFg, true);
         }
         private void FgOutputOnButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
