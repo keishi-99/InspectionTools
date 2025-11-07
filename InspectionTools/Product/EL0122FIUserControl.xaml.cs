@@ -1,12 +1,9 @@
 ﻿using InspectionTools.Common;
 using System.Data;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Interop;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
-using ComboBox = System.Windows.Controls.ComboBox;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -31,8 +28,6 @@ namespace InspectionTools.Product {
             InitializeComponent();
         }
 
-        private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
@@ -41,28 +36,12 @@ namespace InspectionTools.Product {
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
-
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2], "[DMM-V]");
-            UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2], "[DMM-A]");
-            UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [2], "[FG]");
-            UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
-            UpdateComboBox(PsComboBox, "パワーサプライ", [2], "[DCS]");
-        }
-        private static void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
-            if (VisaAddressDataTable == null) {
-                return;
-            }
-
-            var collection = new List<string> { name };
-
-            foreach (var signalType in signalTypes) {
-                var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
-                foreach (var d in rows) {
-                    collection.Add(d["Name"].ToString() ?? string.Empty);
-                }
-            }
-            comboBox.ItemsSource = collection;
+            MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2], "[DMM-V]");
+            MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2], "[DMM-A]");
+            MainWindow.UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [2], "[FG]");
+            MainWindow.UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
+            MainWindow.UpdateComboBox(PsComboBox, "パワーサプライ", [2], "[DCS]");
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
@@ -73,24 +52,11 @@ namespace InspectionTools.Product {
 
         // 選択した機器のVisaAddressを取得
         private void SelectInst() {
-            GetVisaAddress(_instDmm01, Dmm01ComboBox);
-            GetVisaAddress(_instDmm02, Dmm02ComboBox);
-            GetVisaAddress(_instFg, FgComboBox);
-            GetVisaAddress(_instOsc, OscComboBox);
-            GetVisaAddress(_instDcs, PsComboBox);
-        }
-        private static void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
-            instClass.ResetProperties();
-
-            instClass.Name = comboBox.Text;
-            instClass.Index = comboBox.SelectedIndex;
-
-            if (instClass.Index <= 0) { return; }
-
-            var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
-            instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
-            instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
-            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
+            MainWindow.GetVisaAddress(_instDmm01, Dmm01ComboBox);
+            MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
+            MainWindow.GetVisaAddress(_instFg, FgComboBox);
+            MainWindow.GetVisaAddress(_instOsc, OscComboBox);
+            MainWindow.GetVisaAddress(_instDcs, PsComboBox);
         }
         // 機器初期設定
         private void FormatSet() {
@@ -142,7 +108,7 @@ namespace InspectionTools.Product {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc, _instDcs];
-                var tasks = devices.Select(device => ConnectDeviceAsync(device));
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
                 Dmm01ComboBox.IsEnabled = false;
@@ -169,49 +135,6 @@ namespace InspectionTools.Product {
                 throw new Exception("同じ測定器が選択されています。");
             }
         }
-        // デバイス接続
-        private static async Task<string> ConnectDeviceAsync(InstClass instClass) {
-            return instClass.Index < 1
-                ? ""
-                : instClass.SignalType switch {
-                    1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
-                    3 => await ConnectDeviceVisaAsync(instClass, false),
-                    _ => throw new ApplicationException(),
-                };
-        }
-        // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            return await Task.Run(() => {
-                using var usbDev = new USBDeviceManager();
-                usbDev.OpenDev(instClass.VisaAddress);
-                usbDev.OutputDev(instClass.InstCommand);
-                return hasInput ? usbDev.InputDev() : "";
-            });
-        }
-        // ADC接続
-        private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await MainWindow.s_semaphore.WaitAsync();
-            try {
-                uint hDev = 0;
-                var rcvDt = "";
-                uint rcvLen = 50;
-                var id = uint.Parse(instClass.VisaAddress);
-                try {
-                    if (AusbWrapper.Start(TimeOut) != 0 || AusbWrapper.Open(ref hDev, id) != 0) { throw new Exception("開始できません"); }
-                    if (!string.IsNullOrEmpty(instClass.InstCommand)) {
-                        if (AusbWrapper.Write(hDev, instClass.InstCommand) != 0) { throw new Exception("コマンドの送信に失敗しました"); }
-                    }
-                    if (AusbWrapper.Read(hDev, ref rcvDt, ref rcvLen) != 0) { throw new Exception("メッセージの受信に失敗しました"); }
-                } finally {
-                    _ = AusbWrapper.Close(hDev);
-                    _ = AusbWrapper.End();
-                }
-                return rcvDt;
-            } finally {
-                MainWindow.s_semaphore.Release();
-            }
-        }
 
         // 解除
         private void Release() {
@@ -235,33 +158,36 @@ namespace InspectionTools.Product {
         }
 
         // DMM測定値取得
-        private static async Task<decimal> ReadDmm(InstClass instClass) {
+        private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
+            try {
+                VisibleProgressImage(true);
 
-            instClass.InstCommand = instClass.SignalType switch {
-                1 => string.Empty,
-                2 => "FETC?",
-                _ => throw new ApplicationException(),
-            };
+                var output = await MainWindow.ReadDmm(dmmInstClass);
 
-            var result = await ConnectDeviceAsync(instClass);
-            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+                return output;
 
-            return output;
+            } finally {
+                VisibleProgressImage(false);
+            }
         }
         // OSC測定値取得
-        private static async Task<decimal> ReadOsc(InstClass instClass, int oscMeas) {
+        private async Task<decimal> ReadOsc(OscInstClass oscInstClass, int meas) {
+            try {
+                VisibleProgressImage(true);
 
-            instClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-            var result = await ConnectDeviceAsync(instClass);
-            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+                var output = await MainWindow.ReadOsc(oscInstClass, meas);
 
-            return output;
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
         }
         // 電源のON-OFF
-        private async Task SwitchDcsAsync(InstClass instClass, string cmd) {
+        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
             try {
-                instClass.InstCommand = $":OUTPUT {cmd};*OPC?";
-                await ConnectDeviceAsync(instClass);
+                dcsInstClass.InstCommand = $":OUTPUT {cmd};*OPC?";
+                await MainWindow.ConnectDeviceAsync(dcsInstClass);
 
             } catch (Exception ex) {
                 Release();
@@ -416,7 +342,7 @@ namespace InspectionTools.Product {
             }
         }
 
-        // HotkKeyの登録
+        // HotKeyの登録
         private void SetHotKey() {
             MainWindow.HotkeysList.Clear();
 
@@ -448,29 +374,10 @@ namespace InspectionTools.Product {
                 ]);
             }
 
-            MainWindow.Source = HwndSource.FromHwnd(MainWindow.HWnd);
-            MainWindow.Source.AddHook(HwndHook);
-
-            // ホットキーを登録
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                RegisterHotKey(MainWindow.HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
-            }
+            MainWindow.SetHotKey();
         }
         private static void ClearHotKey() {
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                UnregisterHotKey(MainWindow.HWnd, hotkey.Id);
-            }
-            MainWindow.HotkeysList.Clear();
-        }
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
-            if (msg == WmHotKey) {
-                int id = wParam.ToInt32();
-
-                var hotkey = MainWindow.HotkeysList.FirstOrDefault(h => h.Id == id);
-                hotkey?.Action.Invoke(); // ホットキーに設定されたアクションを実行
-                handled = true;
-            }
-            return IntPtr.Zero;
+            MainWindow.ClearHotKey();
         }
 
         // イベントハンドラ

@@ -1,12 +1,9 @@
 ﻿using InspectionTools.Common;
 using System.Data;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Interop;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainMenu.SubMenuUserControl;
-using ComboBox = System.Windows.Controls.ComboBox;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -27,8 +24,6 @@ namespace InspectionTools.Product {
             InitializeComponent();
         }
 
-        private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
@@ -37,24 +32,8 @@ namespace InspectionTools.Product {
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
-
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
-        }
-        private static void UpdateComboBox(ComboBox comboBox, string category, List<int> signalTypes, string name) {
-            if (VisaAddressDataTable == null) {
-                return;
-            }
-
-            var collection = new List<string> { name };
-
-            foreach (var signalType in signalTypes) {
-                var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
-                foreach (var d in rows) {
-                    collection.Add(d["Name"].ToString() ?? string.Empty);
-                }
-            }
-            comboBox.ItemsSource = collection;
+            MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
@@ -65,20 +44,7 @@ namespace InspectionTools.Product {
 
         // 選択した機器のVisaAddressを取得
         private void SelectInst() {
-            GetVisaAddress(_instDmm, DmmComboBox);
-        }
-        private static void GetVisaAddress(InstClass instClass, ComboBox comboBox) {
-            instClass.ResetProperties();
-
-            instClass.Name = comboBox.Text;
-            instClass.Index = comboBox.SelectedIndex;
-
-            if (instClass.Index <= 0) { return; }
-
-            var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
-            instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
-            instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
-            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
+            MainWindow.GetVisaAddress(_instDmm, DmmComboBox);
         }
         // 機器初期設定
         private void FormatSet() {
@@ -101,7 +67,7 @@ namespace InspectionTools.Product {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm];
-                var tasks = devices.Select(device => ConnectDeviceAsync(device));
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
                 DmmComboBox.IsEnabled = false;
@@ -113,49 +79,6 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー");
             } finally {
                 VisibleProgressImage(false);
-            }
-        }
-        // デバイス接続
-        private static async Task<string> ConnectDeviceAsync(InstClass instClass) {
-            return instClass.Index < 1
-                ? ""
-                : instClass.SignalType switch {
-                    1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
-                    3 => await ConnectDeviceVisaAsync(instClass, false),
-                    _ => throw new ApplicationException(),
-                };
-        }
-        // Visa接続
-        private static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            return await Task.Run(() => {
-                using var usbDev = new USBDeviceManager();
-                usbDev.OpenDev(instClass.VisaAddress);
-                usbDev.OutputDev(instClass.InstCommand);
-                return hasInput ? usbDev.InputDev() : "";
-            });
-        }
-        // ADC接続
-        private static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await MainWindow.s_semaphore.WaitAsync();
-            try {
-                uint hDev = 0;
-                var rcvDt = "";
-                uint rcvLen = 50;
-                var id = uint.Parse(instClass.VisaAddress);
-                try {
-                    if (AusbWrapper.Start(TimeOut) != 0 || AusbWrapper.Open(ref hDev, id) != 0) { throw new Exception("開始できません"); }
-                    if (!string.IsNullOrEmpty(instClass.InstCommand)) {
-                        if (AusbWrapper.Write(hDev, instClass.InstCommand) != 0) { throw new Exception("コマンドの送信に失敗しました"); }
-                    }
-                    if (AusbWrapper.Read(hDev, ref rcvDt, ref rcvLen) != 0) { throw new Exception("メッセージの受信に失敗しました"); }
-                } finally {
-                    _ = AusbWrapper.Close(hDev);
-                    _ = AusbWrapper.End();
-                }
-                return rcvDt;
-            } finally {
-                MainWindow.s_semaphore.Release();
             }
         }
 
@@ -173,18 +96,11 @@ namespace InspectionTools.Product {
         }
 
         // DMM測定値取得
-        private async Task<decimal> ReadDmm(InstClass instClass) {
+        private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
             try {
                 VisibleProgressImage(true);
 
-                instClass.InstCommand = instClass.SignalType switch {
-                    1 => string.Empty,
-                    2 => "FETC?",
-                    _ => throw new ApplicationException(),
-                };
-
-                var result = await ConnectDeviceAsync(instClass);
-                decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+                var output = await MainWindow.ReadDmm(dmmInstClass);
 
                 return output;
 
@@ -255,9 +171,10 @@ namespace InspectionTools.Product {
             }
         }
 
-        // HotkKeyの登録
+        // HotKeyの登録
         private void SetHotKey() {
             MainWindow.HotkeysList.Clear();
+
             if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeySlash, ActionHotkeySlash),
@@ -267,29 +184,10 @@ namespace InspectionTools.Product {
                 ]);
             }
 
-            MainWindow.Source = HwndSource.FromHwnd(MainWindow.HWnd);
-            MainWindow.Source.AddHook(HwndHook);
-
-            // ホットキーを登録
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                RegisterHotKey(MainWindow.HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
-            }
+            MainWindow.SetHotKey();
         }
         private static void ClearHotKey() {
-            foreach (var hotkey in MainWindow.HotkeysList) {
-                UnregisterHotKey(MainWindow.HWnd, hotkey.Id);
-            }
-            MainWindow.HotkeysList.Clear();
-        }
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
-            if (msg == WmHotKey) {
-                int id = wParam.ToInt32();
-
-                var hotkey = MainWindow.HotkeysList.FirstOrDefault(h => h.Id == id);
-                hotkey?.Action.Invoke(); // ホットキーに設定されたアクションを実行
-                handled = true;
-            }
-            return IntPtr.Zero;
+            MainWindow.ClearHotKey();
         }
 
         // イベントハンドラ

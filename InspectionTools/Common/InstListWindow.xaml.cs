@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using static InspectionTools.MainMenu.SubMenuUserControl;
 
 namespace InspectionTools.Common {
     /// <summary>
@@ -9,11 +8,11 @@ namespace InspectionTools.Common {
 
         public InstListWindow() {
             InitializeComponent();
-            InstListGrid.ItemsSource = VisaAddressDataTable.DefaultView;
+            InstListGrid.ItemsSource = MainWindow.VisaAddressDataTable.DefaultView;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e) {
-            VisaAddressDataTable.WriteXml("VisaAddress.xml");
+            MainWindow.VisaAddressDataTable.WriteXml("VisaAddress.xml");
             Close();
         }
     }
