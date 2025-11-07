@@ -123,7 +123,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" />
+            VerticalContentAlignment="Center"
+            IsReadOnly="true" />
         <TextBox
             x:Name="FgRotateRangeTextBox"
             Grid.Row="6"
@@ -132,7 +133,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" />
+            VerticalContentAlignment="Center"
+            IsReadOnly="true" />
 
         <TextBlock
             x:Name="Time"

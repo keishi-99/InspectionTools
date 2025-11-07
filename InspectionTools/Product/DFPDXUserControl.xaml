@@ -133,7 +133,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" />
+            VerticalContentAlignment="Center"
+            IsReadOnly="true" />
         <TextBox
             x:Name="FgRotateRangeTextBox"
             Grid.Row="7"
@@ -142,7 +143,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" />
+            VerticalContentAlignment="Center"
+            IsReadOnly="true" />
 
 
         <Common:WaitingCircle
