@@ -24,18 +24,9 @@ namespace InspectionTools.Product {
 
         public EL0137UserControl() {
             InitializeComponent();
-
-            _timer = new DispatcherTimer {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
         }
 
         private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
-
-        // タイマー
-        private readonly DispatcherTimer _timer;
 
         // 起動時
         private void LoadEvents() {
@@ -396,7 +387,6 @@ namespace InspectionTools.Product {
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
         private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
         private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }

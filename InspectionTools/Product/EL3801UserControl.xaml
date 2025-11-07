@@ -7,13 +7,12 @@
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="250"
-    Height="220"
+    Height="200"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10,10,10,10">
         <Grid.RowDefinitions>
-            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -82,18 +81,6 @@
             Content="HotKey"
             Style="{StaticResource {x:Type ToggleButton}}"
             Unchecked="HotKeyChekBox_Unchecked" />
-
-        <TextBlock
-            x:Name="Time"
-            Grid.Row="4"
-            Grid.ColumnSpan="2"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontFamily="Meiryo"
-            FontSize="15"
-            FontWeight="Bold"
-            TextAlignment="Center"
-            TextWrapping="Wrap"><Run Language="ja-jp" Text="00:00:00" /></TextBlock>
 
 
         <Common:WaitingCircle
