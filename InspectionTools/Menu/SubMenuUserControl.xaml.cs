@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Windows;
+using System.Windows.Threading;
 using Button = System.Windows.Controls.Button;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
@@ -13,6 +14,9 @@ namespace InspectionTools.MainMenu {
         public event EventHandler? BackToMainRequested;
         public event EventHandler? HelpButtonClicked;
 
+        // タイマー
+        private readonly DispatcherTimer _timer;
+
         public interface ISubMenuAware {
             void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu);
         }
@@ -20,6 +24,12 @@ namespace InspectionTools.MainMenu {
         public SubMenuUserControl() {
             InitializeComponent();
             LoadEvents();
+
+            _timer = new DispatcherTimer {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
         }
 
         private static void LoadEvents() {
@@ -71,6 +81,7 @@ namespace InspectionTools.MainMenu {
             var parentWindow = Window.GetWindow(this);
             parentWindow.Topmost = false;
         }
+        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
 
     }

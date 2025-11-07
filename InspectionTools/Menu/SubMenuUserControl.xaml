@@ -7,35 +7,52 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Orientation="Horizontal">
-        <Button
-            x:Name="ProductListButton"
-            Margin="5"
-            Padding="5,2,5,2"
-            Click="ProductListButton_Click"
-            Content="製品選択" />
-        <Button
-            x:Name="InstListButton"
-            Margin="5"
-            Padding="5,2,5,2"
-            Click="InstListButton_Click"
-            Content="測定器" />
-        <Button
-            x:Name="HelpButton"
-            Margin="5"
-            Padding="5,2,5,2"
-            Click="HelpButton_Click"
-            Content="ヘルプ" />
-        <CheckBox
-            x:Name="TopMostCheckBox"
-            Margin="5"
-            Padding="5,2,5,2"
-            Checked="TopMostCheckBox_Checked"
-            Content="最前面"
-            Style="{StaticResource {x:Type ToggleButton}}"
-            Unchecked="TopMostCheckBox_Unchecked" />
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <Button
+                x:Name="ProductListButton"
+                Margin="5"
+                Padding="5,2,5,2"
+                Click="ProductListButton_Click"
+                Content="製品選択" />
+            <Button
+                x:Name="InstListButton"
+                Margin="5"
+                Padding="5,2,5,2"
+                Click="InstListButton_Click"
+                Content="測定器" />
+            <Button
+                x:Name="HelpButton"
+                Margin="5"
+                Padding="5,2,5,2"
+                Click="HelpButton_Click"
+                Content="ヘルプ" />
+            <CheckBox
+                x:Name="TopMostCheckBox"
+                Margin="5"
+                Padding="5,2,5,2"
+                Checked="TopMostCheckBox_Checked"
+                Content="最前面"
+                Style="{StaticResource {x:Type ToggleButton}}"
+                Unchecked="TopMostCheckBox_Unchecked" />
+        </StackPanel>
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock
+                x:Name="Time"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontFamily="Meiryo"
+                FontSize="15"
+                FontWeight="Bold"
+                TextAlignment="Center">
+                <Run Language="ja-jp" Text="00:00:00" />
+            </TextBlock>
+        </StackPanel>
     </StackPanel>
 </UserControl>
