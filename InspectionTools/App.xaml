@@ -4,5 +4,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:InspectionTools"
     StartupUri="MainWindow.xaml">
-    <Application.Resources />
+    <Application.Resources>
+
+        <ResourceDictionary>
+
+            <!--  CheckBox  -->
+            <Style BasedOn="{StaticResource {x:Type ToggleButton}}" TargetType="{x:Type CheckBox}" />
+
+            <!--  RadioButton  -->
+            <Style TargetType="RadioButton">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <ContentPresenter />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+
+    </Application.Resources>
 </Application>
