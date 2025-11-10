@@ -85,9 +85,8 @@
             Grid.Row="6"
             Grid.Column="1"
             Width="40"
-            Margin="0,0,0,4"
             HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
+            VerticalAlignment="Center"
             Click="Dcs8VButton_Click"
             Content="8V" />
         <Button
