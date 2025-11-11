@@ -119,7 +119,7 @@ namespace InspectionTools.Product {
                         :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
                         *OPC?
                         """,
-                        "1/2~100分周 CH1.2"
+                        "1/2~100分周 CH1,2"
                     )
                 }
             };

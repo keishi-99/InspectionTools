@@ -117,7 +117,7 @@
         <TextBox
             x:Name="OscRotateRangeTextBox"
             Grid.Row="6"
-            Width="80"
+            Width="90"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
@@ -127,7 +127,7 @@
             x:Name="FgRotateRangeTextBox"
             Grid.Row="6"
             Grid.Column="1"
-            Width="80"
+            Width="90"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
