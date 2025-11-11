@@ -121,6 +121,7 @@ namespace InspectionTools {
             }
         }
 
+
         // ウィンドウサイズ調整
         public static void AdjustWindowSizeToUserControl(Window parentWindow) {
             if (parentWindow != null) {

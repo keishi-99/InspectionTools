@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿using InspectionTools.Common;
+using MaterialDesignThemes.Wpf;
+using System.Data;
 using System.Windows;
 using System.Windows.Threading;
 using Button = System.Windows.Controls.Button;
@@ -13,6 +15,8 @@ namespace InspectionTools.MainMenu {
 
         public event EventHandler? BackToMainRequested;
         public event EventHandler? HelpButtonClicked;
+
+        private static bool s_themeMode = false;
 
         // タイマー
         private readonly DispatcherTimer _timer;
@@ -32,7 +36,7 @@ namespace InspectionTools.MainMenu {
             _timer.Start();
         }
 
-        private static void LoadEvents() {
+        private void LoadEvents() {
             const string XmlFilePath = "VisaAddress.xml";
             if (!System.IO.File.Exists(XmlFilePath)) {
                 MessageBox.Show($"{XmlFilePath}が見つかりません。");
@@ -41,6 +45,8 @@ namespace InspectionTools.MainMenu {
             using DataSet dataSet = new();
             dataSet.ReadXml(XmlFilePath);
             MainWindow.VisaAddressDataTable = dataSet.Tables[0];
+
+            ThemeModeCheckBox.IsChecked = s_themeMode;
         }
 
         // MainMenu表示
@@ -49,11 +55,25 @@ namespace InspectionTools.MainMenu {
         }
 
         // 機器リスト表示
-        private static void ShowInstList() {
-
+        private void ShowInstList() {
             Common.InstListWindow frm1 = new();
             frm1.ShowDialog();
             LoadEvents();
+        }
+
+        // テーマ切り替え
+        private void ThemeModeCheckBox_Checked(object sender, RoutedEventArgs e) {
+            s_themeMode = true;
+            OnIsDarkModeChanged(true);
+        }
+        private void ThemeModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            s_themeMode = false;
+            OnIsDarkModeChanged(false);
+        }
+        internal static void OnIsDarkModeChanged(bool value) {
+            var theme = ThemeHelper.GetBundledTheme();
+            theme.BaseTheme = value ? BaseTheme.Dark : BaseTheme.Light;
+            ThemeHelper.SetBundledTheme(theme);
         }
 
         // ボタン名を指定して有効/無効を切り替えるメソッド

@@ -5,9 +5,10 @@
     xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="350"
-    Height="300"
+    Height="400"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -377,7 +378,6 @@
             Orientation="Horizontal">
             <CheckBox
                 x:Name="SerialLockCheckBox"
-                Width="25"
                 Checked="SerialLockCheckBox_Checked"
                 Content="🔒️"
                 Unchecked="SerialLockCheckBox_Unchecked" />
@@ -389,16 +389,14 @@
                 MaxLines="1" />
             <Button
                 x:Name="SerialBack"
-                Width="20"
                 Margin="10,0,0,0"
                 Click="SerialBack_Click"
-                Content="◀" />
+                Content=" ◀ " />
             <Button
                 x:Name="SerialNext"
-                Width="20"
                 Margin="10,0,0,0"
                 Click="SerialNext_Click"
-                Content="▶" />
+                Content=" ▶ " />
         </StackPanel>
 
 
