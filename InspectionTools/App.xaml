@@ -17,11 +17,6 @@
                 <!--  Material Design  -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ObsoleteBrushes.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
-                <!--  MahApps  -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <!--  Material Design: MahApps Compatibility  -->
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--  Button  -->
@@ -66,6 +61,13 @@
                         <Setter Property="Opacity" Value="0.5" />
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+
+            <!--  TextBox  -->
+            <Style BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
+                <Setter Property="Padding" Value="4" />
+                <Setter Property="Margin" Value="2" />
+                <Setter Property="Height" Value="Auto" />
             </Style>
 
 
