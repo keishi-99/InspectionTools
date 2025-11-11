@@ -1,5 +1,6 @@
 ﻿using InspectionTools.Common;
 using System.Data;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
@@ -41,7 +42,8 @@ namespace InspectionTools {
 
             _subMenu = new MainMenu.SubMenuUserControl();
             _subMenu.BackToMainRequested += (_, __) => ShowMainMenu();
-            _subMenu.HelpButtonClicked += OnHelpButtonClicked;
+            _subMenu.HelpCheckBoxChecked += HelpCheckBoxChecked;
+            _subMenu.HelpCheckBoxUnchecked += HelpCheckBoxUnchecked;
             _subMenu.SetButtonEnabled("ProductListButton", false);
             _subMenu.SetButtonEnabled("InstListButton", true);
             SubMenuContentArea.Content = _subMenu;
@@ -103,24 +105,24 @@ namespace InspectionTools {
                 HotKeyHelpScrollViewer.Height = page.Height + (_subMenu?.ActualHeight ?? 0);
             }
         }
-        private void OnHelpButtonClicked(object? sender, EventArgs e) {
-            _isHelpVisible = !_isHelpVisible;
+        private void HelpCheckBoxChecked(object? sender, EventArgs e) {
+            _isHelpVisible = true;
 
-            var margin = _isHelpVisible ? new Thickness(10) : new Thickness(0);
-            HelpTextBlock1.Margin = margin;
-            HelpTextBlock2.Margin = margin;
 
-            if (_isHelpVisible) {
-                var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
-                HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
-                HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
-            }
-            else {
-                HelpTextBlock1.Text = string.Empty;
-                HelpTextBlock2.Text = string.Empty;
-            }
+            HelpTextBlock1.Margin = new Thickness(10);
+            HelpTextBlock2.Margin = new Thickness(10);
+
+            var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
+            HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
+            HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
         }
-
+        private void HelpCheckBoxUnchecked(object? sender, EventArgs e) {
+            _isHelpVisible = false;
+            HelpTextBlock1.Margin = new Thickness(0);
+            HelpTextBlock2.Margin = new Thickness(0);
+            HelpTextBlock1.Text = string.Empty;
+            HelpTextBlock2.Text = string.Empty;
+        }
 
         // ウィンドウサイズ調整
         public static void AdjustWindowSizeToUserControl(Window parentWindow) {

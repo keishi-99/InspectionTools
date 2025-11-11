@@ -25,12 +25,13 @@
                 Padding="5,2,5,2"
                 Click="InstListButton_Click"
                 Content="測定器" />
-            <Button
-                x:Name="HelpButton"
+            <CheckBox
+                x:Name="HelpCheckBox"
                 Margin="5"
                 Padding="5,2,5,2"
-                Click="HelpButton_Click"
-                Content="ヘルプ" />
+                Checked="HelpCheckBox_Checked"
+                Content="ヘルプ"
+                Unchecked="HelpCheckBox_Unchecked" />
             <CheckBox
                 x:Name="TopMostCheckBox"
                 Margin="5"
