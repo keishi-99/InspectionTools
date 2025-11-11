@@ -183,6 +183,7 @@
             VerticalAlignment="Center"
             Checked="DcsRadioButton_Checked"
             Content="OFF"
+            Foreground="Gray"
             GroupName="DcsSettingsGroup"
             IsHitTestVisible="False"
             Unchecked="DcsRadioButton_Unchecked" />

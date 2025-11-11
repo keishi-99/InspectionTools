@@ -87,7 +87,7 @@
             x:Name="OscRotateRangeTextBox"
             Grid.Row="5"
             Grid.ColumnSpan="2"
-            Width="120"
+            Width="130"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
