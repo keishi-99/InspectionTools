@@ -14,7 +14,8 @@ namespace InspectionTools.MainMenu {
     public partial class SubMenuUserControl : UserControl {
 
         public event EventHandler? BackToMainRequested;
-        public event EventHandler? HelpButtonClicked;
+        public event EventHandler? HelpCheckBoxChecked;
+        public event EventHandler? HelpCheckBoxUnchecked;
 
         private static bool s_themeMode = false;
 
@@ -62,14 +63,6 @@ namespace InspectionTools.MainMenu {
         }
 
         // テーマ切り替え
-        private void ThemeModeCheckBox_Checked(object sender, RoutedEventArgs e) {
-            s_themeMode = true;
-            OnIsDarkModeChanged(true);
-        }
-        private void ThemeModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            s_themeMode = false;
-            OnIsDarkModeChanged(false);
-        }
         internal static void OnIsDarkModeChanged(bool value) {
             var theme = ThemeHelper.GetBundledTheme();
             theme.BaseTheme = value ? BaseTheme.Dark : BaseTheme.Light;
@@ -90,8 +83,11 @@ namespace InspectionTools.MainMenu {
         private void InstListButton_Click(object sender, RoutedEventArgs e) {
             ShowInstList();
         }
-        private void HelpButton_Click(object sender, RoutedEventArgs e) {
-            HelpButtonClicked?.Invoke(this, EventArgs.Empty);
+        private void HelpCheckBox_Checked(object sender, RoutedEventArgs e) {
+            HelpCheckBoxChecked?.Invoke(this, EventArgs.Empty);
+        }
+        private void HelpCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            HelpCheckBoxUnchecked?.Invoke(this, EventArgs.Empty);
         }
         private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
             var parentWindow = Window.GetWindow(this);
@@ -100,6 +96,14 @@ namespace InspectionTools.MainMenu {
         private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
             var parentWindow = Window.GetWindow(this);
             parentWindow.Topmost = false;
+        }
+        private void ThemeModeCheckBox_Checked(object sender, RoutedEventArgs e) {
+            s_themeMode = true;
+            OnIsDarkModeChanged(true);
+        }
+        private void ThemeModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            s_themeMode = false;
+            OnIsDarkModeChanged(false);
         }
         private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
