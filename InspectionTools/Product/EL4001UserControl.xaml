@@ -74,10 +74,10 @@
             x:Name="DcsGrid"
             Grid.Row="2"
             Grid.Column="1"
-            Width="85">
+            Width="90">
             <TextBox
                 x:Name="DcsNumberLabel"
-                Width="25"
+                Width="30"
                 HorizontalAlignment="Left"
                 HorizontalContentAlignment="Right"
                 IsReadOnly="True"
