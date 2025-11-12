@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
     Icon="/sine.ico"
@@ -12,45 +13,166 @@
     Style="{StaticResource MaterialDesignWindow}"
     mc:Ignorable="d">
     <Grid x:Name="MainGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
-        <Border BorderBrush="Gray" BorderThickness="0,0,0,1">
-            <ContentControl x:Name="SubMenuContentArea" />
-        </Border>
+        <materialDesign:DrawerHost x:Name="MainWindowDrawer" IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
+            <materialDesign:DrawerHost.LeftDrawerContent>
+                <DockPanel>
+                    <ToggleButton
+                        Margin="16"
+                        HorizontalAlignment="Right"
+                        DockPanel.Dock="Top"
+                        IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}"
+                        Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
 
-        <ContentControl x:Name="MainMenuContentArea" Grid.Row="1" />
-
-        <!--  右側: ヘルプパネル（初期非表示）  -->
-        <ScrollViewer
-            x:Name="HotKeyHelpScrollViewer"
-            Grid.RowSpan="2"
-            Grid.Column="1"
-            Height="0"
-            BorderThickness="1,0,0,0"
-            VerticalScrollBarVisibility="Auto"
-            Visibility="Visible">
+                    <StackPanel Margin="16,4">
+                        <Button
+                            x:Name="ProductListButton"
+                            Margin="5"
+                            Padding="5,2,5,2"
+                            Click="ProductListButton_Click"
+                            Content="製品選択"
+                            Style="{StaticResource MaterialDesignFlatButton}" />
+                        <Button
+                            x:Name="InstListButton"
+                            Margin="5"
+                            Padding="5,2,5,2"
+                            Click="InstListButton_Click"
+                            Content="測定器設定"
+                            Style="{StaticResource MaterialDesignFlatButton}" />
+                    </StackPanel>
+                </DockPanel>
+            </materialDesign:DrawerHost.LeftDrawerContent>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                <TextBlock
-                    x:Name="HelpTextBlock1"
-                    TextAlignment="Center"
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    x:Name="HelpTextBlock2"
+                <materialDesign:ColorZone Padding="5" Mode="PrimaryDark">
+                    <UniformGrid Columns="3">
+
+                        <ToggleButton
+                            x:Name="MenuToggleButton"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.Name="HamburgerToggleButton"
+                            IsChecked="False"
+                            Style="{DynamicResource MaterialDesignHamburgerToggleButton}" />
+
+                        <TextBlock
+                            x:Name="Time"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontFamily="Meiryo"
+                            FontSize="15"
+                            FontWeight="Bold"
+                            Language="ja-jp"
+                            Text="00:00:00"
+                            TextAlignment="Center" />
+
+                        <materialDesign:PopupBox
+                            HorizontalAlignment="Right"
+                            PlacementMode="BottomAndAlignRightEdges"
+                            StaysOpen="True">
+
+                            <Grid Margin="5">
+                                <Grid.ColumnDefinitions>
+                                    <!--  テキスト用  -->
+                                    <ColumnDefinition Width="*" />
+                                    <!--  トグル用  -->
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock VerticalAlignment="Center" Text="ヘルプ" />
+                                <ToggleButton
+                                    x:Name="HelpCheckBox"
+                                    Grid.Column="1"
+                                    Margin="5"
+                                    Checked="HelpCheckBox_Checked"
+                                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                    Unchecked="HelpCheckBox_Unchecked">
+                                    <ToggleButton.LayoutTransform>
+                                        <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                                    </ToggleButton.LayoutTransform>
+                                </ToggleButton>
+
+                                <TextBlock
+                                    Grid.Row="1"
+                                    VerticalAlignment="Center"
+                                    Text="最前面" />
+                                <ToggleButton
+                                    x:Name="TopMostCheckBox"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Margin="5"
+                                    Checked="TopMostCheckBox_Checked"
+                                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                    Unchecked="TopMostCheckBox_Unchecked">
+                                    <ToggleButton.LayoutTransform>
+                                        <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                                    </ToggleButton.LayoutTransform>
+                                </ToggleButton>
+
+                                <TextBlock
+                                    Grid.Row="2"
+                                    VerticalAlignment="Center"
+                                    Text="ダークテーマ" />
+                                <ToggleButton
+                                    x:Name="ThemeModeCheckBox"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Margin="5"
+                                    Checked="ThemeModeCheckBox_Checked"
+                                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                    Unchecked="ThemeModeCheckBox_Unchecked">
+                                    <ToggleButton.LayoutTransform>
+                                        <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                                    </ToggleButton.LayoutTransform>
+                                </ToggleButton>
+
+                            </Grid>
+                        </materialDesign:PopupBox>
+
+                    </UniformGrid>
+
+                </materialDesign:ColorZone>
+                <ContentControl x:Name="MainMenuContentArea" Grid.Row="1" />
+
+                <!--  右側: ヘルプパネル（初期非表示）  -->
+                <ScrollViewer
+                    x:Name="HotKeyHelpScrollViewer"
+                    Grid.RowSpan="2"
                     Grid.Column="1"
-                    TextWrapping="Wrap" />
+                    Height="0"
+                    BorderThickness="1,0,0,0"
+                    VerticalScrollBarVisibility="Auto"
+                    Visibility="Visible">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            x:Name="HelpTextBlock1"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="HelpTextBlock2"
+                            Grid.Column="1"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </ScrollViewer>
             </Grid>
-        </ScrollViewer>
+        </materialDesign:DrawerHost>
     </Grid>
 </Window>

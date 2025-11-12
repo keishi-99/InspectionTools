@@ -1,10 +1,14 @@
 ﻿using InspectionTools.Common;
+using MaterialDesignThemes.Wpf;
 using System.Data;
 using System.Drawing.Printing;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using static InspectionTools.Common.Win32Wrapper;
+using Button = System.Windows.Controls.Button;
+using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools {
@@ -15,6 +19,9 @@ namespace InspectionTools {
 
         private bool _isHelpVisible = false;
         private string _pageName = string.Empty;
+
+        // タイマー
+        private readonly DispatcherTimer _timer;
 
         public static IntPtr HWnd { get; set; }
         public static HwndSource? Source { get; set; }
@@ -28,25 +35,41 @@ namespace InspectionTools {
 
         public static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
-        private MainMenu.SubMenuUserControl? _subMenu;
-
         public MainWindow() {
             InitializeComponent();
             Common.HelpManager.LoadHelpFile("help.json");
-            ShowMainMenu();
+            LoadEvents();
+
             // Window が完全に作られたあとにハンドルを取得
             Loaded += (s, e) => { HWnd = new WindowInteropHelper(this).Handle; };
+
+            _timer = new DispatcherTimer {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
         }
 
+        private void LoadEvents() {
+            ShowMainMenu();
+            LoadInstList();
+        }
+        private static void LoadInstList() {
+            const string XmlFilePath = "VisaAddress.xml";
+            if (!System.IO.File.Exists(XmlFilePath)) {
+                MessageBox.Show($"{XmlFilePath}が見つかりません。");
+                return;
+            }
+            using DataSet dataSet = new();
+            dataSet.ReadXml(XmlFilePath);
+            MainWindow.VisaAddressDataTable = dataSet.Tables[0];
+        }
         private void ShowMainMenu() {
+            // ドロワーを閉じる
+            MainWindowDrawer.IsLeftDrawerOpen = false;
 
-            _subMenu = new MainMenu.SubMenuUserControl();
-            _subMenu.BackToMainRequested += (_, __) => ShowMainMenu();
-            _subMenu.HelpCheckBoxChecked += HelpCheckBoxChecked;
-            _subMenu.HelpCheckBoxUnchecked += HelpCheckBoxUnchecked;
-            _subMenu.SetButtonEnabled("ProductListButton", false);
-            _subMenu.SetButtonEnabled("InstListButton", true);
-            SubMenuContentArea.Content = _subMenu;
+            SetButtonEnabled("ProductListButton", false);
+            SetButtonEnabled("InstListButton", true);
 
             var mainMenu = new MainMenu.MainMenuUserControl();
             mainMenu.PageSelected += OnPageSelected;
@@ -59,13 +82,30 @@ namespace InspectionTools {
                 HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
                 HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
             }
-            HotKeyHelpScrollViewer.Height = mainMenu.Height + (_subMenu?.Height ?? 0);
+            HotKeyHelpScrollViewer.Height = mainMenu.Height;
+        }
+
+        // 機器リスト表示
+        private void ShowInstList() {
+            Common.InstListWindow frm1 = new();
+            frm1.ShowDialog();
+            LoadInstList();
+            // ドロワーを閉じる
+            MainWindowDrawer.IsLeftDrawerOpen = false;
+
+        }
+
+        // ボタン名を指定して有効/無効を切り替えるメソッド
+        public void SetButtonEnabled(string buttonName, bool isEnabled) {
+            if (FindName(buttonName) is Button button) {
+                button.IsEnabled = isEnabled;
+            }
         }
 
         private void OnPageSelected(string pageName) {
 
-            _subMenu?.SetButtonEnabled("ProductListButton", true);
-            _subMenu?.SetButtonEnabled("InstListButton", false);
+            SetButtonEnabled("ProductListButton", true);
+            SetButtonEnabled("InstListButton", false);
 
             UserControl? page = pageName switch {
                 "EL0122FI" => new Product.EL0122FIUserControl(),
@@ -93,19 +133,15 @@ namespace InspectionTools {
                 _pageName = pageName;
                 MainMenuContentArea.Content = page;
 
-                if (page is MainMenu.SubMenuUserControl.ISubMenuAware s) {
-                    s.SetSubMenuControl(_subMenu);
-                }
-
                 if (_isHelpVisible) {
                     var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
                     HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
                     HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
                 }
-                HotKeyHelpScrollViewer.Height = page.Height + (_subMenu?.ActualHeight ?? 0);
+                HotKeyHelpScrollViewer.Height = page.Height;
             }
         }
-        private void HelpCheckBoxChecked(object? sender, EventArgs e) {
+        private void HelpCheckBoxChecked() {
             _isHelpVisible = true;
 
 
@@ -116,12 +152,19 @@ namespace InspectionTools {
             HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
             HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
         }
-        private void HelpCheckBoxUnchecked(object? sender, EventArgs e) {
+        private void HelpCheckBoxUnchecked() {
             _isHelpVisible = false;
             HelpTextBlock1.Margin = new Thickness(0);
             HelpTextBlock2.Margin = new Thickness(0);
             HelpTextBlock1.Text = string.Empty;
             HelpTextBlock2.Text = string.Empty;
+        }
+
+        // テーマ切り替え
+        internal static void OnIsDarkModeChanged(bool value) {
+            var theme = ThemeHelper.GetBundledTheme();
+            theme.BaseTheme = value ? BaseTheme.Dark : BaseTheme.Light;
+            ThemeHelper.SetBundledTheme(theme);
         }
 
         // ウィンドウサイズ調整
@@ -268,6 +311,40 @@ namespace InspectionTools {
         public static async Task RotationOscAsync(OscInstClass oscInstClass) {
             await ConnectDeviceAsync(oscInstClass);
         }
+
+        // イベントハンドラ
+        private void ProductListButton_Click(object sender, RoutedEventArgs e) {
+            ShowMainMenu();
+        }
+        private void InstListButton_Click(object sender, RoutedEventArgs e) {
+            ShowInstList();
+        }
+        private void HelpCheckBox_Checked(object sender, RoutedEventArgs e) {
+            HelpCheckBoxChecked();
+        }
+        private void HelpCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            HelpCheckBoxUnchecked();
+        }
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = true;
+        }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            var parentWindow = Window.GetWindow(this);
+            parentWindow.Topmost = false;
+        }
+        private void ThemeModeCheckBox_Checked(object sender, RoutedEventArgs e) {
+            //s_themeMode = true;
+            OnIsDarkModeChanged(true);
+        }
+        private void ThemeModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            //s_themeMode = false;
+            OnIsDarkModeChanged(false);
+        }
+        private void Timer_Tick(object? sender, EventArgs e) { 
+            Time.Text = DateTime.Now.ToString("HH:mm:ss");
+        }
+
 
     }
 }
