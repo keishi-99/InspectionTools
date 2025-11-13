@@ -393,6 +393,7 @@
                     x:Name="SerialTextBox"
                     Grid.Column="1"
                     Margin="10,0"
+                    HorizontalContentAlignment="Right"
                     MaxLength="8"
                     MaxLines="1" />
                 <Button

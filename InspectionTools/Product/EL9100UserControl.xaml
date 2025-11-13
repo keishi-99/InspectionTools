@@ -7,7 +7,7 @@
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
-    Height="250"
+    Height="220"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -25,8 +25,7 @@
 
         <ComboBox
             x:Name="Dmm01ComboBox"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -34,8 +33,7 @@
         <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -44,8 +42,7 @@
         <Button
             x:Name="ConnectButton"
             Grid.Row="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
@@ -53,8 +50,7 @@
             x:Name="ReleaseButton"
             Grid.Row="1"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ReleaseButton_Click"
             Content="解除"
@@ -63,8 +59,8 @@
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="2"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"
@@ -74,8 +70,7 @@
             x:Name="OcrButton"
             Grid.Row="2"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="OcrButton_Click"
             Content="OCR" />
