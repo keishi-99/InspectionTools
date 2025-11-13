@@ -21,7 +21,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!--  Button  -->
-            <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="Button">
+            <Style BasedOn="{StaticResource MaterialDesignPaperButton}" TargetType="Button">
                 <Setter Property="Padding" Value="1" />
                 <Setter Property="Height" Value="Auto" />
             </Style>
