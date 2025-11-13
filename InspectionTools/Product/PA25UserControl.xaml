@@ -6,17 +6,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="250"
+    Width="220"
     Height="300"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition Height="0.5*" />
+            <RowDefinition Height="0.5*" />
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
@@ -27,8 +29,7 @@
 
         <ComboBox
             x:Name="OscComboBox"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -36,8 +37,7 @@
         <ComboBox
             x:Name="FgComboBox"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -46,8 +46,7 @@
         <ComboBox
             x:Name="DmmComboBox"
             Grid.Row="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -56,8 +55,7 @@
         <Button
             x:Name="ConnectButton"
             Grid.Row="2"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
@@ -65,8 +63,7 @@
             x:Name="ReleaseButton"
             Grid.Row="2"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ReleaseButton_Click"
             Content="解除"
@@ -75,97 +72,76 @@
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="3"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"
             Unchecked="HotKeyChekBox_Unchecked" />
 
-        <Grid Grid.Row="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="0.5*" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <TextBlock
-                HorizontalAlignment="Center"
+        <TextBlock
+            Grid.Row="5"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Text="OSC" />
+        <UniformGrid
+            Grid.Row="6"
+            Margin="10,0"
+            Rows="1">
+            <Button
+                x:Name="OscRotateRButton"
+                Margin="5,0"
+                Click="OscRotateRButton_Click"
+                Content="◀"
+                IsEnabled="False" />
+            <Button
+                x:Name="OscRotateButton"
+                Margin="5,0"
+                Click="OscRotateButton_Click"
+                Content="▶"
+                IsEnabled="False" />
+        </UniformGrid>
+
+        <TextBlock
+            Grid.Row="5"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Text="FG" />
+        <UniformGrid
+            Grid.Row="6"
+            Grid.Column="1"
+            Margin="10,0"
+            Rows="1">
+            <Button
+                x:Name="FgRotateRButton"
+                Margin="5,0"
                 VerticalAlignment="Center"
-                Text="OSC" />
-            <UniformGrid
-                Grid.Row="1"
-                HorizontalAlignment="Center"
-                Rows="1">
-                <Button
-                    x:Name="OscRotateRButton"
-                    Width="30"
-                    Height="20"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    Click="OscRotateRButton_Click"
-                    Content="◀"
-                    IsEnabled="False" />
-                <Button
-                    x:Name="OscRotateButton"
-                    Width="30"
-                    Height="20"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    Click="OscRotateButton_Click"
-                    Content="▶"
-                    IsEnabled="False" />
-            </UniformGrid>
-        </Grid>
-        <Grid Grid.Row="4" Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="0.5*" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <TextBlock
-                HorizontalAlignment="Center"
+                Click="FgRotateRButton_Click"
+                Content="◀"
+                IsEnabled="False" />
+            <Button
+                x:Name="FgRotateButton"
+                Margin="5,0"
                 VerticalAlignment="Center"
-                Text="FG" />
-            <UniformGrid
-                Grid.Row="1"
-                HorizontalAlignment="Center"
-                Rows="1">
-                <Button
-                    x:Name="FgRotateRButton"
-                    Width="30"
-                    Height="20"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="FgRotateRButton_Click"
-                    Content="◀"
-                    IsEnabled="False" />
-                <Button
-                    x:Name="FgRotateButton"
-                    Width="30"
-                    Height="20"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="FgRotateButton_Click"
-                    Content="▶"
-                    IsEnabled="False" />
-            </UniformGrid>
-        </Grid>
+                Click="FgRotateButton_Click"
+                Content="▶"
+                IsEnabled="False" />
+        </UniformGrid>
 
         <TextBox
             x:Name="OscRotateRangeTextBox"
-            Grid.Row="5"
-            Width="80"
-            HorizontalAlignment="Center"
+            Grid.Row="7"
+            Margin="10,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
             IsReadOnly="True" />
         <TextBox
             x:Name="FgRotateRangeTextBox"
-            Grid.Row="5"
+            Grid.Row="7"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"

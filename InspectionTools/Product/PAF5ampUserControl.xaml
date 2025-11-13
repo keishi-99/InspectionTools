@@ -6,12 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="250"
-    Height="250"
+    Width="220"
+    Height="180"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
@@ -25,8 +25,7 @@
 
         <ComboBox
             x:Name="DcsComboBox"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -34,8 +33,7 @@
         <ComboBox
             x:Name="DmmComboBox"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -44,8 +42,7 @@
         <ComboBox
             x:Name="OscComboBox"
             Grid.Row="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -54,8 +51,7 @@
             x:Name="FgComboBox"
             Grid.Row="1"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -64,8 +60,7 @@
         <Button
             x:Name="ConnectButton"
             Grid.Row="2"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
@@ -73,8 +68,7 @@
             x:Name="ReleaseButton"
             Grid.Row="2"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ReleaseButton_Click"
             Content="解除"
@@ -83,8 +77,8 @@
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="3"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"
