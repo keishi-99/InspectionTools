@@ -20,6 +20,10 @@ namespace InspectionTools {
         private bool _isHelpVisible = false;
         private string _pageName = string.Empty;
 
+        public interface IMainWindowAware {
+            void SetMainWindow(MainWindow mainWindow);
+        }
+
         // タイマー
         private readonly DispatcherTimer _timer;
 
@@ -128,6 +132,10 @@ namespace InspectionTools {
             };
 
             if (page is not null) {
+
+                if (page is IMainWindowAware aware) {
+                    aware.SetMainWindow(this);
+                }
 
                 this.Title = pageName;
                 _pageName = pageName;
