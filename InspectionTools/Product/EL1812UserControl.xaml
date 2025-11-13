@@ -255,11 +255,11 @@
             <Grid
                 Grid.Row="3"
                 Grid.ColumnSpan="4"
-                Margin="30,0"
+                Margin="50,0"
                 VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -293,11 +293,11 @@
             <Grid
                 Grid.Row="4"
                 Grid.ColumnSpan="4"
-                Margin="30,0"
+                Margin="50,0"
                 VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -306,14 +306,15 @@
                     Checked="CountLockCheckBox_Checked"
                     Content="🔒️"
                     Unchecked="CountLockCheckBox_Unchecked" />
-                <Grid Grid.Column="1" Margin="60,0,0,0">
+                <Grid Grid.Column="1" Margin="30,0,0,0">
                     <TextBox
                         x:Name="CountTextBox"
                         Grid.ColumnSpan="2"
                         Margin="5,0"
                         HorizontalContentAlignment="Right"
                         MaxLength="2"
-                        MaxLines="1" />
+                        MaxLines="1"
+                        Text="11" />
                 </Grid>
                 <Button
                     x:Name="CountBack"
