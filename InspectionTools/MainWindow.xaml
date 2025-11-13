@@ -92,7 +92,10 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <TextBlock VerticalAlignment="Center" Text="ヘルプ" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="ヘルプ" />
                                 <ToggleButton
                                     x:Name="HelpCheckBox"
                                     Grid.Column="1"
@@ -107,6 +110,7 @@
 
                                 <TextBlock
                                     Grid.Row="1"
+                                    HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Text="最前面" />
                                 <ToggleButton
