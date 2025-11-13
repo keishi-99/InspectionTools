@@ -1249,7 +1249,10 @@ public void SetMainWindow(MainWindow mainWindow) {
         private void SerialBack_Click(object sender, RoutedEventArgs e) { SerialIncrement(-1); }
         private void SerialNext_Click(object sender, RoutedEventArgs e) { SerialIncrement(1); }
 
-        private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) { FgPanelVisible(); }
+        private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (!IsLoaded) return;
+            FgPanelVisible(); 
+        }
 
 
     }
