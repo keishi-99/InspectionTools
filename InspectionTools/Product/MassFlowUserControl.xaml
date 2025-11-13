@@ -149,7 +149,6 @@
                 Unchecked="HotKeyChekBox_Unchecked" />
         </Grid>
 
-
         <Grid Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition />
@@ -374,11 +373,11 @@
             <Grid
                 Grid.Row="10"
                 Grid.ColumnSpan="4"
-                Margin="60,0"
+                Margin="80,0"
                 VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="4*" />
+                    <ColumnDefinition Width="3*" />
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
