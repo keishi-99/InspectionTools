@@ -16,6 +16,7 @@
                     SecondaryColor="Lime" />
                 <!--  Material Design  -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ObsoleteBrushes.xaml" />
+                <!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />-->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
@@ -61,6 +62,18 @@
                         <Setter Property="Opacity" Value="0.5" />
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+
+
+            <Style
+                x:Key="MaterialDesign2ToggleButtonScaled"
+                BasedOn="{StaticResource MaterialDesignSwitchToggleButton}"
+                TargetType="{x:Type ToggleButton}">
+                <Setter Property="LayoutTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
+                    </Setter.Value>
+                </Setter>
             </Style>
 
             <!--  TextBox  -->
