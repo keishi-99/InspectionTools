@@ -272,6 +272,7 @@
                     x:Name="SerialTextBox"
                     Grid.Column="1"
                     Margin="5,0"
+                    HorizontalContentAlignment="Right"
                     MaxLength="8"
                     MaxLines="1" />
                 <Button
@@ -310,6 +311,7 @@
                         x:Name="CountTextBox"
                         Grid.ColumnSpan="2"
                         Margin="5,0"
+                        HorizontalContentAlignment="Right"
                         MaxLength="2"
                         MaxLines="1" />
                 </Grid>
