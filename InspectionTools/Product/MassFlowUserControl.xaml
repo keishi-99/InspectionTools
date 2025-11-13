@@ -74,7 +74,8 @@
             <Grid
                 x:Name="FgNumberGrid1"
                 Grid.Row="1"
-                Grid.Column="1">
+                Grid.Column="1"
+                Visibility="Visible">
                 <ComboBox
                     x:Name="Fg01ComboBox"
                     Margin="10,0"
@@ -108,15 +109,15 @@
                     IsEditable="True"
                     IsReadOnly="True"
                     Text="[FG2]" />
-                <Button
-                    x:Name="ConnectButton"
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Margin="20,0"
-                    VerticalAlignment="Center"
-                    Click="ConnectButton_Click"
-                    Content="接続" />
             </Grid>
+            <Button
+                x:Name="ConnectButton"
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="20,0"
+                VerticalAlignment="Center"
+                Click="ConnectButton_Click"
+                Content="接続" />
             <Button
                 x:Name="ReleaseButton"
                 Grid.Row="1"
