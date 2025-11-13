@@ -3,7 +3,7 @@ using System.Data;
 using System.Windows;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
-using static InspectionTools.MainMenu.SubMenuUserControl;
+using static InspectionTools.MainWindow;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -11,11 +11,12 @@ namespace InspectionTools.Product {
     /// <summary>
     /// EL0122UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL0122UserControl : UserControl, ISubMenuAware {
+    public partial class EL0122UserControl : UserControl, IMainWindowAware {
 
-        private MainMenu.SubMenuUserControl? _subMenu;
-        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
-            _subMenu = subMenu;
+        private MainWindow? _mainWindow;
+
+        public void SetMainWindow(MainWindow mainWindow) {
+            _mainWindow = mainWindow;
         }
 
         private readonly DmmInstClass _instDmm = new();
@@ -58,7 +59,7 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -88,7 +89,7 @@ namespace InspectionTools.Product {
 
             _instDmm.ResetProperties();
 
-            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled("ProductListButton", true);
             DmmComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;

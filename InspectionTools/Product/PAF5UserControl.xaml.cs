@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
-using static InspectionTools.MainMenu.SubMenuUserControl;
+using static InspectionTools.MainWindow;
 using MessageBox = System.Windows.MessageBox;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -12,11 +12,11 @@ namespace InspectionTools.Product {
     /// <summary>
     /// PAF5UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class PAF5UserControl : UserControl, ISubMenuAware {
+    public partial class PAF5UserControl : UserControl, IMainWindowAware {
 
-        private MainMenu.SubMenuUserControl? _subMenu;
-        public void SetSubMenuControl(MainMenu.SubMenuUserControl? subMenu) {
-            _subMenu = subMenu;
+        private MainWindow? _mainWindow;
+public void SetMainWindow(MainWindow mainWindow) {
+            _mainWindow = mainWindow;
         }
 
         private readonly DmmInstClass _instDmm01 = new();
@@ -122,7 +122,7 @@ namespace InspectionTools.Product {
         // 機器接続
         private async void ConnectInstAsync() {
             try {
-                _subMenu?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
                 HotKeyChekBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -177,7 +177,7 @@ namespace InspectionTools.Product {
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
 
-            _subMenu?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled("ProductListButton", true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
