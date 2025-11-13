@@ -6,16 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="250"
-    Height="260"
+    Width="220"
+    Height="220"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="0.5*" />
-            <RowDefinition Height="0.5*" />
+            <RowDefinition />
+            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
@@ -26,8 +26,7 @@
 
         <ComboBox
             x:Name="Dmm01ComboBox"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -35,8 +34,7 @@
         <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -44,9 +42,8 @@
         <ComboBox
             x:Name="OscComboBox"
             Grid.Row="1"
-            Width="80"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
+            Margin="10,0"
+            VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
             Text="[OSC]" />
@@ -54,9 +51,8 @@
             x:Name="DcsComboBox"
             Grid.Row="1"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
+            Margin="10,0"
+            VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
             Text="[DCS]" />
@@ -64,8 +60,8 @@
         <TextBox
             x:Name="OscRangeLabel"
             Grid.Row="2"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             IsReadOnly="True"
             TextWrapping="Wrap" />
@@ -73,19 +69,23 @@
         <Grid
             x:Name="DcsGrid"
             Grid.Row="2"
-            Grid.Column="1"
-            Width="90">
+            Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="1.5*" />
+            </Grid.ColumnDefinitions>
             <TextBox
                 x:Name="DcsNumberLabel"
-                Width="30"
-                HorizontalAlignment="Left"
+                Margin="5,0"
+                VerticalAlignment="Center"
                 HorizontalContentAlignment="Right"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
             <TextBox
                 x:Name="DcsRangeLabel"
-                Width="50"
-                HorizontalAlignment="Right"
+                Grid.Column="1"
+                Margin="5,0"
+                VerticalAlignment="Center"
                 HorizontalContentAlignment="Left"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
@@ -94,8 +94,7 @@
         <Button
             x:Name="ConnectButton"
             Grid.Row="3"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
@@ -103,8 +102,7 @@
             x:Name="ReleaseButton"
             Grid.Row="3"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ReleaseButton_Click"
             Content="解除"
@@ -113,8 +111,8 @@
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="4"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"

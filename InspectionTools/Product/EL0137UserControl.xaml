@@ -6,12 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="250"
-    Height="250"
+    Width="220"
+    Height="240"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
@@ -27,8 +27,7 @@
 
         <ComboBox
             x:Name="DmmComboBox"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -36,8 +35,7 @@
         <ComboBox
             x:Name="OscComboBox"
             Grid.Column="1"
-            Width="80"
-            HorizontalAlignment="Center"
+            Margin="10,0"
             VerticalAlignment="Center"
             IsEditable="True"
             IsReadOnly="True"
@@ -46,8 +44,7 @@
         <Button
             x:Name="ConnectButton"
             Grid.Row="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
@@ -55,8 +52,7 @@
             x:Name="ReleaseButton"
             Grid.Row="1"
             Grid.Column="1"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
             VerticalAlignment="Center"
             Click="ReleaseButton_Click"
             Content="解除"
@@ -65,8 +61,8 @@
         <CheckBox
             x:Name="HotKeyChekBox"
             Grid.Row="2"
-            Width="60"
-            HorizontalAlignment="Center"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Checked="HotKeyChekBox_Checked"
             Content="HotKey"
@@ -76,9 +72,7 @@
             x:Name="OscRotateButton"
             Grid.Row="4"
             Grid.ColumnSpan="2"
-            Width="60"
-            Height="30"
-            HorizontalAlignment="Center"
+            Margin="70,0"
             Click="OscRotateButton_Click"
             Content="OSC"
             IsEnabled="False" />
@@ -87,8 +81,7 @@
             x:Name="OscRotateRangeTextBox"
             Grid.Row="5"
             Grid.ColumnSpan="2"
-            Width="130"
-            HorizontalAlignment="Center"
+            Margin="30,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
