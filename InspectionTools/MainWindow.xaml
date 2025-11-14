@@ -133,13 +133,14 @@
                                     Kind="WeatherNight" />
 
                                 <ToggleButton
-                                    x:Name="ThemeModeCheckBox"
+                                    x:Name="ThemeToggle"
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     Margin="5"
-                                    Checked="ThemeModeCheckBox_Checked"
+                                    Checked="ThemeToggle_Checked"
+                                    Loaded="ThemeToggle_Loaded"
                                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                                    Unchecked="ThemeModeCheckBox_Unchecked">
+                                    Unchecked="ThemeToggle_Unchecked">
                                     <ToggleButton.LayoutTransform>
                                         <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
                                     </ToggleButton.LayoutTransform>

@@ -89,6 +89,14 @@ namespace InspectionTools {
             HotKeyHelpScrollViewer.Height = mainMenu.Height;
         }
 
+        // テーマ切り替え
+        internal static void SetTheme(BaseTheme baseTheme) {
+            var paletteHelper = new PaletteHelper();
+            var theme = paletteHelper.GetTheme();
+            theme.SetBaseTheme(baseTheme);
+            paletteHelper.SetTheme(theme);
+        }
+
         // 機器リスト表示
         private void ShowInstList() {
             Common.InstListWindow frm1 = new();
@@ -166,13 +174,6 @@ namespace InspectionTools {
             HelpTextBlock2.Margin = new Thickness(0);
             HelpTextBlock1.Text = string.Empty;
             HelpTextBlock2.Text = string.Empty;
-        }
-
-        // テーマ切り替え
-        internal static void OnIsDarkModeChanged(bool value) {
-            var theme = ThemeHelper.GetBundledTheme();
-            theme.BaseTheme = value ? BaseTheme.Dark : BaseTheme.Light;
-            ThemeHelper.SetBundledTheme(theme);
         }
 
         // ウィンドウサイズ調整
@@ -341,13 +342,17 @@ namespace InspectionTools {
             var parentWindow = Window.GetWindow(this);
             parentWindow.Topmost = false;
         }
-        private void ThemeModeCheckBox_Checked(object sender, RoutedEventArgs e) {
-            //s_themeMode = true;
-            OnIsDarkModeChanged(true);
+        private void ThemeToggle_Loaded(object sender, RoutedEventArgs e) {
+            var paletteHelper = new PaletteHelper();
+            var theme = paletteHelper.GetTheme();
+
+            ThemeToggle.IsChecked = theme.GetBaseTheme() == BaseTheme.Dark;
         }
-        private void ThemeModeCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            //s_themeMode = false;
-            OnIsDarkModeChanged(false);
+        private void ThemeToggle_Checked(object sender, RoutedEventArgs e) {
+            SetTheme(BaseTheme.Dark);
+        }
+        private void ThemeToggle_Unchecked(object sender, RoutedEventArgs e) {
+            SetTheme(BaseTheme.Light);
         }
         private void Timer_Tick(object? sender, EventArgs e) { 
             Time.Text = DateTime.Now.ToString("HH:mm:ss");
