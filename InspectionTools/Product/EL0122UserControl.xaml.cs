@@ -34,7 +34,7 @@ namespace InspectionTools.Product {
         }
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2], "[DMM]");
+            MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2]);
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {

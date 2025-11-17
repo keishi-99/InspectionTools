@@ -183,7 +183,7 @@ namespace InspectionTools {
         }
 
         // コンボボックス更新
-        public static void UpdateComboBox(System.Windows.Controls.ComboBox comboBox, string category, List<int> signalTypes, string name) {
+        public static void UpdateComboBox(System.Windows.Controls.ComboBox comboBox, string category, List<int> signalTypes) {
             if (VisaAddressDataTable == null) {
                 return;
             }

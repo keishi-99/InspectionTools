@@ -36,10 +36,10 @@ public void SetMainWindow(MainWindow mainWindow) {
         }
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            MainWindow.UpdateComboBox(DcsComboBox, "パワーサプライ", [2], "[DCS]");
-            MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2], "[DMM1]");
-            MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2], "[DMM2]");
-            MainWindow.UpdateComboBox(OscComboBox, "オシロスコープ", [2], "[OSC]");
+            MainWindow.UpdateComboBox(DcsComboBox, "パワーサプライ", [2]);
+            MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
+            MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2]);
+            MainWindow.UpdateComboBox(OscComboBox, "オシロスコープ", [2]);
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
