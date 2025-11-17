@@ -34,11 +34,12 @@ public void SetMainWindow(MainWindow mainWindow) {
             InitializeComponent();
         }
 
-        private Dictionary<int, (string cmd2, string cmd3)> _dicSwitchDcs = [];
+        private Dictionary<int, (string text, string cmd2, string cmd3)> _dicSwitchDcs = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchFg = [];
         private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchRFg = [];
         private Dictionary<int, string> _dicSwitchOsc = [];
         private Dictionary<int, string> _dicSwitchROsc = [];
+        private Dictionary<int, string> _dicTextFgOsc = [];
 
         // FMRemoteのメニューアイテムID
         private const int MenuItemIdA1L = 32806;
@@ -46,15 +47,6 @@ public void SetMainWindow(MainWindow mainWindow) {
         private const int MenuItemIdA2L = 32808;
         private const int MenuItemIdA2H = 32809;
         private const int MenuItemIdAnalogTrim = 32815;
-
-        // ラジオボタンリスト
-        private List<RadioButton> DcsRadioButtonsList => [
-            DcsOffRadioButton, Dcs2VRadioButton, Dcs8VRadioButton, Dcs1VRadioButton, Dcs7VRadioButton
-        ];
-        private List<RadioButton> FgOscRadioButtonsList => [
-            FgOscRange0RadioButton, FgOscRange1RadioButton, FgOscRange2RadioButton, FgOscRange3RadioButton,
-            FgOscRange4RadioButton, FgOscRange5RadioButton,FgOscRange6RadioButton
-        ];
 
         // 起動時
         private void LoadEvents() {
@@ -92,13 +84,13 @@ public void SetMainWindow(MainWindow mainWindow) {
         // 機器設定辞書登録
         private void RegDictionary() {
             // DCS
-            _dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3)>
+            _dicSwitchDcs = new Dictionary<int, (string text, string cmd2, string cmd3)>
             {
-                { 0, ("SVR5,SOV+0,SBY", "F1R5S0.0O0E") },
-                { 1, ("SVR5,SOV+2,OPR", "F1R5S2.0O1E") },
-                { 2, ("SVR5,SOV+8,OPR", "F1R5S8.0O1E") },
-                { 3, ("SVR5,SOV+1,OPR", "F1R5S1.0O1E") },
-                { 4, ("SVR5,SOV+7,OPR", "F1R5S7.0O1E") },
+                { 0, ("OFF","SVR5,SOV+0,SBY", "F1R5S0.0O0E") },
+                { 1, ("2V","SVR5,SOV+2,OPR", "F1R5S2.0O1E") },
+                { 2, ("8V","SVR5,SOV+8,OPR", "F1R5S8.0O1E") },
+                { 3, ("1V","SVR5,SOV+1,OPR", "F1R5S1.0O1E") },
+                { 4, ("7V","SVR5,SOV+7,OPR", "F1R5S7.0O1E") },
             };
 
             // FG
@@ -363,6 +355,16 @@ public void SetMainWindow(MainWindow mainWindow) {
                     """
                 }
             };
+
+            _dicTextFgOsc = new Dictionary<int, string> {
+                { 0, "0:OFF" },
+                { 1, "1:小流量での動作確認" },
+                { 2, "2:アンプ動作の確認" },
+                { 3, "3:パルス出力回路の確認(最大値)" },
+                { 4, "4:パルス出力回路の確認(最小値)" },
+                { 5, "5:パルス出力回路の確認(周波数)" },
+                { 6, "6:大流量での動作確認" },
+            };
         }
         // 機器初期設定
         private void FormatSet() {
@@ -445,12 +447,14 @@ public void SetMainWindow(MainWindow mainWindow) {
                 await Task.WhenAll(tasks);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    DcsOffRadioButton.IsChecked = true;
+                    DcsNumberTextBox.Text = "OFF";
+                    //DcsOffRadioButton.IsChecked = true;
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {
                     FgOscRotationButton.IsEnabled = true;
                     FgOscRotationRButton.IsEnabled = true;
-                    FgOscRange0RadioButton.IsChecked = true;
+                    FgOscNumberTextBox.Text = "OFF";
+                    //FgOscRange0RadioButton.IsChecked = true;
                 }
 
                 DcsComboBox.IsEnabled = false;
@@ -503,7 +507,7 @@ public void SetMainWindow(MainWindow mainWindow) {
             ReleaseButton.IsEnabled = false;
             HotKeyChekBox.IsChecked = false;
 
-            DcsRadioButtonsList[0].IsChecked = true;
+            DcsNumberTextBox.Text = string.Empty;
             DcsOffButton.IsEnabled = true;
             Dcs2VButton.IsEnabled = true;
             Dcs8VButton.IsEnabled = true;
@@ -513,7 +517,7 @@ public void SetMainWindow(MainWindow mainWindow) {
             FgOscRotationButton.IsEnabled = false;
             FgOscRotationRButton.IsEnabled = false;
 
-            FgOscRadioButtonsList[0].IsChecked = true;
+            FgOscNumberTextBox.Text = string.Empty;
         }
 
         // DCS切り替え
@@ -533,8 +537,10 @@ public void SetMainWindow(MainWindow mainWindow) {
 
                 await SwitchDcsAsync(_instDcs, i);
 
-                // 対応するラジオボタンを選択
-                DcsRadioButtonsList[i].IsChecked = true;
+                // テキストボックス更新
+                DcsNumberTextBox.Text = _dicSwitchDcs[i].text;
+
+                // OFF以外はボタン無効化
                 FgOscRotationButton.IsEnabled = (i == 0) &&
                     (
                     !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
@@ -600,8 +606,12 @@ public void SetMainWindow(MainWindow mainWindow) {
                     _ => Task.CompletedTask // どれにも該当しない場合はすぐに完了するタスク
                 });
 
-                // 対応するラジオボタンを選択
-                FgOscRadioButtonsList[_instOsc.SettingNumber].IsChecked = true;
+                // テキストボックス更新
+                var settingNumber = new InstClass[] { _instOsc, _instFg01, _instFg02_1 }
+                  .FirstOrDefault(x => x.SignalType == 0)
+                  ?.SettingNumber ?? 0;
+
+                FgOscNumberTextBox.Text = _dicTextFgOsc[settingNumber];
 
                 bool isSettingZero = _instOsc.SettingNumber == 0;
                 DcsOffButton.IsEnabled = isSettingZero;

@@ -8,7 +8,7 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="320"
-    Height="420"
+    Height="400"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -16,7 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
             <RowDefinition Height="0.5*" />
-            <RowDefinition Height="6.5*" />
+            <RowDefinition Height="6*" />
         </Grid.RowDefinitions>
 
         <Grid>
@@ -152,7 +152,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="0.5*" />
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition Height="0.5*" />
@@ -163,70 +163,24 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
             <!--  1  -->
-            <RadioButton
-                x:Name="DcsOffRadioButton"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Checked="DcsRadioButton_Checked"
-                Content="OFF"
-                Foreground="Gray"
-                GroupName="DcsSettingsGroup"
-                IsChecked="True"
-                IsHitTestVisible="False"
-                Unchecked="DcsRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="Dcs2VRadioButton"
-                Grid.Row="1"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Checked="DcsRadioButton_Checked"
-                Content="2V"
-                Foreground="Gray"
-                GroupName="DcsSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="DcsRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="Dcs8VRadioButton"
-                Grid.Row="2"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Checked="DcsRadioButton_Checked"
-                Content="8V"
-                Foreground="Gray"
-                GroupName="DcsSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="DcsRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="Dcs1VRadioButton"
-                Grid.Row="3"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Checked="DcsRadioButton_Checked"
-                Content="1V"
-                Foreground="Gray"
-                GroupName="DcsSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="DcsRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="Dcs7VRadioButton"
-                Grid.Row="4"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Checked="DcsRadioButton_Checked"
-                Content="7V"
-                Foreground="Gray"
-                GroupName="DcsSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="DcsRadioButton_Unchecked" />
-
+            <Grid Grid.ColumnSpan="5" Margin="100,4">
+                <TextBox
+                    x:Name="DcsNumberTextBox"
+                    HorizontalContentAlignment="Center"
+                    FontWeight="Bold"
+                    IsReadOnly="True"
+                    TextWrapping="NoWrap" />
+            </Grid>
             <!--  2  -->
             <Button
                 x:Name="DcsOffButton"
-                Grid.Column="1"
-                Margin="17.5,0"
+                Grid.Row="1"
+                Margin="10,0"
+                Padding="1"
                 VerticalAlignment="Center"
                 Click="DcsOffButton_Click"
                 Content="OFF" />
@@ -234,160 +188,88 @@
                 x:Name="Dcs2VButton"
                 Grid.Row="1"
                 Grid.Column="1"
-                Margin="17.5,0"
+                Margin="10,0"
+                Padding="1"
                 VerticalAlignment="Center"
                 Click="Dcs2VButton_Click"
                 Content="2V" />
             <Button
                 x:Name="Dcs8VButton"
-                Grid.Row="2"
-                Grid.Column="1"
-                Margin="17.5,0"
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="10,0"
+                Padding="1"
                 VerticalAlignment="Center"
                 Click="Dcs8VButton_Click"
                 Content="8V" />
             <Button
                 x:Name="Dcs1VButton"
-                Grid.Row="3"
-                Grid.Column="1"
-                Margin="17.5,0"
+                Grid.Row="1"
+                Grid.Column="3"
+                Margin="10,0"
+                Padding="1"
                 VerticalAlignment="Center"
                 Click="Dcs1VButton_Click"
                 Content="1V" />
             <Button
                 x:Name="Dcs7VButton"
-                Grid.Row="4"
-                Grid.Column="1"
-                Margin="17.5,0"
+                Grid.Row="1"
+                Grid.Column="4"
+                Margin="10,0"
+                Padding="1"
                 VerticalAlignment="Center"
                 Click="Dcs7VButton_Click"
                 Content="7V" />
 
             <!--  3  -->
+            <!--  4  -->
+            <Grid
+                Grid.Row="3"
+                Grid.ColumnSpan="5"
+                Margin="40,4">
+                <TextBox
+                    x:Name="FgOscNumberTextBox"
+                    HorizontalContentAlignment="Center"
+                    FontWeight="Bold"
+                    IsReadOnly="True"
+                    TextWrapping="NoWrap" />
+            </Grid>
+            <!--  5  -->
             <Button
                 x:Name="FgOscRotationRButton"
-                Grid.Row="1"
+                Grid.Row="4"
                 Grid.Column="2"
                 Height="Auto"
-                Margin="17.5,5"
+                Margin="10,0"
                 Padding="1"
                 Click="FgOscRotationRButton_Click"
-                Content="▲"
+                Content="◀"
                 IsEnabled="False"
                 Style="{StaticResource MaterialDesignPaperButton}" />
             <StackPanel
-                Grid.Row="2"
-                Grid.Column="2"
+                Grid.Row="4"
+                Grid.Column="1"
                 VerticalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" Text="FG" />
                 <TextBlock HorizontalAlignment="Center" Text="OSC" />
             </StackPanel>
             <Button
                 x:Name="FgOscRotationButton"
-                Grid.Row="3"
-                Grid.Column="2"
+                Grid.Row="4"
+                Grid.Column="3"
                 Height="Auto"
-                Margin="17.5,5"
+                Margin="10,0"
                 Padding="1"
                 Click="FgOscRotationButton_Click"
-                Content="▼"
+                Content="▶"
                 IsEnabled="False"
                 Style="{StaticResource MaterialDesignPaperButton}" />
 
-            <!--  4  -->
-            <RadioButton
-                x:Name="FgOscRange0RadioButton"
-                Grid.Column="3"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Checked="FgOscRadioButton_Checked"
-                Content="OFF"
-                Foreground="Gray"
-                GroupName="FgOscSettingsGroup"
-                IsChecked="True"
-                IsHitTestVisible="False"
-                Unchecked="FgOscRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="FgOscRange1RadioButton"
-                Grid.Row="1"
-                Grid.Column="3"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Checked="FgOscRadioButton_Checked"
-                Content="小流量"
-                Foreground="Gray"
-                GroupName="FgOscSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="FgOscRadioButton_Unchecked" />
-            <RadioButton
-                x:Name="FgOscRange2RadioButton"
-                Grid.Row="2"
-                Grid.Column="3"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Checked="FgOscRadioButton_Checked"
-                Content="アンプ"
-                Foreground="Gray"
-                GroupName="FgOscSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="FgOscRadioButton_Unchecked" />
-            <StackPanel
-                Grid.Row="3"
-                Grid.Column="3"
-                Orientation="Horizontal">
-                <RadioButton
-                    x:Name="FgOscRange3RadioButton"
-                    Grid.Row="7"
-                    Grid.Column="3"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Checked="FgOscRadioButton_Checked"
-                    Content="パルス"
-                    Foreground="Gray"
-                    GroupName="FgOscSettingsGroup"
-                    IsHitTestVisible="False"
-                    Unchecked="FgOscRadioButton_Unchecked" />
-                <RadioButton
-                    x:Name="FgOscRange4RadioButton"
-                    Margin="10,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Checked="FgOscRadioButton_Checked"
-                    Content="L"
-                    Foreground="Gray"
-                    GroupName="FgOscSettingsGroup"
-                    IsHitTestVisible="False"
-                    Unchecked="FgOscRadioButton_Unchecked" />
-                <RadioButton
-                    x:Name="FgOscRange5RadioButton"
-                    Grid.Column="1"
-                    Margin="10,0,0,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Checked="FgOscRadioButton_Checked"
-                    Content="F"
-                    Foreground="Gray"
-                    GroupName="FgOscSettingsGroup"
-                    IsHitTestVisible="False"
-                    Unchecked="FgOscRadioButton_Unchecked" />
-            </StackPanel>
-            <RadioButton
-                x:Name="FgOscRange6RadioButton"
-                Grid.Row="4"
-                Grid.Column="3"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Checked="FgOscRadioButton_Checked"
-                Content="大流量"
-                Foreground="Gray"
-                GroupName="FgOscSettingsGroup"
-                IsHitTestVisible="False"
-                Unchecked="FgOscRadioButton_Unchecked" />
-
-
+            <!--  6  -->
+            <!--  7  -->
             <Grid
-                Grid.Row="10"
-                Grid.ColumnSpan="4"
+                Grid.Row="6"
+                Grid.ColumnSpan="5"
                 Margin="60,4"
                 VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
@@ -405,7 +287,7 @@
                 <Grid Grid.Column="1">
                     <TextBox
                         x:Name="SerialTextBox"
-                        Margin="0,0,20,0"
+                        Margin="2,2,20,2"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
                         MaxLength="8"
@@ -434,6 +316,7 @@
                     </UniformGrid>
                 </Grid>
             </Grid>
+
         </Grid>
 
 
