@@ -449,6 +449,7 @@ public void SetMainWindow(MainWindow mainWindow) {
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {
                     FgOscRotationButton.IsEnabled = true;
+                    FgOscRotationRButton.IsEnabled = true;
                     FgOscRange0RadioButton.IsChecked = true;
                 }
 
@@ -510,6 +511,7 @@ public void SetMainWindow(MainWindow mainWindow) {
             Dcs7VButton.IsEnabled = true;
 
             FgOscRotationButton.IsEnabled = false;
+            FgOscRotationRButton.IsEnabled = false;
 
             FgOscRadioButtonsList[0].IsChecked = true;
         }
@@ -534,6 +536,12 @@ public void SetMainWindow(MainWindow mainWindow) {
                 // 対応するラジオボタンを選択
                 DcsRadioButtonsList[i].IsChecked = true;
                 FgOscRotationButton.IsEnabled = (i == 0) &&
+                    (
+                    !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instOsc.VisaAddress)
+                    );
+                FgOscRotationRButton.IsEnabled = (i == 0) &&
                     (
                     !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
                     !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
@@ -1217,6 +1225,10 @@ public void SetMainWindow(MainWindow mainWindow) {
         private void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
             RotationFgOsc(true);
+        }
+        private void FgOscRotationRButton_Click(object sender, RoutedEventArgs e) {
+            if (MainWindow.IsProcessing) { return; }
+            RotationFgOsc(false);
         }
 
         private void DcsRadioButton_Checked(object sender, RoutedEventArgs e) {
