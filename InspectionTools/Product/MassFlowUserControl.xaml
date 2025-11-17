@@ -266,6 +266,7 @@
                 x:Name="FgOscRotationButton"
                 Grid.RowSpan="5"
                 Grid.Column="2"
+                Height="Auto"
                 Margin="17.5,5"
                 Padding="1"
                 Click="FgOscRotationButton_Click"
