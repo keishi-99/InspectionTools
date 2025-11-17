@@ -5,6 +5,7 @@
     xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
     Height="180"
@@ -27,35 +28,35 @@
             x:Name="DcsComboBox"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DCS"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DCS]" />
+            IsReadOnly="True" />
         <ComboBox
             x:Name="DmmComboBox"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM]" />
+            IsReadOnly="True" />
 
         <ComboBox
-            x:Name="OscComboBox"
+            x:Name="FgComboBox"
             Grid.Row="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="FG"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[OSC]" />
+            IsReadOnly="True" />
         <ComboBox
-            x:Name="FgComboBox"
+            x:Name="OscComboBox"
             Grid.Row="1"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="OSC"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[FG]" />
+            IsReadOnly="True" />
 
         <Button
             x:Name="ConnectButton"

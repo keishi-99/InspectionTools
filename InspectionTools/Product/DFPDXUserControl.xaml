@@ -5,6 +5,7 @@
     xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
     Height="320"
@@ -31,44 +32,44 @@
             x:Name="Dmm01ComboBox"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-1"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM1]" />
+            IsReadOnly="True" />
         <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-2"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM2]" />
+            IsReadOnly="True" />
 
         <ComboBox
             x:Name="Dmm03ComboBox"
             Grid.Row="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-3"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM3]" />
+            IsReadOnly="True" />
 
         <ComboBox
-            x:Name="OscComboBox"
+            x:Name="FgComboBox"
             Grid.Row="2"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="FG"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[OSC]" />
+            IsReadOnly="True" />
         <ComboBox
-            x:Name="FgComboBox"
+            x:Name="OscComboBox"
             Grid.Row="2"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="OSC"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[FG]" />
+            IsReadOnly="True" />
 
         <Button
             x:Name="ConnectButton"
@@ -99,24 +100,24 @@
 
 
         <Button
-            x:Name="OscRotateButton"
-            Grid.Row="6"
-            Margin="20,0"
-            Click="OscRotateButton_Click"
-            Content="OSC"
-            IsEnabled="False" />
-        <Button
             x:Name="FgRotateButton"
             Grid.Row="6"
-            Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="FgRotateButton_Click"
             Content="FG"
             IsEnabled="False" />
+        <Button
+            x:Name="OscRotateButton"
+            Grid.Row="6"
+            Grid.Column="1"
+            Margin="20,0"
+            Click="OscRotateButton_Click"
+            Content="OSC"
+            IsEnabled="False" />
 
         <TextBox
-            x:Name="OscRotateRangeTextBox"
+            x:Name="FgRotateRangeTextBox"
             Grid.Row="7"
             Margin="10,0"
             VerticalAlignment="Center"
@@ -124,7 +125,7 @@
             VerticalContentAlignment="Center"
             IsReadOnly="true" />
         <TextBox
-            x:Name="FgRotateRangeTextBox"
+            x:Name="OscRotateRangeTextBox"
             Grid.Row="7"
             Grid.Column="1"
             Margin="10,0"

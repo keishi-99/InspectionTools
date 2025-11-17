@@ -5,6 +5,7 @@
     xmlns:Common="clr-namespace:InspectionTools.Tool"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools.Product"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
     Height="220"
@@ -28,34 +29,34 @@
             x:Name="Dmm01ComboBox"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-1"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM1]" />
+            IsReadOnly="True" />
         <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-2"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DMM2]" />
+            IsReadOnly="True" />
         <ComboBox
             x:Name="OscComboBox"
             Grid.Row="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="OSC"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[OSC]" />
+            IsReadOnly="True" />
         <ComboBox
             x:Name="DcsComboBox"
             Grid.Row="1"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DCS"
             IsEditable="True"
-            IsReadOnly="True"
-            Text="[DCS]" />
+            IsReadOnly="True" />
 
         <TextBox
             x:Name="OscRangeLabel"
@@ -78,7 +79,7 @@
                 x:Name="DcsNumberLabel"
                 Margin="5,0"
                 VerticalAlignment="Center"
-                HorizontalContentAlignment="Right"
+                HorizontalContentAlignment="Center"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
             <TextBox
@@ -86,7 +87,7 @@
                 Grid.Column="1"
                 Margin="5,0"
                 VerticalAlignment="Center"
-                HorizontalContentAlignment="Left"
+                HorizontalContentAlignment="Center"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
         </Grid>
