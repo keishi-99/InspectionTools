@@ -12,13 +12,14 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
-            <RowDefinition Height="6*" />
+            <RowDefinition Height="0.5*" />
+            <RowDefinition Height="6.5*" />
         </Grid.RowDefinitions>
 
-        <Grid Margin="10">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -147,7 +148,7 @@
                 Unchecked="HotKeyChekBox_Unchecked" />
         </Grid>
 
-        <Grid Grid.Row="1" Margin="10">
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -372,40 +373,51 @@
             <Grid
                 Grid.Row="10"
                 Grid.ColumnSpan="4"
-                Margin="30,0"
+                Margin="60,4"
                 VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <CheckBox
                     x:Name="SerialLockCheckBox"
-                    Margin="5,0"
+                    Margin="15,0"
                     HorizontalAlignment="Stretch"
                     Checked="SerialLockCheckBox_Checked"
                     Content="🔒️"
                     Unchecked="SerialLockCheckBox_Unchecked" />
-                <TextBox
-                    x:Name="SerialTextBox"
-                    Grid.Column="1"
-                    Margin="10,0"
-                    HorizontalContentAlignment="Right"
-                    MaxLength="8"
-                    MaxLines="1" />
-                <Button
-                    x:Name="SerialBack"
-                    Grid.Column="2"
-                    Margin="5,0"
-                    Click="SerialBack_Click"
-                    Content=" ◀ " />
-                <Button
-                    x:Name="SerialNext"
-                    Grid.Column="3"
-                    Margin="5,0"
-                    Click="SerialNext_Click"
-                    Content=" ▶ " />
+
+                <Grid Grid.Column="1">
+                    <TextBox
+                        x:Name="SerialTextBox"
+                        Margin="0,0,20,0"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        MaxLength="8"
+                        MaxLines="1" />
+                    <UniformGrid
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Columns="1"
+                        Rows="2">
+                        <Button
+                            Height="Auto"
+                            Padding="1"
+                            Click="SerialNext_Click"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                            Style="{StaticResource MaterialDesignToolButton}">
+                            <materialDesign:PackIcon Kind="Plus" />
+                        </Button>
+                        <Button
+                            Height="Auto"
+                            Padding="1"
+                            Click="SerialBack_Click"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                            Style="{StaticResource MaterialDesignToolButton}">
+                            <materialDesign:PackIcon Kind="Minus" />
+                        </Button>
+                    </UniformGrid>
+                </Grid>
             </Grid>
         </Grid>
 

@@ -8,17 +8,17 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="320"
-    Height="360"
+    Height="310"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid">
+    <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
-            <RowDefinition Height="5*" />
+            <RowDefinition Height="4.5*" />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="MainGrid01" Margin="10">
+        <Grid x:Name="MainGrid01">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -85,15 +85,12 @@
                 Unchecked="HotKeyChekBox_Unchecked" />
         </Grid>
 
-        <Grid
-            x:Name="MainGrid02"
-            Grid.Row="1"
-            Margin="10">
+        <Grid x:Name="MainGrid02" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="0.25*" />
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -251,90 +248,107 @@
                     IsEnabled="False" />
             </Grid>
 
-            <Grid
-                Grid.Row="3"
-                Grid.ColumnSpan="4"
-                Margin="40,0"
-                VerticalAlignment="Center">
+            <Grid Grid.Row="4" Grid.ColumnSpan="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="2.5*" />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="1.8*" />
+                    <ColumnDefinition Width="0.2*" />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <CheckBox
-                    x:Name="SerialLockCheckBox"
-                    Margin="5,0"
-                    HorizontalAlignment="Stretch"
-                    Checked="SerialLockCheckBox_Checked"
-                    Content="🔒️"
-                    Unchecked="SerialLockCheckBox_Unchecked" />
-                <TextBox
-                    x:Name="SerialTextBox"
-                    Grid.Column="1"
-                    Margin="5"
-                    HorizontalContentAlignment="Right"
-                    MaxLength="8"
-                    MaxLines="1" />
-                <Button
-                    x:Name="SerialBack"
-                    Grid.Column="2"
-                    Margin="5,0"
-                    Click="SerialBack_Click"
-                    Content="◀" />
-                <Button
-                    x:Name="SerialNext"
-                    Grid.Column="3"
-                    Margin="5,0"
-                    Click="SerialNext_Click"
-                    Content="▶" />
-            </Grid>
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox
+                        x:Name="SerialLockCheckBox"
+                        Margin="15,0"
+                        HorizontalAlignment="Stretch"
+                        Checked="SerialLockCheckBox_Checked"
+                        Content="🔒️"
+                        Unchecked="SerialLockCheckBox_Unchecked" />
 
-
-            <Grid
-                Grid.Row="4"
-                Grid.ColumnSpan="4"
-                Margin="40,0"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="2.5*" />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <CheckBox
-                    x:Name="CountLockCheckBox"
-                    Margin="5,0"
-                    HorizontalAlignment="Stretch"
-                    Checked="CountLockCheckBox_Checked"
-                    Content="🔒️"
-                    Unchecked="CountLockCheckBox_Unchecked" />
-                <Grid Grid.Column="1" Margin="50,0,0,0">
-                    <TextBox
-                        x:Name="CountTextBox"
-                        Grid.ColumnSpan="2"
-                        Margin="5"
-                        HorizontalContentAlignment="Right"
-                        MaxLength="2"
-                        MaxLines="1" />
+                    <Grid Grid.Column="1" Margin="0,4">
+                        <TextBox
+                            x:Name="SerialTextBox"
+                            Margin="0,0,20,0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            MaxLength="8"
+                            MaxLines="1" />
+                        <UniformGrid
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Columns="1"
+                            Rows="2">
+                            <Button
+                                Height="Auto"
+                                Padding="1"
+                                Click="SerialNext_Click"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Style="{StaticResource MaterialDesignToolButton}">
+                                <materialDesign:PackIcon Kind="Plus" />
+                            </Button>
+                            <Button
+                                Height="Auto"
+                                Padding="1"
+                                Click="SerialBack_Click"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Style="{StaticResource MaterialDesignToolButton}">
+                                <materialDesign:PackIcon Kind="Minus" />
+                            </Button>
+                        </UniformGrid>
+                    </Grid>
                 </Grid>
-                <Button
-                    x:Name="CountBack"
+
+                <Grid
                     Grid.Column="2"
-                    Margin="5,0"
-                    Click="CountBack_Click"
-                    Content="◀" />
-                <Button
-                    x:Name="CountNext"
-                    Grid.Column="3"
-                    Margin="5,0"
-                    Click="CountNext_Click"
-                    Content="▶" />
+                    Margin="0,4"
+                    VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="1.5*" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox
+                        x:Name="CountLockCheckBox"
+                        Margin="5,0"
+                        HorizontalAlignment="Stretch"
+                        Checked="CountLockCheckBox_Checked"
+                        Content="🔒️"
+                        Unchecked="CountLockCheckBox_Unchecked" />
+
+                    <Grid Grid.Column="1">
+                        <TextBox
+                            x:Name="CountTextBox"
+                            Margin="0,0,20,0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            MaxLength="2"
+                            MaxLines="1" />
+                        <UniformGrid
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Columns="1"
+                            Rows="2">
+                            <Button
+                                Height="Auto"
+                                Padding="1"
+                                Click="CountNext_Click"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Style="{StaticResource MaterialDesignToolButton}">
+                                <materialDesign:PackIcon Kind="Plus" />
+                            </Button>
+                            <Button
+                                Height="Auto"
+                                Padding="1"
+                                Click="CountBack_Click"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Style="{StaticResource MaterialDesignToolButton}">
+                                <materialDesign:PackIcon Kind="Minus" />
+                            </Button>
+                        </UniformGrid>
+                    </Grid>
+                </Grid>
             </Grid>
-
-
-
-
 
         </Grid>
 
