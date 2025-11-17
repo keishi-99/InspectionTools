@@ -8,7 +8,7 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="320"
-    Height="400"
+    Height="380"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -16,7 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
             <RowDefinition Height="0.5*" />
-            <RowDefinition Height="6*" />
+            <RowDefinition Height="5.5*" />
         </Grid.RowDefinitions>
 
         <Grid>
@@ -152,10 +152,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
-                <RowDefinition Height="0.5*" />
+                <RowDefinition Height="0.25*" />
                 <RowDefinition />
                 <RowDefinition />
-                <RowDefinition Height="0.5*" />
+                <RowDefinition Height="0.25*" />
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -239,7 +239,6 @@
                 x:Name="FgOscRotationRButton"
                 Grid.Row="4"
                 Grid.Column="2"
-                Height="Auto"
                 Margin="10,0"
                 Padding="1"
                 Click="FgOscRotationRButton_Click"
@@ -257,7 +256,6 @@
                 x:Name="FgOscRotationButton"
                 Grid.Row="4"
                 Grid.Column="3"
-                Height="Auto"
                 Margin="10,0"
                 Padding="1"
                 Click="FgOscRotationButton_Click"
