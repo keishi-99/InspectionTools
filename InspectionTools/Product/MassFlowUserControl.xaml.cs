@@ -447,14 +447,12 @@ public void SetMainWindow(MainWindow mainWindow) {
                 await Task.WhenAll(tasks);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    DcsNumberTextBox.Text = "OFF";
-                    //DcsOffRadioButton.IsChecked = true;
+                    DcsNumberTextBox.Text = _dicSwitchDcs[0].text;
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {
                     FgOscRotationButton.IsEnabled = true;
                     FgOscRotationRButton.IsEnabled = true;
-                    FgOscNumberTextBox.Text = "OFF";
-                    //FgOscRange0RadioButton.IsChecked = true;
+                    FgOscNumberTextBox.Text = _dicTextFgOsc[0];
                 }
 
                 DcsComboBox.IsEnabled = false;
@@ -608,7 +606,7 @@ public void SetMainWindow(MainWindow mainWindow) {
 
                 // テキストボックス更新
                 var settingNumber = new InstClass[] { _instOsc, _instFg01, _instFg02_1 }
-                  .FirstOrDefault(x => x.SignalType == 0)
+                  .FirstOrDefault(x => x.SignalType != 0)
                   ?.SettingNumber ?? 0;
 
                 FgOscNumberTextBox.Text = _dicTextFgOsc[settingNumber];
