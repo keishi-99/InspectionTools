@@ -35,17 +35,17 @@
                 x:Name="DmmComboBox"
                 Margin="10,0"
                 VerticalAlignment="Center"
+                materialDesign:HintAssist.Hint="DMM"
                 IsEditable="True"
-                IsReadOnly="True"
-                Text="[DMM]" />
+                IsReadOnly="True" />
             <ComboBox
                 x:Name="DcsComboBox"
                 Grid.Row="1"
                 Margin="10,0"
                 VerticalAlignment="Center"
+                materialDesign:HintAssist.Hint="DCS"
                 IsEditable="True"
-                IsReadOnly="True"
-                Text="[DCS]" />
+                IsReadOnly="True" />
 
             <!--  2  -->
             <DockPanel
@@ -79,9 +79,9 @@
                     x:Name="Fg01ComboBox"
                     Margin="10,0"
                     VerticalAlignment="Center"
+                    materialDesign:HintAssist.Hint="FG"
                     IsEditable="True"
-                    IsReadOnly="True"
-                    Text="[FG]" />
+                    IsReadOnly="True" />
             </Grid>
             <Grid
                 x:Name="FgNumberGrid2"
@@ -97,17 +97,17 @@
                     x:Name="Fg02_1ComboBox"
                     Margin="10,0"
                     VerticalAlignment="Center"
+                    materialDesign:HintAssist.Hint="FG1"
                     IsEditable="True"
-                    IsReadOnly="True"
-                    Text="[FG1]" />
+                    IsReadOnly="True" />
                 <ComboBox
                     x:Name="Fg02_2ComboBox"
                     Grid.Row="1"
                     Margin="10,0"
                     VerticalAlignment="Center"
+                    materialDesign:HintAssist.Hint="FG2"
                     IsEditable="True"
-                    IsReadOnly="True"
-                    Text="[FG2]" />
+                    IsReadOnly="True" />
             </Grid>
 
             <!--  3  -->
@@ -132,9 +132,9 @@
                 Grid.Row="2"
                 Margin="10,0"
                 VerticalAlignment="Center"
+                materialDesign:HintAssist.Hint="OSC"
                 IsEditable="True"
-                IsReadOnly="True"
-                Text="[OSC]" />
+                IsReadOnly="True" />
             <CheckBox
                 x:Name="HotKeyChekBox"
                 Grid.Row="2"
@@ -266,11 +266,11 @@
                 x:Name="FgOscRotationButton"
                 Grid.RowSpan="5"
                 Grid.Column="2"
-                Height="200"
-                Margin="17.5,0"
-                VerticalAlignment="Center"
+                Margin="17.5,5"
+                Padding="1"
                 Click="FgOscRotationButton_Click"
-                IsEnabled="False">
+                IsEnabled="False"
+                Style="{StaticResource MaterialDesignPaperButton}">
                 <StackPanel>
                     <TextBlock HorizontalAlignment="Center" Text="FG" />
                     <TextBlock HorizontalAlignment="Center" Text="+" />

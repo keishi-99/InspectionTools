@@ -1,7 +1,6 @@
 ﻿using InspectionTools.Common;
 using MaterialDesignThemes.Wpf;
 using System.Data;
-using System.Drawing.Printing;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
@@ -189,7 +188,7 @@ namespace InspectionTools {
                 return;
             }
 
-            var collection = new List<string> { name };
+            var collection = new List<string> { string.Empty };
 
             foreach (var signalType in signalTypes) {
                 var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
@@ -354,7 +353,7 @@ namespace InspectionTools {
         private void ThemeToggle_Unchecked(object sender, RoutedEventArgs e) {
             SetTheme(BaseTheme.Light);
         }
-        private void Timer_Tick(object? sender, EventArgs e) { 
+        private void Timer_Tick(object? sender, EventArgs e) {
             Time.Text = DateTime.Now.ToString("HH:mm:ss");
         }
 

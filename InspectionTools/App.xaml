@@ -64,7 +64,7 @@
                 </Style.Triggers>
             </Style>
 
-
+            <!--  ToggleButton  -->
             <Style
                 x:Key="MaterialDesign2ToggleButtonScaled"
                 BasedOn="{StaticResource MaterialDesignSwitchToggleButton}"
