@@ -322,7 +322,7 @@
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Grid.ColumnSpan="2"
             Padding="40"
             HorizontalAlignment="Center"
