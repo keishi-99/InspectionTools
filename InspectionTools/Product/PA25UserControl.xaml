@@ -33,7 +33,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM"
-            IsEditable="True"
             IsReadOnly="True" />
 
         <ComboBox
@@ -42,7 +41,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="FG"
-            IsEditable="True"
             IsReadOnly="True" />
         <ComboBox
             x:Name="OscComboBox"
@@ -51,7 +49,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="OSC"
-            IsEditable="True"
             IsReadOnly="True" />
 
         <Button

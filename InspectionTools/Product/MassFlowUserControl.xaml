@@ -37,7 +37,6 @@
                 Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="DMM"
-                IsEditable="True"
                 IsReadOnly="True" />
             <ComboBox
                 x:Name="DcsComboBox"
@@ -45,32 +44,21 @@
                 Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="DCS"
-                IsEditable="True"
                 IsReadOnly="True" />
 
             <!--  2  -->
-            <DockPanel
+            <ComboBox
+                x:Name="FgNumberComboBox"
                 Grid.Column="1"
-                Margin="10,0"
-                VerticalAlignment="Center">
-                <Label
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Content="FG数" />
-                <ComboBox
-                    x:Name="FgNumberComboBox"
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    DockPanel.Dock="Right"
-                    IsEditable="True"
-                    IsReadOnly="True"
-                    SelectedIndex="0"
-                    SelectionChanged="FgNumberComboBox_SelectionChanged">
-                    <ComboBoxItem Content="1" />
-                    <ComboBoxItem Content="2" />
-                </ComboBox>
-            </DockPanel>
+                Margin="5,0"
+                VerticalAlignment="Center"
+                materialDesign:HintAssist.Hint="FG数"
+                IsReadOnly="True"
+                SelectedIndex="0"
+                SelectionChanged="FgNumberComboBox_SelectionChanged">
+                <ComboBoxItem Content="1" />
+                <ComboBoxItem Content="2" />
+            </ComboBox>
             <Grid
                 x:Name="FgNumberGrid1"
                 Grid.Row="1"
@@ -81,7 +69,6 @@
                     Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG"
-                    IsEditable="True"
                     IsReadOnly="True" />
             </Grid>
             <Grid
@@ -99,7 +86,6 @@
                     Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG1"
-                    IsEditable="True"
                     IsReadOnly="True" />
                 <ComboBox
                     x:Name="Fg02_2ComboBox"
@@ -107,7 +93,6 @@
                     Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG2"
-                    IsEditable="True"
                     IsReadOnly="True" />
             </Grid>
 
@@ -134,7 +119,6 @@
                 Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="OSC"
-                IsEditable="True"
                 IsReadOnly="True" />
             <CheckBox
                 x:Name="HotKeyChekBox"
