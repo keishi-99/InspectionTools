@@ -16,9 +16,10 @@
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition Height="0.25*" />
             <RowDefinition />
             <RowDefinition />
-            <RowDefinition Height="0.5*" />
+            <RowDefinition Height="0.25*" />
             <RowDefinition Height="0.5*" />
             <RowDefinition />
             <RowDefinition />
@@ -53,14 +54,14 @@
 
         <Button
             x:Name="ConnectButton"
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
         <Button
             x:Name="ReleaseButton"
-            Grid.Row="2"
+            Grid.Row="3"
             Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
@@ -70,7 +71,7 @@
 
         <CheckBox
             x:Name="HotKeyChekBox"
-            Grid.Row="3"
+            Grid.Row="4"
             Margin="20,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
@@ -79,13 +80,13 @@
             Unchecked="HotKeyChekBox_Unchecked" />
 
         <TextBlock
-            Grid.Row="5"
+            Grid.Row="6"
             Grid.Column="1"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Text="FG" />
         <UniformGrid
-            Grid.Row="6"
+            Grid.Row="7"
             Grid.Column="1"
             Margin="10,0"
             Rows="1">
@@ -106,12 +107,12 @@
         </UniformGrid>
 
         <TextBlock
-            Grid.Row="5"
+            Grid.Row="6"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Text="OSC" />
         <UniformGrid
-            Grid.Row="6"
+            Grid.Row="7"
             Margin="10,0"
             Rows="1">
             <Button
@@ -130,7 +131,7 @@
 
         <TextBox
             x:Name="FgRotateRangeTextBox"
-            Grid.Row="7"
+            Grid.Row="8"
             Margin="10,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
@@ -139,7 +140,7 @@
             IsReadOnly="True" />
         <TextBox
             x:Name="OscRotateRangeTextBox"
-            Grid.Row="7"
+            Grid.Row="8"
             Grid.Column="1"
             Margin="10,0"
             VerticalAlignment="Center"
@@ -151,7 +152,7 @@
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
-            Grid.RowSpan="5"
+            Grid.RowSpan="9"
             Grid.ColumnSpan="2"
             Padding="20,20,20,20"
             HorizontalAlignment="Center"

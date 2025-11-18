@@ -8,7 +8,7 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
-    Height="240"
+    Height="250"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -17,6 +17,7 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition Height="0.25*" />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition Height="0.5*" />
@@ -66,14 +67,14 @@
 
         <Button
             x:Name="ConnectButton"
-            Grid.Row="3"
+            Grid.Row="4"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
         <Button
             x:Name="ReleaseButton"
-            Grid.Row="3"
+            Grid.Row="4"
             Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
@@ -83,7 +84,7 @@
 
         <CheckBox
             x:Name="HotKeyChekBox"
-            Grid.Row="4"
+            Grid.Row="5"
             Margin="20,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
@@ -91,26 +92,26 @@
             Content="HotKey"
             Unchecked="HotKeyChekBox_Unchecked" />
 
-        <TextBlock
-            Grid.Row="5"
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="待機時間(ms)" />
         <TextBox
             x:Name="WaitTimeTextBox"
-            Grid.Row="4"
+            Grid.Row="5"
             Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Right"
             Text="5000" />
+        <TextBlock
+            Grid.Row="6"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="待機時間(ms)" />
 
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
             Grid.Row="1"
-            Grid.RowSpan="4"
+            Grid.RowSpan="7"
             Grid.ColumnSpan="2"
             Padding="20,20,20,20"
             HorizontalAlignment="Center"
