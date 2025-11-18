@@ -113,6 +113,7 @@
                     Grid.Column="1"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
+                    Focusable="False"
                     IsReadOnly="True"
                     Text="---"
                     TextAlignment="Center" />
@@ -147,6 +148,7 @@
                     VerticalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
+                    Focusable="False"
                     IsReadOnly="True"
                     Text="01"
                     TextAlignment="Center" />
@@ -183,6 +185,7 @@
                     Grid.Column="1"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
+                    Focusable="False"
                     IsReadOnly="True"
                     Text="---"
                     TextAlignment="Center" />

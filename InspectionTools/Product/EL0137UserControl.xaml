@@ -84,6 +84,7 @@
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
+            Focusable="False"
             IsReadOnly="true" />
 
 
