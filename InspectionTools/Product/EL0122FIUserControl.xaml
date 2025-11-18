@@ -31,7 +31,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM-V"
-            IsEditable="True"
             IsReadOnly="True" />
         <ComboBox
             x:Name="Dmm02ComboBox"
@@ -39,7 +38,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM-A"
-            IsEditable="True"
             IsReadOnly="True" />
 
         <ComboBox
@@ -48,7 +46,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="FG"
-            IsEditable="True"
             IsReadOnly="True" />
         <ComboBox
             x:Name="OscComboBox"
@@ -57,7 +54,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="OSC"
-            IsEditable="True"
             IsReadOnly="True" />
 
         <ComboBox
@@ -66,7 +62,6 @@
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DCS"
-            IsEditable="True"
             IsReadOnly="True" />
 
         <Button
