@@ -60,6 +60,7 @@
             Margin="20,0"
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
+            Focusable="False"
             IsReadOnly="True"
             TextWrapping="Wrap" />
 
@@ -76,6 +77,7 @@
                 Margin="5,0"
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
+                Focusable="False"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
             <TextBox
@@ -84,6 +86,7 @@
                 Margin="5,0"
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
+                Focusable="False"
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
         </Grid>

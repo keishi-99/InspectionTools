@@ -135,6 +135,7 @@
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
+            Focusable="False"
             IsReadOnly="True" />
         <TextBox
             x:Name="OscRotateRangeTextBox"
@@ -144,6 +145,7 @@
             VerticalAlignment="Center"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center"
+            Focusable="False"
             IsReadOnly="True" />
 
 
