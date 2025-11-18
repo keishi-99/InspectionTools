@@ -28,7 +28,7 @@
 
         <ComboBox
             x:Name="DmmComboBox"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM"
             IsEditable="True"
@@ -36,7 +36,7 @@
         <ComboBox
             x:Name="OscComboBox"
             Grid.Column="1"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="OSC"
             IsEditable="True"

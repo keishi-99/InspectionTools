@@ -37,6 +37,11 @@
                 </Setter>
             </Style>
 
+            <!--  ComboBox  -->
+            <Style BasedOn="{StaticResource MaterialDesignFloatingHintComboBox}" TargetType="ComboBox">
+                <Setter Property="materialDesign:TextFieldAssist.HasClearButton" Value="True" />
+            </Style>
+
             <!--  CheckBox  -->
             <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="{x:Type CheckBox}">
                 <Setter Property="HorizontalAlignment" Value="Center" />
