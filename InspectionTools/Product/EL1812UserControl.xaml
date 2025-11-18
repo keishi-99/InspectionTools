@@ -8,13 +8,14 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="320"
-    Height="310"
+    Height="330"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <Grid x:Name="MainGrid" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
+            <RowDefinition Height="0.25*" />
             <RowDefinition Height="4.5*" />
         </Grid.RowDefinitions>
 
@@ -82,7 +83,7 @@
                 Unchecked="HotKeyChekBox_Unchecked" />
         </Grid>
 
-        <Grid x:Name="MainGrid02" Grid.Row="1">
+        <Grid x:Name="MainGrid02" Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -355,9 +356,7 @@
 
         <Common:WaitingCircle
             x:Name="ProgressRing"
-            Grid.Row="2"
-            Grid.RowSpan="8"
-            Grid.ColumnSpan="4"
+            Grid.RowSpan="3"
             Padding="20,20,20,20"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
