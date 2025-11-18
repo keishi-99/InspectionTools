@@ -34,7 +34,7 @@
             <!--  1  -->
             <ComboBox
                 x:Name="DmmComboBox"
-                Margin="10,0"
+                Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="DMM"
                 IsEditable="True"
@@ -42,7 +42,7 @@
             <ComboBox
                 x:Name="DcsComboBox"
                 Grid.Row="1"
-                Margin="10,0"
+                Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="DCS"
                 IsEditable="True"
@@ -78,7 +78,7 @@
                 Visibility="Visible">
                 <ComboBox
                     x:Name="Fg01ComboBox"
-                    Margin="10,0"
+                    Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG"
                     IsEditable="True"
@@ -96,7 +96,7 @@
                 </Grid.RowDefinitions>
                 <ComboBox
                     x:Name="Fg02_1ComboBox"
-                    Margin="10,0"
+                    Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG1"
                     IsEditable="True"
@@ -104,7 +104,7 @@
                 <ComboBox
                     x:Name="Fg02_2ComboBox"
                     Grid.Row="1"
-                    Margin="10,0"
+                    Margin="5,0"
                     VerticalAlignment="Center"
                     materialDesign:HintAssist.Hint="FG2"
                     IsEditable="True"
@@ -131,7 +131,7 @@
             <ComboBox
                 x:Name="OscComboBox"
                 Grid.Row="2"
-                Margin="10,0"
+                Margin="5,0"
                 VerticalAlignment="Center"
                 materialDesign:HintAssist.Hint="OSC"
                 IsEditable="True"

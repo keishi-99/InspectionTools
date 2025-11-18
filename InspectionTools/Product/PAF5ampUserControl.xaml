@@ -26,7 +26,7 @@
 
         <ComboBox
             x:Name="DcsComboBox"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DCS"
             IsEditable="True"
@@ -34,7 +34,7 @@
         <ComboBox
             x:Name="DmmComboBox"
             Grid.Column="1"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM"
             IsEditable="True"
@@ -43,7 +43,7 @@
         <ComboBox
             x:Name="FgComboBox"
             Grid.Row="1"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="FG"
             IsEditable="True"
@@ -52,7 +52,7 @@
             x:Name="OscComboBox"
             Grid.Row="1"
             Grid.Column="1"
-            Margin="10,0"
+            Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="OSC"
             IsEditable="True"
