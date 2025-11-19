@@ -19,7 +19,7 @@ namespace InspectionTools.Product {
     public partial class MassFlowUserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -967,15 +967,31 @@ public void SetMainWindow(MainWindow mainWindow) {
         // アナログトリム4mA
         private void ActionHotkeyNumDivide() {
             var (hWnd, windowText) = GetActiveWindow;
-            if (windowText.ToString() == "ANLOG TRIM") {
-                AnalogTrim4mA(hWnd);
+            switch (windowText.ToString()) {
+                case "ANLOG TRIM": {
+                        AnalogTrim4mA(hWnd);
+                        break;
+                    }
+                default: {
+                        if (MainWindow.IsProcessing) { return; }
+                        RotationFgOsc(true);
+                        break;
+                    }
             }
         }
         // アナログトリム20mA
         private void ActionHotkeyNumMultiply() {
             var (hWnd, windowText) = GetActiveWindow;
-            if (windowText.ToString() == "ANLOG TRIM") {
-                AnalogTrim20mA(hWnd);
+            switch (windowText.ToString()) {
+                case "ANLOG TRIM": {
+                        AnalogTrim20mA(hWnd);
+                        break;
+                    }
+                default: {
+                        if (MainWindow.IsProcessing) { return; }
+                        RotationFgOsc(true);
+                        break;
+                    }
             }
         }
         // 受信ボタン実行
@@ -1271,7 +1287,7 @@ public void SetMainWindow(MainWindow mainWindow) {
 
         private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (!IsLoaded) return;
-            FgPanelVisible(); 
+            FgPanelVisible();
         }
 
 
