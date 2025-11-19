@@ -205,7 +205,7 @@ namespace InspectionTools {
             instClass.Name = comboBox.Text;
             instClass.Index = comboBox.SelectedIndex;
 
-            if (instClass.Index <= 0) { return; }
+            if (instClass.Index == -1) { return; }
 
             var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
             instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
