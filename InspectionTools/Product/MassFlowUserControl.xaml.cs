@@ -821,7 +821,7 @@ namespace InspectionTools.Product {
             var childHandles = FindChildWindows(hWnd);
             _ = PostMessage(childHandles[7], BmClick, 0, 0);    // STARTクリック
 
-            Task.Delay(1000).Wait();
+            Task.Delay(2000).Wait();
 
             ActivateAndBringToFront(hWnd);
 
@@ -964,7 +964,7 @@ namespace InspectionTools.Product {
                     }
             }
         }
-        // アナログトリム4mA
+        // アナログトリム4mA または FG&OSCローテーション
         private void ActionHotkeyNumDivide() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
@@ -974,12 +974,12 @@ namespace InspectionTools.Product {
                     }
                 default: {
                         if (MainWindow.IsProcessing) { return; }
-                        RotationFgOsc(true);
+                        RotationFgOsc(false);
                         break;
                     }
             }
         }
-        // アナログトリム20mA
+        // アナログトリム20mA または FG&OSCローテーション
         private void ActionHotkeyNumMultiply() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
