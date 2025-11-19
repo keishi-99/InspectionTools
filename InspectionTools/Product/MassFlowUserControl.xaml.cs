@@ -769,10 +769,9 @@ namespace InspectionTools.Product {
             _ = PostMessage(childHandles2[0], BmClick, 0, 0);    // メッセージウィンドウ「はい」クリック
         }
         // アナログトリムオープン
-        private void AnalogTrimOpen(IntPtr hWnd) {
+        private async void AnalogTrimOpen(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
-            //Application.DoEvents();
 
             _ = PostMessage(hWnd, WmCommand, MenuItemIdAnalogTrim, 0);
 
@@ -798,87 +797,78 @@ namespace InspectionTools.Product {
             (hWnd2, var windowText) = GetActiveWindow;
 
             while (windowText != "ANLOG TRIM") {
-                Task.Delay(1000).Wait();
+                await Task.Delay(500);
                 (hWnd2, windowText) = GetActiveWindow;
             }
 
-            Task.Delay(1000).Wait();
+            await Task.Delay(500);
 
             ActivateAndBringToFront(hWnd);
 
             var childHandles2 = FindChildWindows(hWnd2);
             _ = PostMessage(childHandles2[5], WmLButtonDown, 0, 0);    // 入力欄フォーカス
 
-            //Application.DoEvents();
             VisibleProgressImage(false);
         }
         // アナログトリムスタート
-        private void AnalogTrimStart(IntPtr hWnd) {
+        private async void AnalogTrimStart(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
-            //Application.DoEvents();
 
             var childHandles = FindChildWindows(hWnd);
             _ = PostMessage(childHandles[7], BmClick, 0, 0);    // STARTクリック
 
-            Task.Delay(2000).Wait();
+            await Task.Delay(500);
 
             ActivateAndBringToFront(hWnd);
 
             _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
             _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
 
-            //Application.DoEvents();
             VisibleProgressImage(false);
         }
         // アナログトリムクローズ
         private void AnalogTrimClose(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
-            //Application.DoEvents();
 
             var childHandles = FindChildWindows(hWnd);
             _ = PostMessage(childHandles[0], BmClick, 0, 0);    // CLOSEクリック
 
-            //Application.DoEvents();
             VisibleProgressImage(false);
         }
         // アナログトリム4mA
-        private void AnalogTrim4mA(IntPtr hWnd) {
+        private async void AnalogTrim4mA(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
-            //Application.DoEvents();
 
             var childHandles = FindChildWindows(hWnd);
             _ = PostMessage(childHandles[2], BmClick, 0, 0);    // 4mAクリック
 
-            Task.Delay(1000).Wait();
+            await Task.Delay(500);
 
             ActivateAndBringToFront(hWnd);
 
             _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
             _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
 
-            //Application.DoEvents();
             VisibleProgressImage(false);
         }
         // アナログトリム20mA
-        private void AnalogTrim20mA(IntPtr hWnd) {
+        private async void AnalogTrim20mA(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
-            //Application.DoEvents();
 
             var childHandles = FindChildWindows(hWnd);
             _ = PostMessage(childHandles[3], BmClick, 0, 0);    // 20mAクリック
 
-            Task.Delay(1000).Wait();
+            await Task.Delay(500);
 
             ActivateAndBringToFront(hWnd);
 
             _ = PostMessage(childHandles[5], WmLButtonDown, 0, 0);  // 入力欄フォーカス
             _ = PostMessage(childHandles[5], EmSetSel, 0, -1);      // 入力欄全選択
 
-            //Application.DoEvents();
             VisibleProgressImage(false);
         }
         // アクティブウィンドウ取得
