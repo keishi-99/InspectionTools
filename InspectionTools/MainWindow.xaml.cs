@@ -243,7 +243,7 @@ namespace InspectionTools {
 
         // デバイス接続
         public static async Task<string> ConnectDeviceAsync(InstClass instClass) {
-            return instClass.Index < 1
+            return instClass.Index == -1
                 ? ""
                 : instClass.SignalType switch {
                     1 => await ConnectDeviceAdcAsync(instClass),
