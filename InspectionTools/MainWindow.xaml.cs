@@ -188,7 +188,7 @@ namespace InspectionTools {
                 return;
             }
 
-            var collection = new List<string> { string.Empty };
+            var collection = new List<string> { };
 
             foreach (var signalType in signalTypes) {
                 var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
