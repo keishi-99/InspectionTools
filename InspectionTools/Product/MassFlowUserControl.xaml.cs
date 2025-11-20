@@ -803,7 +803,7 @@ namespace InspectionTools.Product {
 
             await Task.Delay(500);
 
-            ActivateAndBringToFront(hWnd);
+            ActivateAndBringToFront(hWnd2);
 
             var childHandles2 = FindChildWindows(hWnd2);
             _ = PostMessage(childHandles2[5], WmLButtonDown, 0, 0);    // 入力欄フォーカス
