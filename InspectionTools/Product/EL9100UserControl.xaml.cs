@@ -16,7 +16,7 @@ namespace InspectionTools.Product {
     public partial class EL9100UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -59,8 +59,8 @@ public void SetMainWindow(MainWindow mainWindow) {
                 _ => string.Empty,
             };
             _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F5,R8,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 10;*OPC?",
+                1 => "*RST,F5,R7,*OPC?",
+                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
                 _ => string.Empty,
             };
         }
@@ -138,8 +138,8 @@ public void SetMainWindow(MainWindow mainWindow) {
 
                 dmmInstClass.InstCommand = func switch {
                     "DCI" => dmmInstClass.SignalType switch {
-                        1 => "*RST,F5,R8,*OPC?",
-                        2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 10;*OPC?",
+                        1 => "*RST,F5,R7,*OPC?",
+                        2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
                         _ => throw new ApplicationException(),
                     },
                     "DCV" => dmmInstClass.SignalType switch {
