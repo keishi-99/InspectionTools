@@ -2,6 +2,7 @@
 using System.Data;
 using System.IO;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using Tesseract;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
@@ -166,6 +167,8 @@ namespace InspectionTools.Product {
                 return;
             }
 
+            OcrImage.Source = ConvertBitmapToBitmapSource(captured);
+
             // 画像ファイルをOCRを実行
             string ocrResult;
             try {
@@ -178,6 +181,20 @@ namespace InspectionTools.Product {
 
             // 結果を表示
             OcrResult.Text = ocrResult;
+        }
+        public static BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap) {
+            using var memory = new MemoryStream();
+            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+            memory.Position = 0;
+
+            var bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = memory;
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.EndInit();
+            bitmapImage.Freeze(); // UIスレッド以外対策
+
+            return bitmapImage;
         }
         public static string PerformOCR(Bitmap image) {
             try {
