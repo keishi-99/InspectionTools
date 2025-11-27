@@ -7,9 +7,7 @@ using System.Windows.Controls;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainWindow;
-using Brushes = System.Windows.Media.Brushes;
 using MessageBox = System.Windows.MessageBox;
-using RadioButton = System.Windows.Controls.RadioButton;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
@@ -1243,31 +1241,6 @@ namespace InspectionTools.Product {
         private void FgOscRotationRButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
             RotationFgOsc(false);
-        }
-
-        private void DcsRadioButton_Checked(object sender, RoutedEventArgs e) {
-            if (sender is RadioButton checkedRadioButton) {
-                checkedRadioButton.FontWeight = FontWeights.Bold;
-                checkedRadioButton.Foreground = Brushes.Black;
-            }
-        }
-        private void DcsRadioButton_Unchecked(object sender, RoutedEventArgs e) {
-            if (sender is RadioButton checkedRadioButton) {
-                checkedRadioButton.FontWeight = FontWeights.Regular;
-                checkedRadioButton.Foreground = Brushes.Gray;
-            }
-        }
-        private void FgOscRadioButton_Checked(object sender, RoutedEventArgs e) {
-            if (sender is RadioButton checkedRadioButton) {
-                checkedRadioButton.FontWeight = FontWeights.Bold;
-                checkedRadioButton.Foreground = Brushes.Black;
-            }
-        }
-        private void FgOscRadioButton_Unchecked(object sender, RoutedEventArgs e) {
-            if (sender is RadioButton checkedRadioButton) {
-                checkedRadioButton.FontWeight = FontWeights.Regular;
-                checkedRadioButton.Foreground = Brushes.Gray;
-            }
         }
 
         private void SerialLockCheckBox_Checked(object sender, RoutedEventArgs e) { SerialLockToggle(); }
