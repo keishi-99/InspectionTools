@@ -99,6 +99,7 @@ namespace InspectionTools {
         // 機器リスト表示
         private void ShowInstList() {
             Common.InstListWindow frm1 = new();
+            frm1.Owner = this;
             frm1.ShowDialog();
             LoadInstList();
             // ドロワーを閉じる
