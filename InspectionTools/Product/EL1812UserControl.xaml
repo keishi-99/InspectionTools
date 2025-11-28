@@ -129,13 +129,10 @@
                 Content="OSC"
                 IsEnabled="False" />
 
-            <Grid
-                Grid.Row="2"
-                Margin="5,0"
-                VerticalAlignment="Center">
+            <Grid Grid.Row="2" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition />
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>

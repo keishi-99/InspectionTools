@@ -26,30 +26,17 @@
                 <!--<Setter Property="Height" Value="Auto" />-->
             </Style>
 
-            <!--  RadioButton  -->
-            <Style TargetType="RadioButton">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="RadioButton">
-                            <ContentPresenter />
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
             <!--  ComboBox  -->
             <Style BasedOn="{StaticResource MaterialDesignFloatingHintComboBox}" TargetType="ComboBox">
                 <Setter Property="materialDesign:TextFieldAssist.HasClearButton" Value="True" />
             </Style>
 
             <!--  CheckBox  -->
-            <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="{x:Type CheckBox}">
+            <Style BasedOn="{StaticResource MaterialDesignPaperButton}" TargetType="{x:Type CheckBox}">
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="Padding" Value="1" />
                 <!--<Setter Property="Height" Value="Auto" />-->
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
                 <Setter Property="Cursor" Value="Hand" />
 
                 <!--  非チェック時の文字色  -->
