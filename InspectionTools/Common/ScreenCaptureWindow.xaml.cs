@@ -83,10 +83,14 @@ namespace InspectionTools.Common {
             SelectionBorder.Visibility = Visibility.Collapsed;
 
             // 画面キャプチャ
-            _capturedImage = _model switch {
-                "EL9100" => CaptureScreenEL9100(point),
-                _ => CaptureScreen(point),
-            };
+            switch (_model) {
+                case "EL9100":
+                    _capturedImage = CaptureScreenEL9100(point);
+                    break;
+                default:
+                    _capturedImage = CaptureScreen(point);
+                    break;
+            }
 
             // アプリケーションの終了
             this.Close();
