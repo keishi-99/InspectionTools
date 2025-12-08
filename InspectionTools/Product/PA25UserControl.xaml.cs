@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class PA25UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -299,8 +299,11 @@ public void SetMainWindow(MainWindow mainWindow) {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm, _instFg, _instOsc];
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                     _instDmm.CurrentMode = DmmMode.DCV;
@@ -371,7 +374,7 @@ public void SetMainWindow(MainWindow mainWindow) {
                     _ => throw new ApplicationException(),
                 };
 
-                await MainWindow.ConnectDeviceAsync(dmmInstClass);
+                MainWindow.ConnectDevice(dmmInstClass);
 
             } finally {
                 VisibleProgressImage(false);

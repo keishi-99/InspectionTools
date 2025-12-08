@@ -15,7 +15,7 @@ namespace InspectionTools.Product {
     public partial class PAF5UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -132,8 +132,11 @@ public void SetMainWindow(MainWindow mainWindow) {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc];
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateRangeTextBox.Text = "OFF";

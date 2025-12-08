@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class EL1812UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -194,8 +194,11 @@ public void SetMainWindow(MainWindow mainWindow) {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm, _instFg, _instOsc];
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateBackButton.IsEnabled = true;
@@ -289,7 +292,7 @@ public void SetMainWindow(MainWindow mainWindow) {
         }
         private static async Task OutputFgAsync(FgInstClass fgInstClass, string cmd) {
             fgInstClass.InstCommand = $"{cmd};";
-            await MainWindow.ConnectDeviceAsync(fgInstClass);
+            MainWindow.ConnectDevice(fgInstClass);
         }
         // OSC切り替え
         private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {

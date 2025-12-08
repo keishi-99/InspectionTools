@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class EL4001UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -128,8 +128,11 @@ public void SetMainWindow(MainWindow mainWindow) {
                 FormatSet();
 
                 InstClass[] devices = [_instDcs, _instDmm01, _instDmm02, _instOsc];
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
@@ -224,7 +227,7 @@ public void SetMainWindow(MainWindow mainWindow) {
                     _ => throw new ApplicationException(),
                 };
 
-                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+                MainWindow.ConnectDevice(dcsInstClass);
                 DcsNumberLabel.Text = settingNumber.ToString("00");
                 DcsRangeLabel.Text = _dicSwitchDcs[settingNumber].text;
 
@@ -246,7 +249,7 @@ public void SetMainWindow(MainWindow mainWindow) {
                     _ => throw new ApplicationException(),
                 };
 
-                await MainWindow.ConnectDeviceAsync(oscInstClass);
+                MainWindow.ConnectDevice(oscInstClass);
 
                 OscRangeLabel.Text = rangeText;
 

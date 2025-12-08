@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class EL0122FIUserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -108,8 +108,11 @@ public void SetMainWindow(MainWindow mainWindow) {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc, _instDcs];
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
@@ -187,7 +190,7 @@ public void SetMainWindow(MainWindow mainWindow) {
         private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
             try {
                 dcsInstClass.InstCommand = $":OUTPUT {cmd};*OPC?";
-                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+                MainWindow.ConnectDevice(dcsInstClass);
 
             } catch (Exception ex) {
                 Release();
