@@ -533,7 +533,7 @@ namespace InspectionTools.Product {
                     SetForegroundWindow(hWnd);
                 }
 
-                await Task.Run(() => SwitchDcsAsync(_instDcs, i));
+                await SwitchDcsAsync(_instDcs, i);
 
                 // テキストボックス更新
                 DcsNumberTextBox.Text = _dicSwitchDcs[i].text;
@@ -571,7 +571,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private void SwitchDcsAsync(InstClass instClass, int i) {
+        private async Task SwitchDcsAsync(InstClass instClass, int i) {
             if (string.IsNullOrEmpty(instClass.VisaAddress)) { return; }
 
             instClass.SettingNumber = i;
