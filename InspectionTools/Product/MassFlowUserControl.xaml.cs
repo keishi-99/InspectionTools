@@ -677,7 +677,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await Task.Run(() => MainWindow.ReadDmm(dmmInstClass));
 
                 return output;
 
@@ -690,7 +690,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadOsc(oscInstClass, meas);
+                var output = await Task.Run(() => MainWindow.ReadOsc(oscInstClass, meas));
 
                 return output;
 

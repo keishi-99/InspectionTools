@@ -136,7 +136,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await Task.Run(() => MainWindow.ReadDmm(dmmInstClass));
 
                 return output;
 

@@ -190,7 +190,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await Task.Run(() => MainWindow.ReadDmm(dmmInstClass));
 
                 return output;
 
@@ -211,7 +211,7 @@ namespace InspectionTools.Product {
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationFgAsync(fgInstClass);
+                await Task.Run(() => MainWindow.RotationFgAsync(fgInstClass));
 
                 FgRotateRangeTextBox.Text = _dicSwitchFg[fgInstClass.SettingNumber].text;
 
@@ -227,7 +227,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadOsc(oscInstClass, meas);
+                var output = await Task.Run(() => MainWindow.ReadOsc(oscInstClass, meas));
 
                 return output;
 
@@ -248,7 +248,7 @@ namespace InspectionTools.Product {
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationOscAsync(oscInstClass);
+                await Task.Run(() => MainWindow.RotationOscAsync(oscInstClass));
 
                 OscRotateRangeTextBox.Text = _dicSwitchOsc[oscInstClass.SettingNumber].text;
 
