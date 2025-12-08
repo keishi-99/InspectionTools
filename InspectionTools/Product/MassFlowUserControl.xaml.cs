@@ -440,9 +440,11 @@ namespace InspectionTools.Product {
                     2 => [_instDcs, _instDmm, _instFg02_1, _instFg02_2, _instOsc],
                     _ => [_instDcs, _instDmm, _instOsc] // 1, 2 以外の値の場合のデフォルト
                 };
-
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(() => {
+                    foreach (var device in devices) {
+                        MainWindow.ConnectDevice(device);
+                    }
+                });
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberTextBox.Text = _dicSwitchDcs[0].text;
@@ -582,7 +584,7 @@ namespace InspectionTools.Product {
             };
 
             if (string.IsNullOrEmpty(instClass.InstCommand) || instClass.UsbDev is null) { return; }
-            await MainWindow.ConnectDeviceAsync(instClass);
+            MainWindow.ConnectDevice(instClass);
         }
 
         // FG&OSCローテーション
@@ -666,7 +668,7 @@ namespace InspectionTools.Product {
         private static async Task ConnectAndSendCommand(InstClass instClass, string command) {
             if (!string.IsNullOrEmpty(instClass.VisaAddress) && !string.IsNullOrEmpty(command) && instClass.UsbDev is not null) {
                 instClass.InstCommand = command;
-                await MainWindow.ConnectDeviceAsync(instClass);
+                MainWindow.ConnectDevice(instClass);
             }
         }
 

@@ -98,8 +98,9 @@ namespace InspectionTools {
 
         // 機器リスト表示
         private void ShowInstList() {
-            Common.InstListWindow frm1 = new();
-            frm1.Owner = this;
+            Common.InstListWindow frm1 = new() {
+                Owner = this
+            };
             frm1.ShowDialog();
             LoadInstList();
             // ドロワーを閉じる
@@ -243,28 +244,47 @@ namespace InspectionTools {
         }
 
         // デバイス接続
-        public static async Task<string> ConnectDeviceAsync(InstClass instClass) {
+        public static string ConnectDevice(InstClass instClass) {
             return instClass.Index == -1
                 ? ""
                 : instClass.SignalType switch {
-                    1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
-                    3 => await ConnectDeviceVisaAsync(instClass, false),
+                    1 => ConnectDeviceAdcAsync(instClass),
+                    2 or 4 => ConnectDeviceVisaAsync(instClass, true),
+                    3 => ConnectDeviceVisaAsync(instClass, false),
                     _ => throw new ApplicationException(),
                 };
         }
         // Visa接続
-        public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            return await Task.Run(() => {
-                using var usbDev = new USBDeviceManager();
-                usbDev.OpenDev(instClass.VisaAddress);
-                usbDev.OutputDev(instClass.InstCommand);
-                return hasInput ? usbDev.InputDev() : "";
+        public static string ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
+            string? result = null;
+            Exception? error = null;
+
+            var thread = new Thread(() => {
+                try {
+                    using var usbDev = new USBDeviceManager();
+                    usbDev.OpenDev(instClass.VisaAddress);
+                    usbDev.OutputDev(instClass.InstCommand);
+
+                    if (hasInput) {
+                        result = usbDev.InputDev();
+                    }
+                } catch (Exception ex) {
+                    error = ex;
+                }
             });
+
+            thread.SetApartmentState(ApartmentState.STA); // ★最重要
+            thread.Start();
+            thread.Join(); // 完了待ち
+
+            if (error != null)
+                throw new ApplicationException("Visa通信でエラーが発生しました。", error);
+
+            return result ?? "";
         }
         // ADC接続
-        public static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
+        public static string ConnectDeviceAdcAsync(InstClass instClass) {
+            s_semaphore.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -295,7 +315,7 @@ namespace InspectionTools {
                 _ => throw new ApplicationException(),
             };
 
-            var result = await ConnectDeviceAsync(dmmInstClass);
+            var result = ConnectDevice(dmmInstClass);
             decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
 
             return output;
@@ -303,14 +323,14 @@ namespace InspectionTools {
 
         // FG切り替え
         public static async Task RotationFgAsync(FgInstClass fgInstClass) {
-            await ConnectDeviceAsync(fgInstClass);
+            ConnectDevice(fgInstClass);
         }
 
         // OSC測定値取得
         public static async Task<decimal> ReadOsc(OscInstClass oscInstClass, int oscMeas) {
 
             oscInstClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-            var result = await ConnectDeviceAsync(oscInstClass);
+            var result = ConnectDevice(oscInstClass);
             decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
 
             return output;
@@ -318,7 +338,7 @@ namespace InspectionTools {
 
         // OSC切り替え
         public static async Task RotationOscAsync(OscInstClass oscInstClass) {
-            await ConnectDeviceAsync(oscInstClass);
+            ConnectDevice(oscInstClass);
         }
 
         // イベントハンドラ
