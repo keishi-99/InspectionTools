@@ -307,7 +307,7 @@ namespace InspectionTools {
         }
 
         // DMM測定値取得
-        public static async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
+        public static decimal ReadDmm(DmmInstClass dmmInstClass) {
 
             dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
                 1 => string.Empty,
@@ -315,7 +315,23 @@ namespace InspectionTools {
                 _ => throw new ApplicationException(),
             };
 
-            var result = ConnectDevice(dmmInstClass);
+            string? result = null;
+            Exception? error = null;
+
+            var thread = new Thread(() => {
+                try {
+                    result = ConnectDevice(dmmInstClass);
+                } catch (Exception ex) {
+                    error = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (error != null) { throw error; }
+
             decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
 
             return output;
@@ -327,17 +343,34 @@ namespace InspectionTools {
         }
 
         // OSC測定値取得
-        public static async Task<decimal> ReadOsc(OscInstClass oscInstClass, int oscMeas) {
+        public static decimal ReadOsc(OscInstClass oscInstClass, int oscMeas) {
+
+            string? result = null;
+            Exception? error = null;
 
             oscInstClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-            var result = ConnectDevice(oscInstClass);
+
+            var thread = new Thread(() => {
+                try {
+                    result = ConnectDevice(oscInstClass);
+                } catch (Exception ex) {
+                    error = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (error != null) { throw error; }
+
             decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
 
             return output;
         }
 
         // OSC切り替え
-        public static async Task RotationOscAsync(OscInstClass oscInstClass) {
+        public static void RotationOscAsync(OscInstClass oscInstClass) {
             ConnectDevice(oscInstClass);
         }
 
