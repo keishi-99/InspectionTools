@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class PAF5ampUserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-        public void SetMainWindow(MainWindow mainWindow) {
+public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -114,11 +114,8 @@ namespace InspectionTools.Product {
                 FormatSet();
 
                 InstClass[] devices = [_instDcs, _instDmm, _instFg, _instOsc];
-                await Task.Run(() => {
-                    foreach (var device in devices) {
-                        MainWindow.ConnectDevice(device);
-                    }
-                });
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                await Task.WhenAll(tasks);
 
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
@@ -158,7 +155,7 @@ namespace InspectionTools.Product {
         private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
             try {
                 dcsInstClass.InstCommand = $":OUTPUT {cmd};*OPC?";
-                MainWindow.ConnectDevice(dcsInstClass);
+                await MainWindow.ConnectDeviceAsync(dcsInstClass);
 
             } catch (Exception ex) {
                 Release();

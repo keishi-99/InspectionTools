@@ -79,11 +79,8 @@ namespace InspectionTools.Product {
                 FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02];
-                await Task.Run(() => {
-                    foreach (var device in devices) {
-                        MainWindow.ConnectDevice(device);
-                    }
-                });
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                await Task.WhenAll(tasks);
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
@@ -154,7 +151,7 @@ namespace InspectionTools.Product {
                     _ => throw new ApplicationException(),
                 };
 
-                MainWindow.ConnectDevice(dmmInstClass);
+                await MainWindow.ConnectDeviceAsync(dmmInstClass);
 
             } finally {
                 VisibleProgressImage(false);

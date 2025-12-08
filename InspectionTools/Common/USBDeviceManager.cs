@@ -102,51 +102,40 @@ namespace InspectionTools.Common {
 
     public class USBDeviceManager : IDisposable {
         private readonly FormattedIO488 _dev;
-        private ResourceManager? _resourceManager;
         private IMessage? _io;  // IMessageの保持
-
         public bool disposed = false; // Disposeが既に呼ばれたかどうかのフラグ
 
         public USBDeviceManager() {
-            _dev = new FormattedIO488();
+            this._dev = new FormattedIO488();
         }
 
         public void OpenDev(string visaaddress) {
             try {
-                _resourceManager = new ResourceManager();
-                _io = (IMessage)_resourceManager.Open(visaaddress, AccessMode.NO_LOCK);
-                _dev.IO = _io;
-                _dev.IO.Timeout = 20000;
+                var resourceManager = new ResourceManager();
+                this._io = (IMessage)resourceManager.Open(visaaddress, AccessMode.NO_LOCK);
+                this._dev.IO = this._io;
+                this._dev.IO.Timeout = 20000;
             } catch (Exception ex) {
                 throw new ApplicationException("接続中にエラーが発生しました。", ex);
             }
         }
 
         public void OutputDev(string cmd) {
-            _dev.WriteString(cmd);
+            this._dev.WriteString(cmd);
         }
 
         public string InputDev() {
             try {
-                return _dev.ReadString();
+                return this._dev.ReadString();
             } catch (Exception ex) {
                 throw new ApplicationException("データ取得中にエラーが発生しました。", ex);
             }
         }
 
         public void CloseDev() {
-            if (_io != null) {
-                try {
-                    _io.Close();
-                } finally {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(_io);
-                    _io = null;
-                }
-            }
-
-            if (_resourceManager != null) {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(_resourceManager);
-                _resourceManager = null;
+            if (this._io != null) {
+                this._io.Close();
+                this._io = null;
             }
         }
 
@@ -159,15 +148,19 @@ namespace InspectionTools.Common {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    CloseDev();
+                    // マネージドリソースの解放
+                    CloseDev(); // 既にCloseDevを実装済み
                 }
+
+                // アンマネージドリソースの解放 (必要があれば)
 
                 disposed = true;
             }
         }
 
+        // デストラクタ (必要があれば)
         ~USBDeviceManager() {
-            Dispose();
+            Dispose(false);
         }
     }
 }

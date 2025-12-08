@@ -18,12 +18,8 @@ namespace InspectionTools {
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e) {
-            var ex = e.Exception;
-
-            string methodName = ex.TargetSite?.DeclaringType?.FullName + "." + ex.TargetSite?.Name;
-
-            System.Windows.MessageBox.Show($"エラー発生メソッド:\n{methodName}\n\n{ex.Message}");
-            e.Handled = true;
+            ShowError(e.Exception);
+            e.Handled = true; // アプリが落ちるのを防ぐ
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e) {
