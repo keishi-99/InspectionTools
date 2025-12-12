@@ -12,24 +12,12 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="3*" />
-            <RowDefinition Height="0.5*" />
-            <RowDefinition Height="5.5*" />
-        </Grid.RowDefinitions>
+    <Grid
+        x:Name="MainGrid"
+        Margin="10"
+        RowDefinitions="3*,0.5*,5.5*">
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+        <Grid ColumnDefinitions="*,*,*" RowDefinitions="*,*,*">
 
             <!--  1  -->
             <ComboBox
@@ -76,11 +64,8 @@
                 Grid.Row="1"
                 Grid.RowSpan="2"
                 Grid.Column="1"
+                RowDefinitions="*,*"
                 Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
                 <ComboBox
                     x:Name="Fg02_1ComboBox"
                     Margin="5,0"
@@ -132,23 +117,10 @@
                 Unchecked="HotKeyCheckBox_Unchecked" />
         </Grid>
 
-        <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition Height="0.25*" />
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition Height="0.25*" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+        <Grid
+            Grid.Row="2"
+            ColumnDefinitions="*,*,*,*,*"
+            RowDefinitions="*,*,0.25*,*,*,0.25*,*">
 
             <!--  1  -->
             <Grid Grid.ColumnSpan="5" Margin="100,4">
@@ -255,11 +227,8 @@
                 Grid.Row="6"
                 Grid.ColumnSpan="5"
                 Margin="60,4"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
+                VerticalAlignment="Center"
+                ColumnDefinitions="*,2*">
                 <CheckBox
                     x:Name="SerialLockCheckBox"
                     Margin="15,0"
