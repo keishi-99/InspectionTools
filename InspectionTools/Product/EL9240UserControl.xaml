@@ -73,14 +73,14 @@
             IsEnabled="False" />
 
         <CheckBox
-            x:Name="HotKeyChekBox"
+            x:Name="HotKeyCheckBox"
             Grid.Row="4"
             Margin="20,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
-            Checked="HotKeyChekBox_Checked"
+            Checked="HotKeyCheckBox_Checked"
             Content="HotKey"
-            Unchecked="HotKeyChekBox_Unchecked" />
+            Unchecked="HotKeyCheckBox_Unchecked" />
 
 
         <Common:WaitingCircle

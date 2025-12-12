@@ -121,15 +121,15 @@
                 materialDesign:HintAssist.Hint="OSC"
                 IsReadOnly="True" />
             <CheckBox
-                x:Name="HotKeyChekBox"
+                x:Name="HotKeyCheckBox"
                 Grid.Row="2"
                 Grid.Column="2"
                 Margin="20,0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                Checked="HotKeyChekBox_Checked"
+                Checked="HotKeyCheckBox_Checked"
                 Content="HotKey"
-                Unchecked="HotKeyChekBox_Unchecked" />
+                Unchecked="HotKeyCheckBox_Unchecked" />
         </Grid>
 
         <Grid Grid.Row="2">

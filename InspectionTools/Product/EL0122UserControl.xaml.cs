@@ -61,7 +61,7 @@ namespace InspectionTools.Product {
             try {
                 _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
-                HotKeyChekBox.IsChecked = false;
+                HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
 
                 SelectInst();
@@ -93,7 +93,7 @@ namespace InspectionTools.Product {
             DmmComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            HotKeyChekBox.IsChecked = false;
+            HotKeyCheckBox.IsChecked = false;
         }
 
         // DMM測定値取得
@@ -195,8 +195,8 @@ namespace InspectionTools.Product {
         private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
-        private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
+        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
+        private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
 
     }

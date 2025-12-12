@@ -70,7 +70,7 @@
             IsEnabled="False" />
 
         <CheckBox
-            x:Name="HotKeyChekBox"
+            x:Name="HotKeyCheckBox"
             Grid.Row="4"
             Margin="20,0"
             HorizontalAlignment="Stretch"
