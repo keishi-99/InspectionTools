@@ -75,19 +75,19 @@
             Margin="20,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
-            Checked="HotKeyChekBox_Checked"
+            Checked="HotKeyCheckBox_Checked"
             Content="HotKey"
-            Unchecked="HotKeyChekBox_Unchecked" />
+            Unchecked="HotKeyCheckBox_Unchecked" />
 
         <TextBlock
             Grid.Row="6"
-            Grid.Column="1"
+            Grid.Column="0"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Text="FG" />
         <UniformGrid
             Grid.Row="7"
-            Grid.Column="1"
+            Grid.Column="0"
             Margin="10,0"
             Rows="1">
             <Button
@@ -108,11 +108,13 @@
 
         <TextBlock
             Grid.Row="6"
+            Grid.Column="1"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Text="OSC" />
         <UniformGrid
             Grid.Row="7"
+            Grid.Column="1"
             Margin="10,0"
             Rows="1">
             <Button
