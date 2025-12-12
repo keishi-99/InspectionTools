@@ -35,7 +35,7 @@ namespace InspectionTools {
         public static bool IsProcessing { get; set; } = false;
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-
+        private static readonly SemaphoreSlim _visaLock = new(1, 1);
         public static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         public MainWindow() {
@@ -255,12 +255,17 @@ namespace InspectionTools {
         }
         // Visa接続
         public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            return await Task.Run(() => {
-                using var usbDev = new USBDeviceManager();
-                usbDev.OpenDev(instClass.VisaAddress);
-                usbDev.OutputDev(instClass.InstCommand);
-                return hasInput ? usbDev.InputDev() : "";
-            });
+            await _visaLock.WaitAsync();
+            try {
+                return await Task.Run(() => {
+                    using var usbDev = new USBDeviceManager();
+                    usbDev.OpenDev(instClass.VisaAddress);
+                    usbDev.OutputDev(instClass.InstCommand);
+                    return hasInput ? usbDev.InputDev() : "";
+                });
+            } finally {
+                _visaLock.Release();
+            }
         }
         // ADC接続
         public static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {

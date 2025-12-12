@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class PA25UserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -638,8 +638,8 @@ public void SetMainWindow(MainWindow mainWindow) {
         private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
-        private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
+        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
+        private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
