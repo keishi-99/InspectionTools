@@ -72,15 +72,15 @@
                 Content="解除"
                 IsEnabled="False" />
             <CheckBox
-                x:Name="HotKeyChekBox"
+                x:Name="HotKeyCheckBox"
                 Grid.Row="2"
                 Grid.Column="1"
                 Margin="20,0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
-                Checked="HotKeyChekBox_Checked"
+                Checked="HotKeyCheckBox_Checked"
                 Content="HotKey"
-                Unchecked="HotKeyChekBox_Unchecked" />
+                Unchecked="HotKeyCheckBox_Unchecked" />
         </Grid>
 
         <Grid x:Name="MainGrid02" Grid.Row="2">

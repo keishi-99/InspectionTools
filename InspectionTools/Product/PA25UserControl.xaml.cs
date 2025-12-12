@@ -292,7 +292,7 @@ namespace InspectionTools.Product {
             try {
                 _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
-                HotKeyChekBox.IsChecked = false;
+                HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
 
                 SelectInst();
@@ -343,7 +343,7 @@ namespace InspectionTools.Product {
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            HotKeyChekBox.IsChecked = false;
+            HotKeyCheckBox.IsChecked = false;
             FgRotateButton.IsEnabled = false;
             FgRotateRButton.IsEnabled = false;
             OscRotateButton.IsEnabled = false;

@@ -14,7 +14,7 @@ namespace InspectionTools.Product {
     public partial class EL0122FIUserControl : UserControl, IMainWindowAware {
 
         private MainWindow? _mainWindow;
-public void SetMainWindow(MainWindow mainWindow) {
+        public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
 
@@ -100,7 +100,7 @@ public void SetMainWindow(MainWindow mainWindow) {
             try {
                 _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
-                HotKeyChekBox.IsChecked = false;
+                HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
 
                 SelectInst();
@@ -154,7 +154,7 @@ public void SetMainWindow(MainWindow mainWindow) {
             PsComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
-            HotKeyChekBox.IsChecked = false;
+            HotKeyCheckBox.IsChecked = false;
         }
 
         // DMM測定値取得
@@ -384,8 +384,8 @@ public void SetMainWindow(MainWindow mainWindow) {
         private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
         private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
-        private void HotKeyChekBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
-        private void HotKeyChekBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
+        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
+        private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
 
     }
