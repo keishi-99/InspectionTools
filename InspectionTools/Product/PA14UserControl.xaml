@@ -12,21 +12,11 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition Height="0.25*" />
-            <RowDefinition />
-            <RowDefinition />
-            <RowDefinition Height="0.25*" />
-            <RowDefinition />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+    <Grid
+        x:Name="MainGrid"
+        Margin="10"
+        ColumnDefinitions="*,*"
+        RowDefinitions="*,*,0.25*,*,*,0.25*,*,*">
 
         <ComboBox
             x:Name="Dmm01ComboBox"

@@ -42,15 +42,7 @@
                     </StackPanel>
                 </DockPanel>
             </materialDesign:DrawerHost.LeftDrawerContent>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
 
                 <materialDesign:ColorZone Padding="5" Mode="PrimaryDark">
                     <UniformGrid Columns="3">
@@ -78,19 +70,10 @@
                             PlacementMode="BottomAndAlignRightEdges"
                             StaysOpen="True">
 
-                            <Grid Margin="5">
-                                <Grid.ColumnDefinitions>
-                                    <!--  テキスト用  -->
-                                    <ColumnDefinition Width="*" />
-                                    <!--  トグル用  -->
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                            <Grid
+                                Margin="5"
+                                ColumnDefinitions="*,Auto"
+                                RowDefinitions="Auto,Auto,Auto">
 
                                 <TextBlock
                                     HorizontalAlignment="Center"
@@ -163,11 +146,7 @@
                     BorderThickness="1,0,0,0"
                     VerticalScrollBarVisibility="Auto"
                     Visibility="Visible">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
+                    <Grid ColumnDefinitions="Auto,Auto">
 
                         <TextBlock
                             x:Name="HelpTextBlock1"

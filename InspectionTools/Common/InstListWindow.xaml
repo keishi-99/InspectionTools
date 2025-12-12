@@ -12,12 +12,7 @@
     Style="{StaticResource MaterialDesignWindow}"
     WindowStyle="ToolWindow"
     mc:Ignorable="d">
-    <Grid>
-
-        <Grid.RowDefinitions>
-            <RowDefinition Height="9*" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+    <Grid RowDefinitions="9*,*">
 
         <DataGrid x:Name="InstListGrid" />
         <Border

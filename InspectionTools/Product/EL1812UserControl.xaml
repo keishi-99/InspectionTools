@@ -12,24 +12,15 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
-    <Grid x:Name="MainGrid" Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="3*" />
-            <RowDefinition Height="0.25*" />
-            <RowDefinition Height="4.5*" />
-        </Grid.RowDefinitions>
+    <Grid
+        x:Name="MainGrid"
+        Margin="10"
+        RowDefinitions="3*,0.25*,4.5*">
 
-        <Grid x:Name="MainGrid01">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+        <Grid
+            x:Name="MainGrid01"
+            ColumnDefinitions="*,*,*"
+            RowDefinitions="*,*,*">
 
             <!--  1  -->
             <ComboBox
@@ -83,28 +74,18 @@
                 Unchecked="HotKeyCheckBox_Unchecked" />
         </Grid>
 
-        <Grid x:Name="MainGrid02" Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition Height="0.25*" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+        <Grid
+            x:Name="MainGrid02"
+            Grid.Row="2"
+            ColumnDefinitions="*,*"
+            RowDefinitions="*,*,*,0.25*,*">
 
             <Grid
                 Grid.Row="0"
                 Grid.Column="0"
                 Margin="30,0"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+                VerticalAlignment="Center"
+                ColumnDefinitions="*,*">
                 <Label
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -129,13 +110,10 @@
                 Content="OSC"
                 IsEnabled="False" />
 
-            <Grid Grid.Row="2" VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+            <Grid
+                Grid.Row="2"
+                VerticalAlignment="Center"
+                ColumnDefinitions="1.2*,*,*,*">
                 <Label
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -169,11 +147,8 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 Margin="30,0"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+                VerticalAlignment="Center"
+                ColumnDefinitions="*,*">
                 <Label
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -193,11 +168,8 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="35,0"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+                VerticalAlignment="Center"
+                ColumnDefinitions="*,*">
                 <Button
                     x:Name="FgRotateBackButton"
                     Margin="5,0"
@@ -217,12 +189,8 @@
                 Grid.Row="2"
                 Grid.Column="1"
                 Margin="10,0"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
+                VerticalAlignment="Center"
+                ColumnDefinitions="1.2*,*,*">
                 <Button
                     x:Name="FgTriggerButton"
                     Margin="5,0"
@@ -246,17 +214,11 @@
                     IsEnabled="False" />
             </Grid>
 
-            <Grid Grid.Row="4" Grid.ColumnSpan="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.8*" />
-                    <ColumnDefinition Width="0.2*" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="2*" />
-                    </Grid.ColumnDefinitions>
+            <Grid
+                Grid.Row="4"
+                Grid.ColumnSpan="2"
+                ColumnDefinitions="1.8*,0.2*,*">
+                <Grid VerticalAlignment="Center" ColumnDefinitions="*,2*">
                     <CheckBox
                         x:Name="SerialLockCheckBox"
                         Margin="15,0"
@@ -301,11 +263,8 @@
                 <Grid
                     Grid.Column="2"
                     Margin="0,4"
-                    VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="1.5*" />
-                    </Grid.ColumnDefinitions>
+                    VerticalAlignment="Center"
+                    ColumnDefinitions="*,1.5*">
                     <CheckBox
                         x:Name="CountLockCheckBox"
                         Margin="5,0"
