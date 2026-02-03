@@ -35,7 +35,7 @@ namespace InspectionTools {
         public static bool IsProcessing { get; set; } = false;
 
         private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-        private static readonly SemaphoreSlim _visaLock = new(1, 1);
+        private static readonly SemaphoreSlim s_visaLock = new(1, 1);
         public static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
 
         public MainWindow() {
@@ -98,8 +98,9 @@ namespace InspectionTools {
 
         // 機器リスト表示
         private void ShowInstList() {
-            Common.InstListWindow frm1 = new();
-            frm1.Owner = this;
+            Common.InstListWindow frm1 = new() {
+                Owner = this
+            };
             frm1.ShowDialog();
             LoadInstList();
             // ドロワーを閉じる
@@ -126,6 +127,7 @@ namespace InspectionTools {
                 "EL1812" => new Product.EL1812UserControl(),
                 "EL3801" => new Product.EL3801UserControl(),
                 "EL4001" => new Product.EL4001UserControl(),
+                "EL5000" => new Product.EL5000UserControl(),
                 "EL9100" => new Product.EL9100UserControl(),
                 "EL9240" => new Product.EL9240UserControl(),
 
@@ -178,9 +180,7 @@ namespace InspectionTools {
 
         // ウィンドウサイズ調整
         public static void AdjustWindowSizeToUserControl(Window parentWindow) {
-            if (parentWindow != null) {
-                parentWindow.SizeToContent = SizeToContent.WidthAndHeight;
-            }
+            parentWindow?.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
         // コンボボックス更新
@@ -255,7 +255,7 @@ namespace InspectionTools {
         }
         // Visa接続
         public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
-            await _visaLock.WaitAsync();
+            await s_visaLock.WaitAsync();
             try {
                 return await Task.Run(() => {
                     using var usbDev = new USBDeviceManager();
@@ -264,7 +264,7 @@ namespace InspectionTools {
                     return hasInput ? usbDev.InputDev() : "";
                 });
             } finally {
-                _visaLock.Release();
+                s_visaLock.Release();
             }
         }
         // ADC接続
@@ -289,6 +289,20 @@ namespace InspectionTools {
             } finally {
                 s_semaphore.Release();
             }
+        }
+
+        // CNT測定値取得
+        public static async Task<decimal> ReadCnt(CntInstClass cntInstClass) {
+
+            cntInstClass.InstCommand = cntInstClass.SignalType switch {
+                3 => ":MEAS?XNOW",
+                _ => throw new ApplicationException(),
+            };
+
+            var result = await ConnectDeviceAsync(cntInstClass);
+            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
+
+            return output;
         }
 
         // DMM測定値取得

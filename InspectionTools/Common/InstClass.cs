@@ -45,6 +45,9 @@
         }
     }
 
+    // CNT用クラス
+    public class CntInstClass : InstClass { }
+
     // DCS用クラス
     public class DcsInstClass : InstClass { }
 
