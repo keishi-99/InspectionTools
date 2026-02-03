@@ -18,6 +18,7 @@ namespace InspectionTools.MainMenu {
         private void EL1812_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL1812"); }
         private void EL3801_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL3801"); }
         private void EL4001_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL4001"); }
+        private void EL5000_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL5000"); }
         private void EL9100_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL9100"); }
         private void EL9240_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL9240"); }
         private void PA14_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PA14"); }
