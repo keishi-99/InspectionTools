@@ -23,6 +23,15 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
         private readonly OscInstClass _instOsc = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public EL9240UserControl() {
             InitializeComponent();
         }
@@ -30,7 +39,6 @@ namespace InspectionTools.Product {
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -55,32 +63,56 @@ namespace InspectionTools.Product {
             MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
             MainWindow.GetVisaAddress(_instOsc, OscComboBox);
         }
+
+        // 機器設定辞書登録
+        private void RegDictionary() {
+            _dicCommands[_instDcs] =
+                (
+                    Init: new() { Visa = "*RST;:VOLT 30;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm01] =
+                (
+                    Init: new() { Adc = "*RST,F6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm02] =
+                (
+                    Init: new() { Adc = "*RST,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instOsc] =
+                (
+                    Init: new() {
+                        Visa =
+                            """
+                            *RST;:HEADER 0;
+                            :CH1:SCALE 5.0E0;POSITION -3.0E0;
+                            :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 29.0E0;POSITION2 1.4E0;
+                            :MEASUREMENT:MEAS1:TYPE MEAN;SOURCE CH1;
+                            *OPC?
+                            """,
+                        ExpectsResponse = true
+                    },
+                    Settings: []
+                );
+        }
         // 機器初期設定
         private void FormatSet() {
-            _instDcs.InstCommand = _instDcs.SignalType switch {
-                2 => "*RST;:VOLT 30;*OPC?",
-                _ => string.Empty,
-            };
-            _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,F6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",
-                _ => string.Empty
-            };
-            _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
-                _ => string.Empty,
-            };
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 =>
-                    """
-                    *RST;:HEADER 0;
-                    :CH1:SCALE 5.0E0;POSITION -3.0E0;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 29.0E0;POSITION2 1.4E0;
-                    :MEASUREMENT:MEAS1:TYPE MEAN;SOURCE CH1;
-                    *OPC?
-                    """,
-                _ => string.Empty,
+            (_instDcs.InstCommand, _instDcs.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -94,9 +126,10 @@ namespace InspectionTools.Product {
 
                 SelectInst();
                 CheckDmmId();
-                FormatSet();
 
                 InstClass[] devices = [_instDcs, _instDmm01, _instDmm02, _instOsc];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -161,7 +194,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                dcsInstClass.InstCommand = $":OUTPUT {cmd};*OPC?";
+                (dcsInstClass.InstCommand, dcsInstClass.ExpectsResponse) = ($":OUTPUT {cmd};*OPC?", true);
 
                 await MainWindow.ConnectDeviceAsync(dcsInstClass);
 

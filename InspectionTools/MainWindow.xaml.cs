@@ -248,20 +248,20 @@ namespace InspectionTools {
                 ? ""
                 : instClass.SignalType switch {
                     1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass, true),
-                    3 => await ConnectDeviceVisaAsync(instClass, false),
+                    2 or 4 => await ConnectDeviceVisaAsync(instClass),
+                    3 => await ConnectDeviceVisaAsync(instClass),
                     _ => throw new ApplicationException(),
                 };
         }
         // Visa接続
-        public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass, bool hasInput) {
+        public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass) {
             await s_visaLock.WaitAsync();
             try {
                 return await Task.Run(() => {
                     using var usbDev = new USBDeviceManager();
                     usbDev.OpenDev(instClass.VisaAddress);
                     usbDev.OutputDev(instClass.InstCommand);
-                    return hasInput ? usbDev.InputDev() : "";
+                    return instClass.ExpectsResponse ? usbDev.InputDev() : string.Empty;
                 });
             } finally {
                 s_visaLock.Release();
@@ -294,8 +294,8 @@ namespace InspectionTools {
         // CNT測定値取得
         public static async Task<decimal> ReadCnt(CntInstClass cntInstClass) {
 
-            cntInstClass.InstCommand = cntInstClass.SignalType switch {
-                3 => ":MEAS?XNOW",
+            (cntInstClass.InstCommand, cntInstClass.ExpectsResponse) = cntInstClass.SignalType switch {
+                3 => (":MEAS?XNOW", true),
                 _ => throw new ApplicationException(),
             };
 
