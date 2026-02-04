@@ -21,17 +21,22 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly OscInstClass _instOsc = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public EL0137UserControl() {
             InitializeComponent();
         }
 
-        private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
-            RegDictionary();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -54,99 +59,118 @@ namespace InspectionTools.Product {
         }
         // 機器設定辞書登録
         private void RegDictionary() {
-            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)>
-            {
-                { 0,(
-                        """
-                        :SELECT:CH1 1;CH2 0;
-                        :CH1:SCALE 5.0E-1;POSITION -2.0E0;
-                        :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;
-                        :CURSOR:HBARS:POSITION1 1.5E0;POSITION2 1.5E0;
-                        :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                        :TRIGGER:MAIN:LEVEL 1.0E0;EDGE:SOURCE CH1;
-                        :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH1;
-                        :MEASUREMENT:MEAS2:TYPE NONE;SOURCE MATH;
-                        :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
-                        *OPC?
-                        """,
-                        "OC入力回路"
-                    )
-                },
-                { 1,(
-                        """
-                        :CURSOR:HBARS:POSITION1 1.6E0;POSITION2 1.6E0;
-                        *OPC?
-                        """,
-                        "電流入力回路"
-                    )
-                },
-                { 2,(
-                        """
-                        :CURSOR:HBARS:POSITION1 1.3E0;POSITION2 1.3E0;
-                        *OPC?
-                        """,
-                        "電圧入力回路"
-                    )
-                },
-                { 3,(
-                        """
-                        :CH1:SCALE 1.0E0;
-                        :TRIGGER:MAIN:LEVEL 1.0E0;EDGE:SOURCE CH1;
-                        :CURSOR:HBARS:POSITION1 3.0E0;POSITION2 2.0E0;
-                        :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH1;
-                        *OPC?
-                        """,
-                        "波高値"
-                    )
-                },
-                { 4,(
-                        """
-                        :SELECT:CH1 1;CH2 1;
-                        :CURSOR:SELECT:SOURCE CH1;
-                        :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
-                        :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
-                        *OPC?
-                        """,
-                        "1/1分周 CH1,2"
-                    )
-                },
-                { 5,(
-                        """
-                        :SELECT:CH1 1;CH2 1;
-                        :CURSOR:SELECT:SOURCE CH1;
-                        :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
-                        :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
-                        *OPC?
-                        """,
-                        "1/2~100分周 CH1,2"
-                    )
-                }
-            };
+            _dicCommands[_instDmm] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instOsc] =
+                (
+                    Init: new() {
+                        Visa =
+                            """
+                            *RST;
+                            :HEADER 0;
+                            :CH1:SCALE 5.0E-1;POSITION -2.0E0;
+                            :CH2:POSITION -2.0E0;
+                            :CH3:POSITION -2.0E0;
+                            :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 1.5E0;POSITION2 1.5E0;
+                            :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                            :TRIGGER:MAIN:LEVEL 1.0E0;
+                            :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH1;
+                            :MEASUREMENT:MEAS4:TYPE NONE;SOURCE MATH;
+                            :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
+                            *OPC?
+                            """,
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new() {
+                            Text ="OC入力回路",
+                            Visa =
+                                """
+                                :SELECT:CH1 1;CH2 0;
+                                :CH1:SCALE 5.0E-1;POSITION -2.0E0;
+                                :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;
+                                :CURSOR:HBARS:POSITION1 1.5E0;POSITION2 1.5E0;
+                                :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                                :TRIGGER:MAIN:LEVEL 1.0E0;EDGE:SOURCE CH1;
+                                :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH1;
+                                :MEASUREMENT:MEAS2:TYPE NONE;SOURCE MATH;
+                                :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new() {
+                            Text ="電流入力回路",
+                            Visa =
+                                """
+                                :CURSOR:HBARS:POSITION1 1.6E0;POSITION2 1.6E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new() {
+                            Text ="電圧入力回路",
+                            Visa =
+                                """
+                                :CURSOR:HBARS:POSITION1 1.3E0;POSITION2 1.3E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new() {
+                            Text ="波高値",
+                            Visa =
+                                """
+                                :CH1:SCALE 1.0E0;
+                                :TRIGGER:MAIN:LEVEL 1.0E0;EDGE:SOURCE CH1;
+                                :CURSOR:HBARS:POSITION1 3.0E0;POSITION2 2.0E0;
+                                :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new() {
+                            Text ="1/1分周 CH1,2",
+                            Visa =
+                                """
+                                :SELECT:CH1 1;CH2 1;
+                                :CURSOR:SELECT:SOURCE CH1;
+                                :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
+                                :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new() {
+                            Text ="1/2~100分周 CH1,2",
+                            Visa =
+                                """
+                                :SELECT:CH1 1;CH2 1;
+                                :CURSOR:SELECT:SOURCE CH1;
+                                :MEASUREMENT:MEAS1:TYPE PWIDTH;SOURCE CH1;
+                                :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                    ]
+                );
         }
         // 機器初期設定
         private void FormatSet() {
-            _instDmm.InstCommand = _instDmm.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
-                _ => string.Empty
-            };
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 =>
-                    """
-                    *RST;
-                    :HEADER 0;
-                    :CH1:SCALE 5.0E-1;POSITION -2.0E0;
-                    :CH2:POSITION -2.0E0;
-                    :CH3:POSITION -2.0E0;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 1.5E0;POSITION2 1.5E0;
-                    :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                    :TRIGGER:MAIN:LEVEL 1.0E0;
-                    :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH1;
-                    :MEASUREMENT:MEAS4:TYPE NONE;SOURCE MATH;
-                    :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
-                    *OPC?
-                    """,
-                _ => string.Empty,
+            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -159,9 +183,10 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                FormatSet();
 
                 InstClass[] devices = [_instDmm, _instOsc];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -232,16 +257,23 @@ namespace InspectionTools.Product {
                 if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                var oscMaxSettingNumber = _dicSwitchOsc.Count;
-                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+                var settings = _dicCommands[oscInstClass].Settings;
+                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                oscInstClass.InstCommand = _dicSwitchOsc[oscInstClass.SettingNumber].cmd;
+                var sw = settings[oscInstClass.SettingNumber];
+                oscInstClass.InstCommand = oscInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
                 await MainWindow.RotationOscAsync(oscInstClass);
 
-                OscRotateRangeTextBox.Text = _dicSwitchOsc[oscInstClass.SettingNumber].text;
+                OscRotateRangeTextBox.Text = sw.Text;
 
             } catch (Exception ex) {
                 Release();

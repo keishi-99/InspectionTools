@@ -23,18 +23,22 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public PAF5UserControl() {
             InitializeComponent();
         }
 
-        private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
-        private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
-            RegDictionary();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -61,60 +65,78 @@ namespace InspectionTools.Product {
         }
         // 機器設定辞書登録
         private void RegDictionary() {
-            _dicSwitchFg = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":FREQ 20;:OUTPUT OFF;*OPC?", "OFF")  },
-                { 1,  (":FREQ 20;:OUTPUT ON;*OPC?", "20")  },
-                { 2, (":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", "200") },
-                { 3, (":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", "2000")  },
-                { 4,  (":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", "6250")  },
-                { 5,  (":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", "5000")  },
-                { 6,  (":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", "1000")  },
-                { 7,  (":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", "400") } ,
-                { 8,  (":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", "0.51[min][F]") },
-                { 9,  (":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", "1[min][F]")  },
-                { 10,  (":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", "3.5[min][7]")  },
-                { 11, (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[min][7]")  },
-                { 12, (":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", "33[max][7]") } ,
-                { 13,  (":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", "46[max][7]")  },
-                { 14,  (":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", "5.7[max][F]")  },
-                { 15,  (":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", "8[max][F]")  }
-            };
 
-            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
-                { 0,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "1")  },
-                { 1,  (":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", "2")  },
-                { 2,  (":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", "3")  },
-                { 3,  (":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", "4")  }
-            };
+            _dicCommands[_instDmm01] =
+                (
+                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm02] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instFg] =
+                (
+                    Init: new() { Visa = "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?", ExpectsResponse = true },
+                    Settings: [
+                        new(){Text= "OFF",          Visa= ":FREQ 20;:OUTPUT OFF;*OPC?", ExpectsResponse=true},
+                        new(){Text= "20",           Visa= ":FREQ 20;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "200",          Visa= ":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "2000",         Visa= ":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "6250",         Visa= ":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "5000",         Visa= ":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "1000",         Visa= ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "400",          Visa= ":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "0.51[min][F]", Visa= ":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "1[min][F]",    Visa= ":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "3.5[min][7]",  Visa= ":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "5.7[min][7]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "33[max][7]",   Visa= ":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "46[max][7]",   Visa= ":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "5.7[max][F]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "8[max][F]",    Visa= ":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                    ]
+                );
+
+            _dicCommands[_instOsc] =
+                (
+                    Init: new() {
+                        Visa =
+                            """
+                            *RST;:HEADER 0;
+                            :ACQUIRE:MODE AVERAGE;
+                            :CH1:SCALE 1.0E-1;COUPLING DC;
+                            :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 2.0E-1;POSITION2 -2.0E-1;
+                            :HORIZONTAL:MAIN:SCALE 1.0E-3;
+                            :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
+                            *OPC?
+                            """,
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new(){Text= "1", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", ExpectsResponse=true},
+                        new(){Text= "2", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", ExpectsResponse=true},
+                        new(){Text= "3", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", ExpectsResponse=true},
+                        new(){Text= "4", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", ExpectsResponse=true},
+                    ]
+                );
         }
         // 機器初期設定
         private void FormatSet() {
-            _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,R7,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",
-                _ => string.Empty
-            };
-            _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
-                _ => string.Empty,
-            };
-            _instFg.InstCommand = _instFg.SignalType switch {
-                2 => "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?",
-                _ => string.Empty,
-            };
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 =>
-                    """
-                    *RST;:HEADER 0;
-                    :ACQUIRE:MODE AVERAGE;
-                    :CH1:SCALE 1.0E-1;COUPLING DC;
-                    :CURSOR:FUNCTION HBARS;SELECT:SOURCE CH1;:CURSOR:HBARS:POSITION1 2.0E-1;POSITION2 -2.0E-1;
-                    :HORIZONTAL:MAIN:SCALE 1.0E-3;
-                    :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
-                    *OPC?
-                    """,
-                _ => string.Empty,
+            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instFg.InstCommand, _instFg.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
+            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -128,9 +150,10 @@ namespace InspectionTools.Product {
 
                 SelectInst();
                 CheckDmmId();
-                FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -222,16 +245,23 @@ namespace InspectionTools.Product {
                 if (string.IsNullOrEmpty(fgInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                var fgMaxSettingNumber = _dicSwitchFg.Count;
-                _instFg.SettingNumber = (_instFg.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
+                var settings = _dicCommands[fgInstClass].Settings;
+                fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                fgInstClass.InstCommand = _dicSwitchFg[_instFg.SettingNumber].cmd;
+                var sw = settings[fgInstClass.SettingNumber];
+                fgInstClass.InstCommand = fgInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                fgInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
                 await MainWindow.RotationFgAsync(fgInstClass);
 
-                FgRotateRangeTextBox.Text = _dicSwitchFg[fgInstClass.SettingNumber].text;
+                FgRotateRangeTextBox.Text = sw.Text;
 
             } catch (Exception ex) {
                 Release();
@@ -246,16 +276,23 @@ namespace InspectionTools.Product {
                 if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                var oscMaxSettingNumber = _dicSwitchOsc.Count;
-                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+                var settings = _dicCommands[oscInstClass].Settings;
+                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                oscInstClass.InstCommand = _dicSwitchOsc[oscInstClass.SettingNumber].cmd;
+                var sw = settings[oscInstClass.SettingNumber];
+                oscInstClass.InstCommand = oscInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
                 await MainWindow.RotationOscAsync(oscInstClass);
 
-                OscRotateRangeTextBox.Text = _dicSwitchOsc[oscInstClass.SettingNumber].text;
+                OscRotateRangeTextBox.Text = sw.Text;
 
             } catch (Exception ex) {
                 Release();

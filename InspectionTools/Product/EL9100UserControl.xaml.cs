@@ -24,6 +24,15 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public EL9100UserControl() {
             InitializeComponent();
         }
@@ -31,7 +40,6 @@ namespace InspectionTools.Product {
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -52,17 +60,31 @@ namespace InspectionTools.Product {
             MainWindow.GetVisaAddress(_instDmm01, Dmm01ComboBox);
             MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
         }
+        // 機器設定辞書登録
+        private void RegDictionary() {
+            _dicCommands[_instDmm01] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm02] =
+                (
+                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+        }
         // 機器初期設定
         private void FormatSet() {
-            _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?",
-                _ => string.Empty,
-            };
-            _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F5,R7,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
-                _ => string.Empty,
+            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -76,9 +98,10 @@ namespace InspectionTools.Product {
 
                 SelectInst();
                 CheckDmmId();
-                FormatSet();
 
                 InstClass[] devices = [_instDmm01, _instDmm02];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -137,15 +160,15 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                dmmInstClass.InstCommand = func switch {
+                (dmmInstClass.InstCommand, dmmInstClass.ExpectsResponse) = func switch {
                     "DCI" => dmmInstClass.SignalType switch {
-                        1 => "*RST,F5,R7,*OPC?",
-                        2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?",
+                        1 => ("*RST,F5,R7,*OPC?", true),
+                        2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", true),
                         _ => throw new ApplicationException(),
                     },
                     "DCV" => dmmInstClass.SignalType switch {
-                        1 => "*RST,F1,R6,*OPC?",
-                        2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?",
+                        1 => ("*RST,F1,R6,*OPC?", true),
+                        2 => ("*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", true),
                         _ => throw new ApplicationException(),
                     },
                     _ => throw new ApplicationException(),

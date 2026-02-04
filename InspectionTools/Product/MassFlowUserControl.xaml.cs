@@ -1,4 +1,5 @@
 ﻿using InspectionTools.Common;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -28,16 +29,20 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg02_2 = new();
         private readonly OscInstClass _instOsc = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
+        private Dictionary<int, string> _dicTextFgOsc = [];
+
         public MassFlowUserControl() {
             InitializeComponent();
         }
-
-        private Dictionary<int, (string text, string cmd2, string cmd3)> _dicSwitchDcs = [];
-        private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchFg = [];
-        private Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)> _dicSwitchRFg = [];
-        private Dictionary<int, string> _dicSwitchOsc = [];
-        private Dictionary<int, string> _dicSwitchROsc = [];
-        private Dictionary<int, string> _dicTextFgOsc = [];
 
         // FMRemoteのメニューアイテムID
         private const int MenuItemIdA1L = 32806;
@@ -49,8 +54,6 @@ namespace InspectionTools.Product {
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
-            RegDictionary();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -82,277 +85,308 @@ namespace InspectionTools.Product {
         // 機器設定辞書登録
         private void RegDictionary() {
             // DCS
-            _dicSwitchDcs = new Dictionary<int, (string text, string cmd2, string cmd3)>
-            {
-                { 0, ("OFF","SVR5,SOV+0,SBY", "F1R5S0.0O0E") },
-                { 1, ("2V","SVR5,SOV+2,OPR", "F1R5S2.0O1E") },
-                { 2, ("8V","SVR5,SOV+8,OPR", "F1R5S8.0O1E") },
-                { 3, ("1V","SVR5,SOV+1,OPR", "F1R5S1.0O1E") },
-                { 4, ("7V","SVR5,SOV+7,OPR", "F1R5S7.0O1E") },
-            };
+            _dicCommands[_instDcs] =
+                (
+                    Init: new() { Visa = "SVR5,SOV+0,SBY", Gpib = "RCF1R5S0.0O0E" },
+                    Settings: [
+                        new() { Text= "OFF",    Visa = "SVR5,SOV+0,SBY", Gpib = "F1R5S0.0O0E" },
+                        new() { Text= "2V",     Visa = "SVR5,SOV+2,OPR", Gpib = "F1R5S2.0O1E" },
+                        new() { Text= "8V",     Visa = "SVR5,SOV+8,OPR", Gpib = "F1R5S8.0O1E" },
+                        new() { Text= "1V",     Visa = "SVR5,SOV+1,OPR", Gpib = "F1R5S1.0O1E" },
+                        new() { Text= "7V",     Visa = "SVR5,SOV+7,OPR", Gpib = "F1R5S7.0O1E" },
+                    ]
+                );
+
+            _dicCommands[_instDmm] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
 
             // FG
-            _dicSwitchFg = new Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)>() {
-                {
-                    0,(
-                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 3.0;",
-                    ":OUTP1:STAT OFF;:SOUR1:VOLT:OFFS 3.0;:OUTP2:STAT OFF;*OPC?",
-                    ":OUTP OFF;:VOLT:OFFS 3.0;*OPC?",
-                    ":OUTP OFF;*OPC?"
-                    )
-                },
-                {
-                    1,(
-                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT ON;",
-                    ":OUTP1:STAT ON;:OUTP2:STAT ON;*OPC?",
-                    ":OUTP ON;*OPC?",
-                    ":OUTP ON;*OPC?"
-                    )
-                },
-                {
-                    2,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:OUTP:STAT ON;",
-                    ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;*OPC?",
-                    ":VOLT 5.0VPP;*OPC?",
-                    string.Empty
-                    )
-                },
-                {
-                    3,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:VOLT:OFFS 4.0;:OUTP:STAT ON;",
-                    ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:VOLT:OFFS 4.0;*OPC?",
-                    ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?",
-                    string.Empty
-                    )
-                },
-                {
-                    4,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-                {
-                    5,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-                {
-                    6,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-            };
-            _dicSwitchRFg = new Dictionary<int, (string fg01, string fg02, string fg03_1, string fg03_2)>() {
-                {
-                    0,(
-                    ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;",
-                    ":OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
-                    ":OUTP OFF;*OPC?",
-                    ":OUTP OFF;*OPC?"
-                    )
-                },
-                {
-                    1,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:OUTP:STAT ON;",
-                    ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;*OPC?",
-                    ":VOLT 0.0VPP;*OPC?",
-                    string.Empty
-                    )
-                },
-                {
-                    2,(
-                    ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:VOLT:OFFS 3.0;:OUTP:STAT ON;",
-                    ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;:SOUR1:VOLT:OFFS 3.0;*OPC?",
-                    ":VOLT 5.0VPP;:VOLT:OFFS 3.0;*OPC?",
-                    string.Empty
-                    )
-                },
-                {
-                    3,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-                {
-                    4,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-                {
-                    5,(
-                    string.Empty,
-                    string.Empty,
-                    string.Empty,
-                    string.Empty
-                    )
-                },
-                {
-                    6,(
-                    ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 4.0;:OUTP:STAT ON;",
-                    ":OUTP1:STAT ON;:OUTP2:STAT ON;:SOUR1:VOLT:OFFS 4.0;*OPC?",
-                    ":OUTP ON;:VOLT:OFFS 4.0;*OPC?",
-                    ":OUTP ON;*OPC?"
-                    )
-                },
-            };
+            _dicCommands[_instFg01] =
+                (
+                    Init: new() {
+                        Gpib = "*RST;:CHAN 2;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 2.0;:OUTP:STAT OFF;:CHAN 1;:CHAN:MODE IND;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 3.0;:OUTP:STAT OFF;",
+                        Visa = "*RST;:CHAN:MODE IND;:SOUR1:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:FREQ:CW 100HZ;:SOUR1:VOLT:OFFS 3.0;:SOUR2:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR2:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR2:FREQ:CW 100HZ;:SOUR2:VOLT:OFFS 2.0;:OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
+                    },
+                    Settings: [
+                        new() { Text = "0:OFF",                              Gpib = ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 3.0;",     Visa = ":OUTP1:STAT OFF;:SOUR1:VOLT:OFFS 3.0;:OUTP2:STAT OFF;" },
+                        new() { Text = "1:小流量での動作確認",               Gpib = ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT ON;",                      Visa = ":OUTP1:STAT ON;:OUTP2:STAT ON;", },
+                        new() { Text = "2:アンプ動作の確認",                 Gpib = ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:OUTP:STAT ON;",                   Visa = ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;" },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Gpib = ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:VOLT:OFFS 4.0;:OUTP:STAT ON;",    Visa = ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:VOLT:OFFS 4.0;" },
+                        new() { Text = "4:パルス出力回路の確認(最小値)" },
+                        new() { Text = "5:パルス出力回路の確認(周波数)" },
+                        new() { Text = "6:大流量での動作確認" },
+                    ]
+                );
+
+            _dicCommands[_instFg02_1] =
+                (
+                    Init: new() {
+                        Visa = "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 3.0;*OPC?",
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;:VOLT:OFFS 3.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;*OPC?", ExpectsResponse = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "4:パルス出力回路の確認(最小値)", ExpectsResponse = true },
+                        new() { Text = "5:パルス出力回路の確認(周波数)", ExpectsResponse = true },
+                        new() { Text = "6:大流量での動作確認",           ExpectsResponse = true },
+                    ]
+                );
+
+            _dicCommands[_instFg02_2] =
+                (
+                    Init: new() {
+                        Visa = "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 2.0;*OPC?",
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "2:アンプ動作の確認",             ExpectsResponse = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)", ExpectsResponse = true },
+                        new() { Text = "4:パルス出力回路の確認(最小値)", ExpectsResponse = true },
+                        new() { Text = "5:パルス出力回路の確認(周波数)", ExpectsResponse = true },
+                        new() { Text = "6:大流量での動作確認",           ExpectsResponse = true },
+                    ]
+                );
+
+            _dicReverseCommands[_instFg01] =
+                (
+                    Init: new(),
+                    Settings: [
+                        new() { Text = "0:OFF",                              Gpib = ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;",                    Visa = ":OUTP1:STAT OFF;:OUTP2:STAT OFF;" },
+                        new() { Text = "1:小流量での動作確認",               Gpib = ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:OUTP:STAT ON;",                   Visa = ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;" },
+                        new() { Text = "2:アンプ動作の確認",                 Gpib = ":CHAN 1;:OUTP:STAT OFF;:VOLT 5.0;:VOLT:OFFS 3.0;:OUTP:STAT ON;",    Visa = ":SOUR1:VOLT:LEV:IMM:AMPL 5.0VPP;:SOUR1:VOLT:OFFS 3.0;" },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Gpib = ":CHAN 1;:OUTP:STAT OFF;:VOLT 0.0;:VOLT:OFFS 4.0;:OUTP:STAT ON;",    Visa = ":SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:VOLT:OFFS 4.0;" },
+                        new() { Text = "4:パルス出力回路の確認(最小値)" },
+                        new() { Text = "5:パルス出力回路の確認(周波数)" },
+                        new() { Text = "6:大流量での動作確認",               Gpib = ":CHAN 2;:OUTP:STAT ON;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 4.0;:OUTP:STAT ON;",    Visa = ":OUTP1:STAT ON;:OUTP2:STAT ON;:SOUR1:VOLT:OFFS 4.0;" },
+                    ]
+                );
+
+            _dicReverseCommands[_instFg02_1] =
+                (
+                    Init: new(),
+                    Settings: [
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":VOLT 0.0VPP;*OPC?", ExpectsResponse = true },
+                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;:VOLT:OFFS 3.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "4:パルス出力回路の確認(最小値)" },
+                        new() { Text = "5:パルス出力回路の確認(周波数)" },
+                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
+                    ]
+                );
+
+            _dicReverseCommands[_instFg02_2] =
+                (
+                    Init: new(),
+                    Settings: [
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "2:アンプ動作の確認" },
+                        new() { Text = "3:パルス出力回路の確認(最大値)" },
+                        new() { Text = "4:パルス出力回路の確認(最小値)" },
+                        new() { Text = "5:パルス出力回路の確認(周波数)" },
+                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                    ]
+                );
 
             // OSC
-            _dicSwitchOsc = new Dictionary<int, string> {
-                { 0, string.Empty },
-                {
-                    1,
-                    """
-                    :CH2:SCALE 5.0E0;
-                    :CH3:SCALE 5.0E0;
-                    :CH4:SCALE 5.0E0;
-                    :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                    :TRIGGER:MAIN:LEVEL 2.0E0;
-                    *OPC?
-                    """
-                },
-                {
-                    2,
-                    """
-                    :SELECT:CH1 1;CH2 0;CH4 0;
-                    :MEASUREMENT:MEAS1:TYPE FREQUENCY;SOURCE CH1;
-                    :MEASUREMENT:MEAS2:TYPE PK2PK;SOURCE CH1;
-                    *OPC?
-                    """
-                },
-                {
-                    3,
-                    """
-                    :SELECT:CH1 0;CH3 1;
-                    :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH3;
-                    :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH3;
-                    :HORIZONTAL:MAIN:SCALE 5.0E-2;
-                    :TRIGGER:MAIN:EDGE:SOURCE CH3;
-                    :TRIGGER:MAIN:LEVEL 1.0E1;
-                    *OPC?
-                    """
-                },
-                {
-                    4,
-                    """
-                    :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH3;
-                    :ACQUIRE:MODE AVERAGE;NUMAVG 4;
-                    :CH3:SCALE 5.0E-2;
-                    :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                    :TRIGGER:MAIN:LEVEL 5.0E-2;
-                    *OPC?
-                    """
-                },
-                {
-                    5,
-                    """
-                    :MEASUREMENT:MEAS2:TYPE FREQUENCY;SOURCE CH3;
-                    :ACQUIRE:MODE SAMPLE;NUMAVG 16;
-                    :CH3:SCALE 5.0E0;
-                    :HORIZONTAL:MAIN:SCALE 5.0E-2;
-                    :TRIGGER:MAIN:LEVEL 1.0E1;
-                    *OPC?
-                    """
-                },
-                {
-                    6,
-                    """
-                    :SELECT:CH2 1;CH3 0;CH4 1;
-                    :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
-                    :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
-                    :ACQUIRE:MODE SAMPLE;NUMAVG 16;
-                    :CH2:SCALE 1.0E0;
-                    :CH4:SCALE 1.0E0;
-                    :HORIZONTAL:MAIN:SCALE 1.0E-2;
-                    :TRIGGER:MAIN:EDGE:SOURCE CH1;
-                    :TRIGGER:MAIN:LEVEL 0.0E0;
-                    *OPC?
-                    """
-                }
-            };
-            _dicSwitchROsc = new Dictionary<int, string> {
-                { 0, string.Empty },
-                {
-                    1,
-                    """
-                    :SELECT:CH1 0;CH2 1;CH3 0;CH4 1;
-                    :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
-                    :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
-                    *OPC?
-                    """
-                },
-                {
-                    2,
-                    """
-                    :SELECT:CH1 1;CH3 0;CH2 0;CH4 0;
-                    :MEASUREMENT:MEAS1:TYPE FREQUENCY;SOURCE CH1;
-                    :MEASUREMENT:MEAS2:TYPE PK2PK;SOURCE CH1;
-                    :CH2:SCALE 5.0E0;
-                    :CH4:SCALE 5.0E0;
-                    :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                    :TRIGGER:MAIN:EDGE:SOURCE CH1;
-                    :TRIGGER:MAIN:LEVEL 2.0E0;
-                    *OPC?
-                    """
-                },
-                {
-                    3,
-                    """
-                    :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH3;
-                    :ACQUIRE:MODE SAMPLE;NUMAVG 16;
-                    :CH3:SCALE 5.0E0;
-                    :HORIZONTAL:MAIN:SCALE 5.0E-2;
-                    :TRIGGER:MAIN:LEVEL 1.0E1;
-                    *OPC?
-                    """
-                },
-                {
-                    4,
-                    """
-                    :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH3;
-                    :ACQUIRE:MODE AVERAGE;NUMAVG 4;
-                    :CH3:SCALE 5.0E-2;
-                    :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                    :TRIGGER:MAIN:LEVEL 5.0E-2;
-                    *OPC?
-                    """
-                },
-                {
-                    5,
-                    """
-                    :SELECT:CH1 0;CH2 0;CH3 1;CH4 0;
-                    :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH3;
-                    :MEASUREMENT:MEAS2:TYPE FREQUENCY;SOURCE CH3;
-                    :CH3:SCALE 5.0E0;:HORIZONTAL:MAIN:SCALE 5.0E-2;
-                    :TRIGGER:MAIN:EDGE:SOURCE CH3;
-                    :TRIGGER:MAIN:LEVEL 1.0E1;
-                    *OPC?
-                    """
-                },
-                {
-                    6,
-                    """
-                    :CH2:SCALE 1.0E0;
-                    :CH3:SCALE 5.0E-2;
-                    :CH4:SCALE 1.0E0;
-                    :HORIZONTAL:MAIN:SCALE 1.0E-2;
-                    :TRIGGER:MAIN:LEVEL 0.0E0;
-                    *OPC?
-                    """
-                }
-            };
+            _dicCommands[_instOsc] =
+                (
+                    Init: new() {
+                        Visa =
+                            """
+                            *RST;
+                            :HEADER 0;
+                            :ACQUIRE:STATE 1;STOPAFTER RUNSTOP;
+                            :SELECT:CH1 0;CH2 1;CH4 1;
+                            :CH1:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 1.0E0;POSITION -2.0E0;
+                            :CH2:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -2.0E0;
+                            :CH3:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -3.0E0;
+                            :CH4:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -3.0E0;
+                            :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                            :HORIZONTAL:DELAY:SCALE 5.0E-9;POSITION 5.0E-4;
+                            :HORIZONTAL:SCALE 2.5E-3;
+                            :TRIGGER:MAIN:HOLDOFF:VALUE 5.0E-7;
+                            :TRIGGER:MAIN:VIDEO:SYNC FIELD;LINE 1;
+                            :TRIGGER:MAIN:LEVEL 2.0E0;
+                            :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
+                            :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
+                            :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
+                            :MEASUREMENT:MEAS4:TYPE NONE;SOURCE MATH;
+                            :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
+                            *OPC?
+                            """,
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new(){},
+                        new(){
+                            Visa =
+                                """
+                                :CH2:SCALE 5.0E0;
+                                :CH3:SCALE 5.0E0;
+                                :CH4:SCALE 5.0E0;
+                                :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                                :TRIGGER:MAIN:LEVEL 2.0E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH1 1;CH2 0;CH4 0;
+                                :MEASUREMENT:MEAS1:TYPE FREQUENCY;SOURCE CH1;
+                                :MEASUREMENT:MEAS2:TYPE PK2PK;SOURCE CH1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH1 0;CH3 1;
+                                :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH3;
+                                :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH3;
+                                :HORIZONTAL:MAIN:SCALE 5.0E-2;
+                                :TRIGGER:MAIN:EDGE:SOURCE CH3;
+                                :TRIGGER:MAIN:LEVEL 1.0E1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                            """
+                            :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH3;
+                            :ACQUIRE:MODE AVERAGE;NUMAVG 4;
+                            :CH3:SCALE 5.0E-2;
+                            :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                            :TRIGGER:MAIN:LEVEL 5.0E-2;
+                            *OPC?
+                            """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :MEASUREMENT:MEAS2:TYPE FREQUENCY;SOURCE CH3;
+                                :ACQUIRE:MODE SAMPLE;NUMAVG 16;
+                                :CH3:SCALE 5.0E0;
+                                :HORIZONTAL:MAIN:SCALE 5.0E-2;
+                                :TRIGGER:MAIN:LEVEL 1.0E1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH2 1;CH3 0;CH4 1;
+                                :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
+                                :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
+                                :ACQUIRE:MODE SAMPLE;NUMAVG 16;
+                                :CH2:SCALE 1.0E0;
+                                :CH4:SCALE 1.0E0;
+                                :HORIZONTAL:MAIN:SCALE 1.0E-2;
+                                :TRIGGER:MAIN:EDGE:SOURCE CH1;
+                                :TRIGGER:MAIN:LEVEL 0.0E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        }
+                    ]
+                );
+
+            _dicReverseCommands[_instOsc] =
+                (
+                    Init: new() { },
+                    Settings: [
+                        new(){},
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH1 0;CH2 1;CH3 0;CH4 1;
+                                :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
+                                :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH1 1;CH3 0;CH2 0;CH4 0;
+                                :MEASUREMENT:MEAS1:TYPE FREQUENCY;SOURCE CH1;
+                                :MEASUREMENT:MEAS2:TYPE PK2PK;SOURCE CH1;
+                                :CH2:SCALE 5.0E0;
+                                :CH4:SCALE 5.0E0;
+                                :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                                :TRIGGER:MAIN:EDGE:SOURCE CH1;
+                                :TRIGGER:MAIN:LEVEL 2.0E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH3;
+                                :ACQUIRE:MODE SAMPLE;NUMAVG 16;
+                                :CH3:SCALE 5.0E0;
+                                :HORIZONTAL:MAIN:SCALE 5.0E-2;
+                                :TRIGGER:MAIN:LEVEL 1.0E1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH3;
+                                :ACQUIRE:MODE AVERAGE;NUMAVG 4;
+                                :CH3:SCALE 5.0E-2;
+                                :HORIZONTAL:MAIN:SCALE 2.5E-3;
+                                :TRIGGER:MAIN:LEVEL 5.0E-2;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :SELECT:CH1 0;CH2 0;CH3 1;CH4 0;
+                                :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH3;
+                                :MEASUREMENT:MEAS2:TYPE FREQUENCY;SOURCE CH3;
+                                :CH3:SCALE 5.0E0;:HORIZONTAL:MAIN:SCALE 5.0E-2;
+                                :TRIGGER:MAIN:EDGE:SOURCE CH3;
+                                :TRIGGER:MAIN:LEVEL 1.0E1;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Visa =
+                                """
+                                :CH2:SCALE 1.0E0;
+                                :CH3:SCALE 5.0E-2;
+                                :CH4:SCALE 1.0E0;
+                                :HORIZONTAL:MAIN:SCALE 1.0E-2;
+                                :TRIGGER:MAIN:LEVEL 0.0E0;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        }
+                    ]
+                );
 
             _dicTextFgOsc = new Dictionary<int, string> {
                 { 0, "0:OFF" },
@@ -366,58 +400,19 @@ namespace InspectionTools.Product {
         }
         // 機器初期設定
         private void FormatSet() {
-            // DCS
-            _instDcs.InstCommand = _instDcs.SignalType switch {
-                2 => "SVR5,SOV+0,SBY,*OPC?",
-                3 => "RCF1R5S0.0O0E",
-                _ => string.Empty,
-            };
-            // DMM
-            _instDmm.InstCommand = _instDmm.SignalType switch {
-                1 => "*RST,F5,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",
-                _ => string.Empty,
-            };
-            // FG
-            _instFg01.InstCommand = _instFg01.SignalType switch {
-                3 => "*RST;:CHAN 2;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 2.0;:OUTP:STAT OFF;:CHAN 1;:CHAN:MODE IND;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 3.0;:OUTP:STAT OFF;",
-                4 => "*RST;:CHAN:MODE IND;:SOUR1:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:FREQ:CW 100HZ;:SOUR1:VOLT:OFFS 3.0;:SOUR2:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR2:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR2:FREQ:CW 100HZ;:SOUR2:VOLT:OFFS 2.0;:OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
-                _ => string.Empty,
-            };
-            _instFg02_1.InstCommand = _instFg02_1.SignalType switch {
-                2 => "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 3.0;*OPC?",
-                _ => string.Empty,
-            };
-            _instFg02_2.InstCommand = _instFg02_2.SignalType switch {
-                2 => "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 2.0;*OPC?",
-                _ => string.Empty,
-            };
-            // OSC
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 =>
-                """
-                *RST;
-                :HEADER 0;
-                :ACQUIRE:STATE 1;STOPAFTER RUNSTOP;
-                :SELECT:CH1 0;CH2 1;CH4 1;
-                :CH1:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 1.0E0;POSITION -2.0E0;
-                :CH2:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -2.0E0;
-                :CH3:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -3.0E0;
-                :CH4:PROBE 1.0E1;CURRENTPROBE 1.0E1;SCALE 5.0E0;POSITION -3.0E0;
-                :HORIZONTAL:MAIN:SCALE 2.5E-3;
-                :HORIZONTAL:DELAY:SCALE 5.0E-9;POSITION 5.0E-4;
-                :HORIZONTAL:SCALE 2.5E-3;
-                :TRIGGER:MAIN:HOLDOFF:VALUE 5.0E-7;
-                :TRIGGER:MAIN:VIDEO:SYNC FIELD;LINE 1;
-                :TRIGGER:MAIN:LEVEL 2.0E0;
-                :MEASUREMENT:MEAS1:TYPE MAXIMUM;SOURCE CH2;
-                :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
-                :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
-                :MEASUREMENT:MEAS4:TYPE NONE;SOURCE MATH;
-                :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
-                *OPC?
-                """,
-                _ => string.Empty,
+            (_instDcs.InstCommand, _instDcs.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instFg01.InstCommand, _instFg01.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg01].Init, _instFg01.SignalType);
+            (_instFg02_1.InstCommand, _instFg02_1.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg02_1].Init, _instFg02_1.SignalType);
+            (_instFg02_2.InstCommand, _instFg02_2.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg02_2].Init, _instFg02_2.SignalType);
+            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -431,7 +426,6 @@ namespace InspectionTools.Product {
 
                 SelectInst();
                 CheckFgId();
-                FormatSet();
 
                 var value = int.Parse(FgNumberComboBox.Text);
 
@@ -441,11 +435,14 @@ namespace InspectionTools.Product {
                     _ => [_instDcs, _instDmm, _instOsc] // 1, 2 以外の値の場合のデフォルト
                 };
 
+                RegDictionary();
+                FormatSet();
+
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    DcsNumberTextBox.Text = _dicSwitchDcs[0].text;
+                    DcsNumberTextBox.Text = "OFF";
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {
                     FgOscRotationButton.IsEnabled = true;
@@ -487,7 +484,7 @@ namespace InspectionTools.Product {
             _instDcs.ResetProperties();
             _instDmm.ResetProperties();
             _instFg01.ResetProperties();
-            _instFg02_1.ResetProperties();
+            _instFg02_2.ResetProperties();
             _instFg02_2.ResetProperties();
             _instOsc.ResetProperties();
 
@@ -534,18 +531,22 @@ namespace InspectionTools.Product {
                 await SwitchDcsAsync(_instDcs, i);
 
                 // テキストボックス更新
-                DcsNumberTextBox.Text = _dicSwitchDcs[i].text;
+                var settings = _dicCommands[_instDcs].Settings;
+                var sw = settings[_instDcs.SettingNumber];
+                DcsNumberTextBox.Text = sw.Text;
 
                 // OFF以外はボタン無効化
                 FgOscRotationButton.IsEnabled = (i == 0) &&
                     (
                     !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
                     !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instFg02_2.VisaAddress) ||
                     !string.IsNullOrEmpty(_instOsc.VisaAddress)
                     );
                 FgOscRotationRButton.IsEnabled = (i == 0) &&
                     (
                     !string.IsNullOrEmpty(_instFg01.VisaAddress) ||
+                    !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
                     !string.IsNullOrEmpty(_instFg02_1.VisaAddress) ||
                     !string.IsNullOrEmpty(_instOsc.VisaAddress)
                     );
@@ -569,20 +570,23 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private async Task SwitchDcsAsync(InstClass instClass, int i) {
-            if (string.IsNullOrEmpty(instClass.VisaAddress)) { return; }
+        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
+            if (string.IsNullOrEmpty(dcsInstClass.VisaAddress)) { return; }
 
-            instClass.SettingNumber = i;
-            var settingNumber = instClass.SettingNumber;
+            var settings = _dicCommands[dcsInstClass].Settings;
+            dcsInstClass.SettingNumber = i;
 
-            instClass.InstCommand = instClass.SignalType switch {
-                2 => _dicSwitchDcs[settingNumber].cmd2,
-                3 => _dicSwitchDcs[settingNumber].cmd3,
+            var sw = settings[dcsInstClass.SettingNumber];
+            dcsInstClass.ExpectsResponse = sw.ExpectsResponse;
+
+            dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
+                2 => dcsInstClass.InstCommand = sw.Visa,
+                3 => dcsInstClass.InstCommand = sw.Gpib,
                 _ => throw new ApplicationException(),
             };
 
-            if (string.IsNullOrEmpty(instClass.InstCommand) || instClass.UsbDev is null) { return; }
-            await MainWindow.ConnectDeviceAsync(instClass);
+            if (string.IsNullOrEmpty(dcsInstClass.InstCommand) || dcsInstClass.UsbDev is null) { return; }
+            await MainWindow.ConnectDeviceAsync(dcsInstClass);
         }
 
         // FG&OSCローテーション
@@ -624,48 +628,40 @@ namespace InspectionTools.Product {
             }
         }
         private async Task RotationFgOscAsync(FgInstClass fgInstClass, OscInstClass oscInstClass, bool isNext) {
-            var fgMaxSettingNumber = _dicSwitchFg.Count;
-            var oscMaxSettingNumber = _dicSwitchOsc.Count;
+            var dic = isNext ? _dicCommands : _dicReverseCommands;
+            var fgSettings = dic[fgInstClass].Settings;
+            var oscSettings = dic[oscInstClass].Settings;
 
-            fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
-            oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+            fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + fgSettings.Count) % fgSettings.Count;
+            oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscSettings.Count) % oscSettings.Count;
 
-            await ConnectAndSendCommand(fgInstClass, GetFgCommand(fgInstClass, isNext));
-            await ConnectAndSendCommand(oscInstClass, GetOscCommand(oscInstClass, isNext));
+            await ConnectAndSendCommand(fgSettings, fgInstClass);
+            await ConnectAndSendCommand(oscSettings, oscInstClass);
         }
         private async Task RotationFgOscAsync(FgInstClass fgInstClass2_1, FgInstClass fgInstClass2_2, OscInstClass oscInstClass, bool isNext) {
-            var fgMaxSettingNumber = _dicSwitchFg.Count;
-            var oscMaxSettingNumber = _dicSwitchOsc.Count;
+            var dic = isNext ? _dicCommands : _dicReverseCommands;
+            var fg2_1Settings = dic[fgInstClass2_1].Settings;
+            var fg2_2Settings = dic[fgInstClass2_2].Settings;
+            var oscSettings = dic[oscInstClass].Settings;
 
-            fgInstClass2_1.SettingNumber = (fgInstClass2_1.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
-            oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+            fgInstClass2_1.SettingNumber = (fgInstClass2_1.SettingNumber + (isNext ? 1 : -1) + fg2_1Settings.Count) % fg2_1Settings.Count;
+            oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscSettings.Count) % oscSettings.Count;
 
-            await ConnectAndSendCommand(fgInstClass2_1, GetFgCommand(fgInstClass2_1, isNext));
-            await ConnectAndSendCommand(fgInstClass2_2, GetFgCommand(fgInstClass2_2, isNext));
-            await ConnectAndSendCommand(oscInstClass, GetOscCommand(oscInstClass, isNext));
+            await ConnectAndSendCommand(fg2_1Settings, fgInstClass2_1);
+            await ConnectAndSendCommand(fg2_2Settings, fgInstClass2_2);
+            await ConnectAndSendCommand(oscSettings, oscInstClass);
         }
-        private string GetFgCommand(FgInstClass fgInstClass, bool isNext) {
-            var dic = isNext ? _dicSwitchFg : _dicSwitchRFg;
-            var (fg01, fg02, fg03_1, fg03_2) = dic[fgInstClass.SettingNumber];
+        private static async Task ConnectAndSendCommand(List<SwitchCommand> settings, InstClass instClass) {
+            if (!string.IsNullOrEmpty(instClass.VisaAddress) && instClass.UsbDev is not null) {
+                var sw = settings[instClass.SettingNumber];
 
-            return fgInstClass.SignalType switch {
-                2 => fgInstClass.Tag switch {
-                    "FG-1" => fg03_1,
-                    "FG-2" => fg03_2,
-                    _ => string.Empty
-                },
-                3 => fg01,
-                4 => fg02,
-                _ => string.Empty
-            };
-        }
-        private string GetOscCommand(OscInstClass oscInstClass, bool isNext) {
-            var dic = isNext ? _dicSwitchOsc : _dicSwitchROsc;
-            return dic[oscInstClass.SettingNumber];
-        }
-        private static async Task ConnectAndSendCommand(InstClass instClass, string command) {
-            if (!string.IsNullOrEmpty(instClass.VisaAddress) && !string.IsNullOrEmpty(command) && instClass.UsbDev is not null) {
-                instClass.InstCommand = command;
+                instClass.InstCommand = instClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                instClass.ExpectsResponse = sw.ExpectsResponse;
                 await MainWindow.ConnectDeviceAsync(instClass);
             }
         }

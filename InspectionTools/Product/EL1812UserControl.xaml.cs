@@ -1,6 +1,7 @@
 ﻿using InspectionTools.Common;
 using System.Data;
 using System.Windows;
+using VisaComLib;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainWindow;
@@ -22,13 +23,19 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
+
         public EL1812UserControl() {
             InitializeComponent();
         }
-
-        private Dictionary<int, (string cmd, string text)> _dicSwitchFg = [];
-        private Dictionary<int, (string cmd, string text)> _dicSwitchFgR = [];
-        private Dictionary<int, (string cmd, string text)> _dicSwitchOsc = [];
 
         private int _rotateMenuNumber = 0;
         private List<string> _listRotateMenuTitle = [];
@@ -36,8 +43,6 @@ namespace InspectionTools.Product {
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
-            RegDictionary();
             RegMenuTitle();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
@@ -63,101 +68,119 @@ namespace InspectionTools.Product {
         }
         // 機器設定辞書登録
         private void RegDictionary() {
-            // FG
-            _dicSwitchFg = new Dictionary<int, (string cmd, string text)>()
-            {
-                { 0, ("SIG 0;OMO 1;BTY 1;FRQ 2E+02;", "00" ) },
-                { 1, ("SIG 1;MRK 79;TRG 1;", "01" ) },
-                { 2, ("MRK 1;TRG 1;", "02" ) },
-                { 3, ("MRK 839;TRG 1;", "03" ) },
-                { 4, ("MRK 1;TRG 1;", "04" ) },
-                { 5, ("MRK 78;TRG 1;", "05" ) },
-                { 6, ("MRK 2;TRG 1;", "06" ) },
-                { 7, ("FRQ 3E+3;MRK 1E+5;TRG 1;", "07" ) },
-                { 8, ("MRK 10;TRG 1;", "08" ) },
-                { 9, ("MRK 1002;TRG 1;", "09" ) },
-                { 10, ("OMO 0;MRK 1;FRQ 10;", "10" ) },
-                { 11, ("SIG 0;", "11" ) },
-                { 12, ("SIG 1;", "12" ) },
-                { 13, ("SIG 0;", "13" ) },
-                { 14, ("SIG 1;", "14" ) },
-            };
-            _dicSwitchFgR = new Dictionary<int, (string cmd, string text)> {
-                { 0, ("SIG 0;HIV 4.5;LOV 2.0;FRQ 2E+02;", "00" ) },
-                { 1, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 79;", "01" ) },
-                { 2, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;", "02" ) },
-                { 3, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 839;", "03" ) },
-                { 4, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;", "04" ) },
-                { 5, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 78;", "05" ) },
-                { 6, ("HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 2;", "06" ) },
-                { 7, ("FRQ 3E+3;MRK 1E+5;", "07" ) },
-                { 8, ("FRQ 3E+3;MRK 10;", "08" ) },
-                { 9, ("BTY 1;FRQ 3E+3;MRK 1002;", "09" ) },
-                { 10, ("SIG 1;FRQ 10;", "10" ) },
-                { 11, ("SIG 0;FRQ 10;", "11" )},
-                { 12, ("SIG 1;FRQ 10;", "12" ) },
-                { 13, ("SIG 0;FRQ 10;", "13" ) },
-                { 14, ("SIG 1;MRK 1;BTY 0;FRQ 10;", "14" ) }
-            };
-            // OSC
-            _dicSwitchOsc = new Dictionary<int, (string cmd, string text)> {
-                { 0,
-                    (
-                    """
-                    :HORIZONTAL:MAIN:SCALE 5.0E-5;
-                    :HORIZONTAL:MAIN:POSITION 10.0E-5;
-                    *OPC?
-                    """,
-                    "150u"
-                    )
-                },
-                { 1,
-                    (
-                    """
-                    :HORIZONTAL:MAIN:SCALE 25.0E-5;
-                    *OPC?
-                    """,
-                    "1m"
-                    )
-                },
-                { 2,
-                    (
-                    """
-                    :HORIZONTAL:MAIN:SCALE 10.0E-3;
-                    :HORIZONTAL:MAIN:POSITION 20.0E-3;
-                    *OPC?
-                    """,
-                    "50m"
-                    )
-                }
-            };
+
+            _dicCommands[_instDmm] =
+                (
+                    Init: new() { Adc = "*RST,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instFg] =
+                (
+                    Init: new() { Text = "00", Gpib = "*RST;OMO 1;BES 0;BTY 1;FNC 3;TRS 1;TRE 0;BSS 1;BSV -100.0;FRQ 2E+02;HIV 4.5;LOV 2.0;MRK 79;SIG 0;" },
+                    Settings: [
+                        new(){ Text="00", Gpib = "SIG 0;OMO 1;BTY 1;FRQ 2E+02;"},
+                        new(){ Text="01", Gpib = "SIG 1;MRK 79;TRG 1;" },
+                        new(){ Text="02", Gpib = "MRK 1;TRG 1;" },
+                        new(){ Text="03", Gpib = "MRK 839;TRG 1;" },
+                        new(){ Text="04", Gpib = "MRK 1;TRG 1;" },
+                        new(){ Text="05", Gpib = "MRK 78;TRG 1;" },
+                        new(){ Text="06", Gpib = "MRK 2;TRG 1;" },
+                        new(){ Text="07", Gpib = "FRQ 3E+3;MRK 1E+5;TRG 1;" },
+                        new(){ Text="08", Gpib = "MRK 10;TRG 1;" },
+                        new(){ Text="09", Gpib = "MRK 1002;TRG 1;" },
+                        new(){ Text="10", Gpib = "OMO 0;MRK 1;FRQ 10;" },
+                        new(){ Text="11" ,Gpib = "SIG 0;" },
+                        new(){ Text="12", Gpib = "SIG 1;" },
+                        new(){ Text="13", Gpib = "SIG 0;" },
+                        new(){ Text="14", Gpib = "SIG 1;" }
+                    ]
+                );
+
+            _dicCommands[_instOsc] =
+                (
+                    Init: new() {
+                        Visa =
+                        """
+                        *RST;:HEADER 0;
+                        :CH1:SCALE 5.0E0;POSITION -2.0E0;COUPLING DC;
+                        :HORIZONTAL:MAIN:SCALE 5.0E-5;
+                        :HORIZONTAL:MAIN:POSITION 10.0E-5;
+                        :TRIGGER:MAIN:LEVEL 1.5E1;
+                        :TRIGGER:MAIN:EDGE:SLOPE FALL;
+                        :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
+                        *OPC?
+                        """
+                        ,
+                        ExpectsResponse = true
+                    },
+                    Settings: [
+                        new(){
+                            Text = "150u",
+                            Visa=
+                                 """
+                                :HORIZONTAL:MAIN:SCALE 5.0E-5;
+                                :HORIZONTAL:MAIN:POSITION 10.0E-5;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Text = "1m",
+                            Visa=
+                                """
+                                :HORIZONTAL:MAIN:SCALE 25.0E-5;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                        new(){
+                            Text = "50m",
+                            Visa=
+                                """
+                                :HORIZONTAL:MAIN:SCALE 10.0E-3;
+                                :HORIZONTAL:MAIN:POSITION 20.0E-3;
+                                *OPC?
+                                """,
+                            ExpectsResponse = true
+                        },
+                    ]
+                );
+
+            _dicReverseCommands[_instFg] =
+                (
+                    Init: new(),
+                    Settings: [
+                        new(){Text= "00",Gpib="SIG 0;HIV 4.5;LOV 2.0;FRQ 2E+02;"},
+                        new(){Text= "01",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 79;"},
+                        new(){Text= "02",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;"},
+                        new(){Text= "03",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 839;"},
+                        new(){Text= "04",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 1;"},
+                        new(){Text= "05",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 78;"},
+                        new(){Text= "06",Gpib="HIV 4.5;LOV 2.0;FRQ 2E+02;MRK 2;"},
+                        new(){Text= "07",Gpib="FRQ 3E+3;MRK 1E+5;"},
+                        new(){Text= "08",Gpib="FRQ 3E+3;MRK 10;"},
+                        new(){Text= "09",Gpib="BTY 1;FRQ 3E+3;MRK 1002;"},
+                        new(){Text= "10",Gpib="SIG 1;FRQ 10;"},
+                        new(){Text= "11",Gpib="SIG 0;FRQ 10;"},
+                        new(){Text= "12",Gpib="SIG 1;FRQ 10;"},
+                        new(){Text= "13",Gpib="SIG 0;FRQ 10;"},
+                        new(){Text= "14",Gpib="SIG 1;MRK 1;BTY 0;FRQ 10;"},
+                    ]
+                );
         }
         // 機器初期設定
         private void FormatSet() {
-            // DMM
-            _instDmm.InstCommand = _instDmm.SignalType switch {
-                1 => "*RST,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;*OPC?",
-                _ => string.Empty,
-            };
-            // FG
-            _instFg.InstCommand = _instFg.SignalType switch {
-                3 => "*RST;OMO 1;BES 0;BTY 1;FNC 3;TRS 1;TRE 0;BSS 1;BSV -100.0;FRQ 2E+02;HIV 4.5;LOV 2.0;MRK 79;SIG 0;",
-                _ => string.Empty,
-            };
-            // OSC
-            _instOsc.InstCommand = _instOsc.SignalType switch {
-                2 => """
-                    *RST;:HEADER 0;
-                    :CH1:SCALE 5.0E0;POSITION -2.0E0;COUPLING DC;
-                    :HORIZONTAL:MAIN:SCALE 5.0E-5;
-                    :HORIZONTAL:MAIN:POSITION 10.0E-5;
-                    :TRIGGER:MAIN:LEVEL 1.5E1;
-                    :TRIGGER:MAIN:EDGE:SLOPE FALL;
-                    :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
-                    *OPC?
-                    """,
-                _ => string.Empty,
+            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instFg.InstCommand, _instFg.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
+            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
         // 検査項目名登録
@@ -191,9 +214,10 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                FormatSet();
 
                 InstClass[] devices = [_instDmm, _instFg, _instOsc];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -253,17 +277,23 @@ namespace InspectionTools.Product {
                 if (string.IsNullOrEmpty(fgInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                var fgMaxSettingNumber = _dicSwitchFg.Count;
-                fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + fgMaxSettingNumber) % fgMaxSettingNumber;
+                var settings = _dicCommands[fgInstClass].Settings;
+                fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                var dic = isNext ? _dicSwitchFg : _dicSwitchFgR;
-                fgInstClass.InstCommand = dic[fgInstClass.SettingNumber].cmd;
+                var sw = settings[fgInstClass.SettingNumber];
+                fgInstClass.InstCommand = fgInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                fgInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
                 await MainWindow.RotationFgAsync(fgInstClass);
 
-                FgRotateRangeTextBox.Text = _dicSwitchFg[fgInstClass.SettingNumber].text;
+                FgRotateRangeTextBox.Text = sw.Text;
 
             } catch (Exception ex) {
                 Release();
@@ -297,16 +327,24 @@ namespace InspectionTools.Product {
                 if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
 
-                var oscMaxSettingNumber = _dicSwitchOsc.Count;
-                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscMaxSettingNumber) % oscMaxSettingNumber;
+                var dic = isNext ? _dicCommands : _dicReverseCommands;
+                var settings = dic[_instOsc].Settings;
+                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                oscInstClass.InstCommand = _dicSwitchOsc[oscInstClass.SettingNumber].cmd;
+                var sw = settings[oscInstClass.SettingNumber];
+                oscInstClass.InstCommand = oscInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
                 await MainWindow.RotationOscAsync(oscInstClass);
 
-                OscRotateRangeTextBox.Text = _dicSwitchOsc[oscInstClass.SettingNumber].text;
+                OscRotateRangeTextBox.Text = sw.Text;
 
             } catch (Exception ex) {
                 Release();

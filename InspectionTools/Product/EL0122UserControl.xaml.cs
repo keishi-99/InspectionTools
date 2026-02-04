@@ -21,6 +21,15 @@ namespace InspectionTools.Product {
 
         private readonly DmmInstClass _instDmm = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public EL0122UserControl() {
             InitializeComponent();
         }
@@ -28,7 +37,6 @@ namespace InspectionTools.Product {
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
@@ -47,12 +55,24 @@ namespace InspectionTools.Product {
         private void SelectInst() {
             MainWindow.GetVisaAddress(_instDmm, DmmComboBox);
         }
+        // 機器設定辞書登録
+        private void RegDictionary() {
+            _dicCommands[_instDmm] =
+                (
+                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+        }
         // 機器初期設定
         private void FormatSet() {
-            _instDmm.InstCommand = _instDmm.SignalType switch {
-                1 => "*RST,R7,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",
-                _ => string.Empty,
+            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -65,9 +85,10 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                FormatSet();
 
                 InstClass[] devices = [_instDmm];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 

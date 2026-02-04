@@ -23,23 +23,28 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
 
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
         public EL5000UserControl() {
             InitializeComponent();
         }
 
-        private Dictionary<int, (string cmd2, string cmd3, string text)> _dicSwitchDcs = [];
-
         // 起動時
         private void LoadEvents() {
             InstListImport();
-            FormatSet();
-            RegDictionary();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
-            MainWindow.UpdateComboBox(CntComboBox, "ユニバーサルカウンタ", [5]);
+            MainWindow.UpdateComboBox(CntComboBox, "ユニバーサルカウンタ", [3]);
             MainWindow.UpdateComboBox(DcsComboBox, "電流電圧発生器", [2, 3]);
             MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
             MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2]);
@@ -60,42 +65,56 @@ namespace InspectionTools.Product {
         }
         // 機器設定辞書登録
         private void RegDictionary() {
-            _dicSwitchDcs = new Dictionary<int, (string cmd2, string cmd3, string text)>
-            {
-                { 0, ("SOI+0MA,SBY", "F5R6S0EO0E", "OFF") },
-                { 1, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
-                { 2, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
-                { 3, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
-                { 4, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
-                { 5, ("SOI+0MA,SBY", "F5R6S0EO0E", "OFF") },
-                { 6, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
-                { 7, ("SOI+12MA,OPR", "F5R6S12.0E-3O1E", "12mA") },
-                { 8, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
-                { 9, ("SOI+20MA,OPR", "F5R6S20.0E-3O1E", "20mA") },
-                { 10, ("SOI+12MA,OPR", "F5R6S12.0E-3O1E", "12mA") },
-                { 11, ("SOI+4MA,OPR", "F5R6S4.0E-3O1E", "4.0mA") },
-            };
+
+            _dicCommands[_instCnt] =
+                (
+                    Init: new() { Gpib = ":FUNC FINA;:FRUN ON;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm01] =
+                (
+                    Init: new() { Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDmm02] =
+                (
+                    Init: new() { Adc = "*RST,F1,R5,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+            _dicCommands[_instDcs] =
+                (
+                    Init: new() { Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
+                    Settings: [
+                        new() { Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
+                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
+                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
+                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
+                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                    ]
+                );
         }
         // 機器初期設定
         private void FormatSet() {
-            _instCnt.InstCommand = _instCnt.SignalType switch {
-                3 => ":FUNC FINA;:FRUN ON;*OPC?",
-                _ => string.Empty,
-            };
-            _instDcs.InstCommand = _instDcs.SignalType switch {
-                2 => "SIR3,SOI+0,SBY,*OPC?",
-                3 => "RCF5R6S0EO0E",
-                _ => string.Empty,
-            };
-            _instDmm01.InstCommand = _instDmm01.SignalType switch {
-                1 => "*RST,F1,R6,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?",
-                _ => string.Empty,
-            };
-            _instDmm02.InstCommand = _instDmm02.SignalType switch {
-                1 => "*RST,F1,R5,*OPC?",
-                2 => "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?",
-                _ => string.Empty,
+            (_instCnt.InstCommand, _instCnt.ExpectsResponse) = ResolveCommand(_dicCommands[_instCnt].Init, _instCnt.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instDcs.InstCommand, _instDcs.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
             };
         }
 
@@ -109,9 +128,10 @@ namespace InspectionTools.Product {
 
                 SelectInst();
                 CheckDmmId();
-                FormatSet();
 
                 InstClass[] devices = [_instCnt, _instDcs, _instDmm01, _instDmm02];
+                RegDictionary();
+                FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
                 await Task.WhenAll(tasks);
 
@@ -183,19 +203,21 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var maxSettingNumber = _dicSwitchDcs.Keys.Count;
-                dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + maxSettingNumber) % maxSettingNumber;
-                var settingNumber = dcsInstClass.SettingNumber;
+                var settings = _dicCommands[dcsInstClass].Settings;
+                dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
+                var sw = settings[dcsInstClass.SettingNumber];
                 dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
-                    2 => _dicSwitchDcs[settingNumber].cmd2,
-                    3 => _dicSwitchDcs[settingNumber].cmd3,
-                    _ => throw new ApplicationException(),
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
                 };
+                dcsInstClass.ExpectsResponse = sw.ExpectsResponse;
 
                 await MainWindow.ConnectDeviceAsync(dcsInstClass);
-                DcsNumberLabel.Text = settingNumber.ToString("00");
-                DcsRangeLabel.Text = _dicSwitchDcs[settingNumber].text;
+                DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
+                DcsRangeLabel.Text = sw.Text;
 
                 VisibleProgressImage(false);
 

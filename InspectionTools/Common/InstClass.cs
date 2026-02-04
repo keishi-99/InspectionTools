@@ -9,6 +9,7 @@
         public int Index { get; set; } = 0;
         public string Tag { get; set; } = string.Empty;
         public string InstCommand { get; set; } = string.Empty;
+        public bool ExpectsResponse { get; set; } = false;
         public int SettingNumber { get; set; } = 0;
 
         private bool _disposed = false;
