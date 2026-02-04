@@ -1,0 +1,343 @@
+﻿using InspectionTools.Common;
+using System.Data;
+using System.Windows;
+using WindowsInput;
+using static InspectionTools.Common.Win32Wrapper;
+using static InspectionTools.MainWindow;
+using MessageBox = System.Windows.MessageBox;
+using UserControl = System.Windows.Controls.UserControl;
+
+namespace InspectionTools.Product {
+    /// <summary>
+    /// EL9230UserControl.xaml の相互作用ロジック
+    /// </summary>
+    public partial class EL9230UserControl : UserControl, IMainWindowAware {
+
+        private MainWindow? _mainWindow;
+        public void SetMainWindow(MainWindow mainWindow) {
+            _mainWindow = mainWindow;
+        }
+
+        private readonly DcsInstClass _instDcs01 = new();
+        private readonly DcsInstClass _instDcs02 = new();
+        private readonly DmmInstClass _instDmm01 = new();
+        //private readonly DmmInstClass _instDmm02 = new();
+
+        private record SwitchCommand {
+            public string Text { get; init; } = string.Empty;
+            public string Adc { get; init; } = string.Empty;
+            public string Visa { get; init; } = string.Empty;
+            public string Gpib { get; init; } = string.Empty;
+            public bool ExpectsResponse { get; init; } = false;
+        }
+        private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+
+        private bool _dcsFlg = false;
+        private bool _dmmDcvFlg = false;
+
+        public EL9230UserControl() {
+            InitializeComponent();
+        }
+
+        // 起動時
+        private void LoadEvents() {
+            InstListImport();
+            var parentWindow = Window.GetWindow(this);
+            MainWindow.AdjustWindowSizeToUserControl(parentWindow);
+        }
+        private void InstListImport() {
+            // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
+            MainWindow.UpdateComboBox(Dcs01ComboBox, "パワーサプライ", [2]);
+            MainWindow.UpdateComboBox(Dcs02ComboBox, "電流電圧発生器", [2]);
+            MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
+            //MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2]);
+        }
+        // 処理中の画像を表示/非表示にします。
+        private void VisibleProgressImage(bool isVisible) {
+            MainWindow.IsProcessing = isVisible;
+            MainGrid.IsEnabled = !isVisible;
+            ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // 選択した機器のVisaAddressを取得
+        private void SelectInst() {
+            MainWindow.GetVisaAddress(_instDcs01, Dcs01ComboBox);
+            MainWindow.GetVisaAddress(_instDcs02, Dcs02ComboBox);
+            MainWindow.GetVisaAddress(_instDmm01, Dmm01ComboBox);
+            //MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
+        }
+
+        // 機器設定辞書登録
+        private void RegDictionary() {
+
+            _dicCommands[_instDcs01] =
+                (
+                    Init: new() { Visa = "*RST;:VOLT 30;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            _dicCommands[_instDcs02] =
+                (
+                    Init: new() { Visa = "SIR3,SOI+0,SBY" },
+                    Settings: [
+                        new() { Text = "OFF",   Visa = "SOI+0MA,SBY" },
+                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR" },
+                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR" },
+                        new() { Text = "8.0mA", Visa = "SOI+8MA,OPR" },
+                        new() { Text = "12mA",  Visa = "SOI+12MA,OPR" },
+                        new() { Text = "16mA",  Visa = "SOI+16MA,OPR" },
+                    ]
+                );
+
+            _dicCommands[_instDmm01] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Settings: []
+                );
+
+            //_dicCommands[_instDmm02] =
+            //    (
+            //        Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+            //        Settings: []
+            //    );
+        }
+        // 機器初期設定
+        private void FormatSet() {
+            (_instDcs01.InstCommand, _instDcs01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs01].Init, _instDcs01.SignalType);
+            (_instDcs02.InstCommand, _instDcs02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs02].Init, _instDcs02.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            //(_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+        }
+        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+            return signalType switch {
+                1 => (sw.Adc, sw.ExpectsResponse),
+                2 => (sw.Visa, sw.ExpectsResponse),
+                3 => (sw.Gpib, sw.ExpectsResponse),
+                _ => (string.Empty, false),
+            };
+        }
+
+        // 機器接続
+        private async void ConnectInstAsync() {
+            try {
+                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+
+                HotKeyCheckBox.IsChecked = false;
+                VisibleProgressImage(true);
+
+                SelectInst();
+                CheckDmmId();
+
+                InstClass[] devices = [_instDcs01, _instDcs02, _instDmm01];
+                //InstClass[] devices = [_instDcs01, _instDcs02, _instDmm01, _instDmm02];
+                RegDictionary();
+                FormatSet();
+                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                await Task.WhenAll(tasks);
+
+                Dcs01ComboBox.IsEnabled = false;
+                Dcs02ComboBox.IsEnabled = false;
+                Dmm01ComboBox.IsEnabled = false;
+                //Dmm02ComboBox.IsEnabled = false;
+                ConnectButton.IsEnabled = false;
+                ReleaseButton.IsEnabled = true;
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー");
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // DMMのIDチェック処理
+        private static void CheckDmmId() {
+            //var indices = new[] { _instDmm01.Index, _instDmm02.Index }
+            //    .Where(i => i >= 1); // 未選択(0以下)は無視
+
+            //if (indices.Count() != indices.Distinct().Count()) {
+            //    throw new Exception("同じ測定器が選択されています。");
+            //}
+        }
+
+        // 解除
+        private void Release() {
+            VisibleProgressImage(false);
+
+            _instDcs01.ResetProperties();
+            _instDcs02.ResetProperties();
+            _instDmm01.ResetProperties();
+            //_instDmm02.ResetProperties();
+
+            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            Dcs01ComboBox.IsEnabled = true;
+            Dcs02ComboBox.IsEnabled = true;
+            Dmm01ComboBox.IsEnabled = true;
+            //Dmm02ComboBox.IsEnabled = true;
+            ConnectButton.IsEnabled = true;
+            ReleaseButton.IsEnabled = false;
+            HotKeyCheckBox.IsChecked = false;
+
+            _dcsFlg = false;
+            _dmmDcvFlg = false;
+        }
+
+        // DMM測定値取得
+        private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
+            try {
+                VisibleProgressImage(true);
+
+                var output = await MainWindow.ReadDmm(dmmInstClass);
+
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // DMM切り替え
+        private async Task SwitchDmm2(DmmInstClass dmmInstClass, bool dmmDivFlg) {
+            try {
+                VisibleProgressImage(true);
+
+                (dmmInstClass.InstCommand, dmmInstClass.ExpectsResponse) = dmmDivFlg switch {
+                    true => dmmInstClass.SignalType switch {
+                        1 => ("*RST,R6,*OPC?", true),
+                        2 => ("*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", true),
+                        _ => throw new ApplicationException(),
+                    },
+                    false => dmmInstClass.SignalType switch {
+                        1 => ("*RST,F5,R6,*OPC?", true),
+                        2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", true),
+                        _ => throw new ApplicationException(),
+                    },
+                };
+
+                await MainWindow.ConnectDeviceAsync(dmmInstClass);
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // DCS01切り替え
+        private async Task SwitchDcs01(DcsInstClass dcsInstClass, string cmd) {
+            try {
+                VisibleProgressImage(true);
+
+                (dcsInstClass.InstCommand, dcsInstClass.ExpectsResponse) = ($":OUTPUT {cmd};*OPC?", true);
+
+                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+
+                VisibleProgressImage(false);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // DCS02切り替え
+        private async Task RotationDcs02(DcsInstClass dcsInstClass, bool isNext) {
+            try {
+                VisibleProgressImage(true);
+
+                var settings = _dicCommands[dcsInstClass].Settings;
+                dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
+
+                var sw = settings[dcsInstClass.SettingNumber];
+                dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                dcsInstClass.ExpectsResponse = sw.ExpectsResponse;
+
+                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+
+                VisibleProgressImage(false);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // DMM01測定値コピー
+        private async void ActionHotkeyNumSubtract() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm01);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString());
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // DMM01切り替え
+        private async void ActionHotkeyNumAdd() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                _dmmDcvFlg = !_dmmDcvFlg;
+                await SwitchDmm2(_instDmm01, _dmmDcvFlg);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // DCS01ローテーション
+        private async void ActionHotkeyNumDivide() {
+            if (MainWindow.IsProcessing) { return; }
+            _dcsFlg = !_dcsFlg;
+            var cmd = _dcsFlg ? "ON" : "OFF";
+            await SwitchDcs01(_instDcs01, cmd);
+        }
+        // DCS02ローテーション
+        private async void ActionHotkeyNumMultiply() {
+            if (MainWindow.IsProcessing) { return; }
+            await RotationDcs02(_instDcs02, true);
+        }
+
+        // HotKeyの登録
+        private void SetHotKey() {
+            MainWindow.HotkeysList.Clear();
+
+            if (!string.IsNullOrEmpty(_instDcs01.VisaAddress)) {
+                MainWindow.HotkeysList.AddRange([
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
+                ]);
+            }
+            if (!string.IsNullOrEmpty(_instDcs02.VisaAddress)) {
+                MainWindow.HotkeysList.AddRange([
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
+                ]);
+            }
+            if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                MainWindow.HotkeysList.AddRange([
+                    new(ModNone, HotkeyNumSubtract, ActionHotkeyNumSubtract),
+                    new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
+                ]);
+            }
+            //if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+            //    MainWindow.HotkeysList.AddRange([
+            //    ]);
+            //}
+
+            MainWindow.SetHotKey();
+        }
+        private static void ClearHotKey() {
+            MainWindow.ClearHotKey();
+        }
+
+        // イベントハンドラ
+        private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
+        private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
+        private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
+        private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
+        private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
+    }
+}
