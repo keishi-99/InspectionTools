@@ -129,6 +129,7 @@ namespace InspectionTools {
                 "EL4001" => new Product.EL4001UserControl(),
                 "EL5000" => new Product.EL5000UserControl(),
                 "EL9100" => new Product.EL9100UserControl(),
+                "EL9230" => new Product.EL9230UserControl(),
                 "EL9240" => new Product.EL9240UserControl(),
 
                 "PA14" => new Product.PA14UserControl(),
