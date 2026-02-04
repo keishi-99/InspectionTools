@@ -72,7 +72,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs01] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 30;*OPC?", ExpectsResponse = true },
+                    Init: new() { Visa = "*RST;:VOLT 7.2;*OPC?", ExpectsResponse = true },
                     Settings: []
                 );
 
