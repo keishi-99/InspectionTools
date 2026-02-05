@@ -1,5 +1,4 @@
 ﻿using InspectionTools.Common;
-using System.Collections.Generic;
 using System.Data;
 using System.Windows;
 using WindowsInput;
