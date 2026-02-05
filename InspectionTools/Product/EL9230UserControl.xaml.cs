@@ -32,7 +32,6 @@ namespace InspectionTools.Product {
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
-        private bool _dcsFlg = false;
         private bool _dmmDcvFlg = false;
 
         public EL9230UserControl() {
@@ -73,7 +72,10 @@ namespace InspectionTools.Product {
             _dicCommands[_instDcs01] =
                 (
                     Init: new() { Visa = "*RST;:VOLT 7.2;*OPC?", Query = true },
-                    Settings: []
+                    Settings: [
+                        new() { Text = "OFF",   Visa = $":OUTPUT OFF;*OPC?",    Query = true },
+                        new() { Text = "ON",    Visa = $":OUTPUT ON;*OPC?",     Query = true },
+                    ]
                 );
 
             _dicCommands[_instDcs02] =
@@ -176,7 +178,6 @@ namespace InspectionTools.Product {
             ReleaseButton.IsEnabled = false;
             HotKeyCheckBox.IsChecked = false;
 
-            _dcsFlg = false;
             _dmmDcvFlg = false;
         }
 
@@ -218,11 +219,21 @@ namespace InspectionTools.Product {
             }
         }
         // DCS01切り替え
-        private async Task SwitchDcs01(DcsInstClass dcsInstClass, string cmd) {
+        private async Task SwitchDcs01(DcsInstClass dcsInstClass, bool isNext) {
             try {
                 VisibleProgressImage(true);
 
-                (dcsInstClass.InstCommand, dcsInstClass.Query) = ($":OUTPUT {cmd};*OPC?", true);
+                var settings = _dicCommands[dcsInstClass].Settings;
+                dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
+
+                var sw = settings[dcsInstClass.SettingNumber];
+                dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                dcsInstClass.Query = sw.Query;
 
                 await MainWindow.ConnectDeviceAsync(dcsInstClass);
 
@@ -263,15 +274,11 @@ namespace InspectionTools.Product {
         // DCS01ローテーション
         private async void ActionHotkeyComma() {
             if (MainWindow.IsProcessing) { return; }
-            _dcsFlg = !_dcsFlg;
-            var cmd = _dcsFlg ? "ON" : "OFF";
-            await SwitchDcs01(_instDcs01, cmd);
+            await SwitchDcs01(_instDcs01, true);
         }
         private async void ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
-            _dcsFlg = !_dcsFlg;
-            var cmd = _dcsFlg ? "ON" : "OFF";
-            await SwitchDcs01(_instDcs01, cmd);
+            await SwitchDcs01(_instDcs01, true);
         }
         // DCS02ローテーション
         private async void ActionHotkeyPeriod() {
