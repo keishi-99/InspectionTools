@@ -1,4 +1,5 @@
 ﻿using InspectionTools.Common;
+using System.Collections.Generic;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -31,8 +32,6 @@ namespace InspectionTools.Product {
             public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
-
-        private bool _dmmDcvFlg = false;
 
         public EL9230UserControl() {
             InitializeComponent();
@@ -94,7 +93,10 @@ namespace InspectionTools.Product {
             _dicCommands[_instDmm01] =
                 (
                     Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
-                    Settings: []
+                    Settings: [
+                        new() { Adc = "*RST,F5,R6,*OPC?",   Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?",         Query = true },
+                        new() { Adc = "*RST,R6,*OPC?",      Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?",     Query = true },
+                    ]
                 );
 
             _dicCommands[_instDmm02] =
@@ -177,8 +179,6 @@ namespace InspectionTools.Product {
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
             HotKeyCheckBox.IsChecked = false;
-
-            _dmmDcvFlg = false;
         }
 
         // DMM測定値取得
@@ -195,22 +195,21 @@ namespace InspectionTools.Product {
             }
         }
         // DMM切り替え
-        private async Task SwitchDmm(DmmInstClass dmmInstClass, bool dmmDivFlg) {
+        private async Task SwitchDmm(DmmInstClass dmmInstClass, bool isNext) {
             try {
                 VisibleProgressImage(true);
 
-                (dmmInstClass.InstCommand, dmmInstClass.Query) = dmmDivFlg switch {
-                    true => dmmInstClass.SignalType switch {
-                        1 => ("*RST,R6,*OPC?", true),
-                        2 => ("*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", true),
-                        _ => throw new ApplicationException(),
-                    },
-                    false => dmmInstClass.SignalType switch {
-                        1 => ("*RST,F5,R6,*OPC?", true),
-                        2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", true),
-                        _ => throw new ApplicationException(),
-                    },
+                var settings = _dicCommands[dmmInstClass].Settings;
+                dmmInstClass.SettingNumber = (dmmInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
+
+                var sw = settings[dmmInstClass.SettingNumber];
+                dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
                 };
+                dmmInstClass.Query = sw.Query;
 
                 await MainWindow.ConnectDeviceAsync(dmmInstClass);
 
@@ -356,8 +355,7 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             try {
-                _dmmDcvFlg = !_dmmDcvFlg;
-                await SwitchDmm(_instDmm01, _dmmDcvFlg);
+                await SwitchDmm(_instDmm01, true);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
