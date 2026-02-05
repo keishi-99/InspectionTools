@@ -28,7 +28,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -67,21 +67,21 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 1.5;*OPC?", ExpectsResponse = true },
+                    Init: new() { Visa = "*RST;:VOLT 1.5;*OPC?", Query = true },
                     Settings: []
                 );
             _dicCommands[_instFg] =
                 (
-                    Init: new() { Visa = "*RST;:FREQ 1.7E0;*OPC?", ExpectsResponse = true },
+                    Init: new() { Visa = "*RST;:FREQ 1.7E0;*OPC?", Query = true },
                     Settings: [
-                        new() { Visa = ":FREQ 1.7E0;*OPC?", ExpectsResponse = true },
-                        new() { Visa = ":FREQ 1.0E1;*OPC?", ExpectsResponse = true },
-                        new() { Visa = ":FREQ 4.0E3;*OPC?", ExpectsResponse = true },
+                        new() { Visa = ":FREQ 1.7E0;*OPC?", Query = true },
+                        new() { Visa = ":FREQ 1.0E1;*OPC?", Query = true },
+                        new() { Visa = ":FREQ 4.0E3;*OPC?", Query = true },
                     ]
                 );
 
@@ -97,27 +97,27 @@ namespace InspectionTools.Product {
                             :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
                             *OPC?
                             """,
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
-                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-2;*OPC?", ExpectsResponse = true },
-                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 2.5E-2;*OPC?", ExpectsResponse = true },
-                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-5;*OPC?", ExpectsResponse = true },
+                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-2;*OPC?", Query = true },
+                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 2.5E-2;*OPC?", Query = true },
+                        new() { Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-5;*OPC?", Query = true },
                     ]
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
-            (_instDcs.InstCommand, _instDcs.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
-            (_instFg.InstCommand, _instFg.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
-            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instDcs.InstCommand, _instDcs.Query) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+            (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
+            (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -175,7 +175,7 @@ namespace InspectionTools.Product {
         // 電源のON-OFF
         private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
             try {
-                (dcsInstClass.InstCommand, dcsInstClass.ExpectsResponse) = ($":OUTPUT {cmd};*OPC?", true);
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ($":OUTPUT {cmd};*OPC?", true);
                 await MainWindow.ConnectDeviceAsync(dcsInstClass);
 
             } catch (Exception ex) {
@@ -212,7 +212,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                fgInstClass.ExpectsResponse = sw.ExpectsResponse;
+                fgInstClass.Query = sw.Query;
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -241,7 +241,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
+                oscInstClass.Query = sw.Query;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 

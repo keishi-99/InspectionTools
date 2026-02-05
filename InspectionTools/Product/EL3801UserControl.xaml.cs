@@ -27,7 +27,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -65,33 +65,33 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F1,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F1,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm03] =
                 (
-                    Init: new() { Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
-            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
-            (_instDmm03.InstCommand, _instDmm03.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm03].Init, _instDmm03.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instDmm03.InstCommand, _instDmm03.Query) = ResolveCommand(_dicCommands[_instDmm03].Init, _instDmm03.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }

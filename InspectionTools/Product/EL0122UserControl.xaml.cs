@@ -26,7 +26,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -59,19 +59,19 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }

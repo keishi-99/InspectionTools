@@ -29,7 +29,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -64,26 +64,26 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
                     Settings: []
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
-            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -160,7 +160,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                (dmmInstClass.InstCommand, dmmInstClass.ExpectsResponse) = func switch {
+                (dmmInstClass.InstCommand, dmmInstClass.Query) = func switch {
                     "DCI" => dmmInstClass.SignalType switch {
                         1 => ("*RST,F5,R7,*OPC?", true),
                         2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", true),

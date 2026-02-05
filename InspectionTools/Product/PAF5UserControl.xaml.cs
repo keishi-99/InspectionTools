@@ -28,7 +28,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -68,36 +68,36 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instFg] =
                 (
-                    Init: new() { Visa = "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?", ExpectsResponse = true },
+                    Init: new() { Visa = "*RST;:FREQ 20;:VOLT 0.44VPP;*OPC?", Query = true },
                     Settings: [
-                        new(){Text= "OFF",          Visa= ":FREQ 20;:OUTPUT OFF;*OPC?", ExpectsResponse=true},
-                        new(){Text= "20",           Visa= ":FREQ 20;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "200",          Visa= ":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "2000",         Visa= ":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "6250",         Visa= ":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "5000",         Visa= ":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "1000",         Visa= ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "400",          Visa= ":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "0.51[min][F]", Visa= ":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "1[min][F]",    Visa= ":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "3.5[min][7]",  Visa= ":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "5.7[min][7]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "33[max][7]",   Visa= ":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "46[max][7]",   Visa= ":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "5.7[max][F]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", ExpectsResponse=true},
-                        new(){Text= "8[max][F]",    Visa= ":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", ExpectsResponse=true},
+                        new(){Text= "OFF",          Visa= ":FREQ 20;:OUTPUT OFF;*OPC?", Query=true},
+                        new(){Text= "20",           Visa= ":FREQ 20;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "200",          Visa= ":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "2000",         Visa= ":OUTPUT OFF;:FREQ 2000;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "6250",         Visa= ":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "5000",         Visa= ":OUTPUT OFF;:FREQ 5000;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "1000",         Visa= ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "400",          Visa= ":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "0.51[min][F]", Visa= ":OUTPUT OFF;:FREQ 0.51;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "1[min][F]",    Visa= ":OUTPUT OFF;:FREQ 1.0;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "3.5[min][7]",  Visa= ":OUTPUT OFF;:FREQ 3.5;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "5.7[min][7]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "33[max][7]",   Visa= ":OUTPUT OFF;:FREQ 33;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "46[max][7]",   Visa= ":OUTPUT OFF;:FREQ 46;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "5.7[max][F]",  Visa= ":OUTPUT OFF;:FREQ 5.7;:OUTPUT ON;*OPC?", Query=true},
+                        new(){Text= "8[max][F]",    Visa= ":OUTPUT OFF;:FREQ 8.0;:OUTPUT ON;*OPC?", Query=true},
                     ]
                 );
 
@@ -114,28 +114,28 @@ namespace InspectionTools.Product {
                             :MEASUREMENT:MEAS1:TYPE PK2PK;SOURCE CH1;
                             *OPC?
                             """,
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
-                        new(){Text= "1", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", ExpectsResponse=true},
-                        new(){Text= "2", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", ExpectsResponse=true},
-                        new(){Text= "3", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", ExpectsResponse=true},
-                        new(){Text= "4", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", ExpectsResponse=true},
+                        new(){Text= "1", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", Query=true},
+                        new(){Text= "2", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-2;*OPC?", Query=true},
+                        new(){Text= "3", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-3;*OPC?", Query=true},
+                        new(){Text= "4", Visa= ":HORIZONTAL:MAIN:SCALE 1.0E-4;*OPC?", Query=true},
                     ]
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm01.InstCommand, _instDmm01.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
-            (_instDmm02.InstCommand, _instDmm02.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
-            (_instFg.InstCommand, _instFg.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
-            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+            (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
+            (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
+            (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -255,7 +255,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                fgInstClass.ExpectsResponse = sw.ExpectsResponse;
+                fgInstClass.Query = sw.Query;
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -286,7 +286,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
+                oscInstClass.Query = sw.Query;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 

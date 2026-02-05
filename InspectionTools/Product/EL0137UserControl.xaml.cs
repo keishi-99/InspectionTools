@@ -26,7 +26,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -61,7 +61,7 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -83,7 +83,7 @@ namespace InspectionTools.Product {
                             :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
                             *OPC?
                             """,
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
                         new() {
@@ -101,7 +101,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS3:TYPE NONE;SOURCE MATH;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new() {
                             Text ="電流入力回路",
@@ -110,7 +110,7 @@ namespace InspectionTools.Product {
                                 :CURSOR:HBARS:POSITION1 1.6E0;POSITION2 1.6E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new() {
                             Text ="電圧入力回路",
@@ -119,7 +119,7 @@ namespace InspectionTools.Product {
                                 :CURSOR:HBARS:POSITION1 1.3E0;POSITION2 1.3E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new() {
                             Text ="波高値",
@@ -131,7 +131,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE MINIMUM;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new() {
                             Text ="1/1分周 CH1,2",
@@ -143,7 +143,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new() {
                             Text ="1/2~100分周 CH1,2",
@@ -155,21 +155,21 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE PWIDTH;SOURCE CH2;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                     ]
                 );
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
-            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -267,7 +267,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
+                oscInstClass.Query = sw.Query;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
