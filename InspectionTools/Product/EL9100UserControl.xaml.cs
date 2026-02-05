@@ -14,9 +14,11 @@ namespace InspectionTools.Product {
     /// <summary>
     /// EL9100UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL9100UserControl : UserControl, IMainWindowAware {
+    public partial class EL9100UserControl : UserControl, IMainWindowAware, IDisposable {
 
         private MainWindow? _mainWindow;
+        private bool _disposed = false;
+
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -37,8 +39,88 @@ namespace InspectionTools.Product {
             InitializeComponent();
         }
 
+        #region IDisposable Implementation
+
+        /// <summary>
+        /// リソースの解放（IDisposableパターン）
+        /// </summary>
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// リソースの解放処理
+        /// </summary>
+        /// <param name="disposing">マネージドリソースも解放する場合はtrue</param>
+        protected virtual void Dispose(bool disposing) {
+            if (_disposed) {
+                return;
+            }
+
+            if (disposing) {
+                // マネージドリソースの解放
+                try {
+                    // ホットキーのクリア
+                    ClearHotKey();
+
+                    // 計測器の解放
+                    DisposeInstrument(_instDmm01);
+                    DisposeInstrument(_instDmm02);
+
+                    // 辞書のクリア
+                    _dicCommands.Clear();
+                } catch (Exception ex) {
+                    // Dispose中のエラーはログに記録するのみ
+                    System.Diagnostics.Debug.WriteLine($"Dispose error: {ex.Message}");
+                }
+            }
+
+            // アンマネージドリソースの解放（必要に応じて）
+            // ...
+
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// 個別の計測器インスタンスを解放
+        /// </summary>
+        private static void DisposeInstrument(InstClass instrument) {
+            if (instrument == null) return;
+
+            try {
+                // 計測器がIDisposableを実装している場合
+                if (instrument is IDisposable disposable) {
+                    disposable.Dispose();
+                }
+                else {
+                    // ResetPropertiesで状態をリセット
+                    instrument.ResetProperties();
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// オブジェクトが破棄済みかチェック
+        /// </summary>
+        private void ThrowIfDisposed() {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+        }
+
+        /// <summary>
+        /// ファイナライザ
+        /// </summary>
+        ~EL9100UserControl() {
+            Dispose(false);
+        }
+
+        #endregion
+
         // 起動時
         private void LoadEvents() {
+            ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
@@ -90,6 +172,8 @@ namespace InspectionTools.Product {
 
         // 機器接続
         private async void ConnectInstAsync() {
+            ThrowIfDisposed();
+
             try {
                 _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
@@ -97,7 +181,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                CheckDmmId();
+                ValidateDmmSelection();
 
                 InstClass[] devices = [_instDmm01, _instDmm02];
                 RegDictionary();
@@ -118,7 +202,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMMのIDチェック処理
-        private void CheckDmmId() {
+        private void ValidateDmmSelection() {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
                 .Where(i => i >= 1); // 未選択(0以下)は無視
 
@@ -144,6 +228,8 @@ namespace InspectionTools.Product {
 
         // DMM測定値取得
         private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
+            ThrowIfDisposed();
+
             try {
                 VisibleProgressImage(true);
 
@@ -157,6 +243,8 @@ namespace InspectionTools.Product {
         }
         // DMM切り替え
         private async Task SwitchDmm2(DmmInstClass dmmInstClass, string func) {
+            ThrowIfDisposed();
+
             try {
                 VisibleProgressImage(true);
 
@@ -316,6 +404,8 @@ namespace InspectionTools.Product {
 
         // HotKeyの登録
         private void SetHotKey() {
+            ThrowIfDisposed();
+
             MainWindow.HotkeysList.Clear();
 
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
@@ -345,7 +435,7 @@ namespace InspectionTools.Product {
         private void OcrButton_Click(object sender, RoutedEventArgs e) { Capture(); }
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
-
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }
 
     }
 }

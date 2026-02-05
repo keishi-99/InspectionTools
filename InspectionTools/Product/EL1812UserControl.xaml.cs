@@ -12,9 +12,11 @@ namespace InspectionTools.Product {
     /// <summary>
     /// EL1812UserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL1812UserControl : UserControl, IMainWindowAware {
+    public partial class EL1812UserControl : UserControl, IMainWindowAware, IDisposable {
 
         private MainWindow? _mainWindow;
+        private bool _disposed = false;
+
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -37,11 +39,92 @@ namespace InspectionTools.Product {
             InitializeComponent();
         }
 
+        #region IDisposable Implementation
+
+        /// <summary>
+        /// リソースの解放（IDisposableパターン）
+        /// </summary>
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// リソースの解放処理
+        /// </summary>
+        /// <param name="disposing">マネージドリソースも解放する場合はtrue</param>
+        protected virtual void Dispose(bool disposing) {
+            if (_disposed) {
+                return;
+            }
+
+            if (disposing) {
+                // マネージドリソースの解放
+                try {
+                    // ホットキーのクリア
+                    ClearHotKey();
+
+                    // 計測器の解放
+                    DisposeInstrument(_instDcs);
+                    DisposeInstrument(_instFg);
+                    DisposeInstrument(_instOsc);
+
+                    // 辞書のクリア
+                    _dicCommands.Clear();
+                } catch (Exception ex) {
+                    // Dispose中のエラーはログに記録するのみ
+                    System.Diagnostics.Debug.WriteLine($"Dispose error: {ex.Message}");
+                }
+            }
+
+            // アンマネージドリソースの解放（必要に応じて）
+            // ...
+
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// 個別の計測器インスタンスを解放
+        /// </summary>
+        private static void DisposeInstrument(InstClass instrument) {
+            if (instrument == null) return;
+
+            try {
+                // 計測器がIDisposableを実装している場合
+                if (instrument is IDisposable disposable) {
+                    disposable.Dispose();
+                }
+                else {
+                    // ResetPropertiesで状態をリセット
+                    instrument.ResetProperties();
+                }
+            } catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// オブジェクトが破棄済みかチェック
+        /// </summary>
+        private void ThrowIfDisposed() {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+        }
+
+        /// <summary>
+        /// ファイナライザ
+        /// </summary>
+        ~EL1812UserControl() {
+            Dispose(false);
+        }
+
+        #endregion
+
         private int _rotateMenuNumber = 0;
         private List<string> _listRotateMenuTitle = [];
 
         // 起動時
         private void LoadEvents() {
+            ThrowIfDisposed();
             InstListImport();
             RegMenuTitle();
             var parentWindow = Window.GetWindow(this);
@@ -207,6 +290,8 @@ namespace InspectionTools.Product {
 
         // 機器接続
         private async void ConnectInstAsync() {
+            ThrowIfDisposed();
+
             try {
                 _mainWindow?.SetButtonEnabled("ProductListButton", false);
 
@@ -273,6 +358,8 @@ namespace InspectionTools.Product {
 
         // FG切り替え
         private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+            ThrowIfDisposed();
+
             try {
                 if (string.IsNullOrEmpty(fgInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
@@ -304,6 +391,8 @@ namespace InspectionTools.Product {
         }
         // FG 出力ON/OFF
         private async void OutputFg(string cmd) {
+            ThrowIfDisposed();
+
             try {
                 if (string.IsNullOrEmpty(_instFg.VisaAddress)) { return; }
                 VisibleProgressImage(true);
@@ -323,6 +412,8 @@ namespace InspectionTools.Product {
         }
         // OSC切り替え
         private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+            ThrowIfDisposed();
+
             try {
                 if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
                 VisibleProgressImage(true);
@@ -355,6 +446,8 @@ namespace InspectionTools.Product {
         }
         // DMM測定値取得
         private async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
+            ThrowIfDisposed();
+
             try {
                 VisibleProgressImage(true);
 
@@ -368,6 +461,8 @@ namespace InspectionTools.Product {
         }
         // OSC測定値取得
         private async Task<decimal> ReadOsc(OscInstClass oscInstClass, int meas) {
+            ThrowIfDisposed();
+
             try {
                 VisibleProgressImage(true);
 
@@ -529,6 +624,7 @@ namespace InspectionTools.Product {
             intCount += i;
             CountTextBox.Text = intCount.ToString();
         }
+
         // OSC切り替え
         private void ActionSwitchOscRange(bool isNext) {
             var foregroundWindow = GetForegroundWindow();
@@ -717,6 +813,8 @@ namespace InspectionTools.Product {
 
         // HotKeyの登録
         private void SetHotKey() {
+            ThrowIfDisposed();
+
             MainWindow.HotkeysList.Clear();
 
             MainWindow.HotkeysList.AddRange([
@@ -820,7 +918,7 @@ namespace InspectionTools.Product {
         private void CountNext_Click(object sender, RoutedEventArgs e) { CountIncrement(1); }
         private void CountLockCheckBox_Checked(object sender, RoutedEventArgs e) { CountLockToggle(); }
         private void CountLockCheckBox_Unchecked(object sender, RoutedEventArgs e) { CountLockToggle(); }
-
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }
 
     }
 }
