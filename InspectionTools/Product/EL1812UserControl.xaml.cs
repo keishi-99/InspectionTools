@@ -65,7 +65,7 @@ namespace InspectionTools.Product {
                     ClearHotKey();
 
                     // 計測器の解放
-                    DisposeInstrument(_instDcs);
+                    DisposeInstrument(_instDmm);
                     DisposeInstrument(_instFg);
                     DisposeInstrument(_instOsc);
 
