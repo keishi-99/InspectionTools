@@ -24,13 +24,13 @@
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM-1"
             IsReadOnly="True" />
-        <!--<ComboBox
+        <ComboBox
             x:Name="Dmm02ComboBox"
             Grid.Column="1"
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DMM-2"
-            IsReadOnly="True" />-->
+            IsReadOnly="True" />
 
         <ComboBox
             x:Name="Dcs01ComboBox"
