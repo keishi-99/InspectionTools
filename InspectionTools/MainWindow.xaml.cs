@@ -262,7 +262,7 @@ namespace InspectionTools {
                     using var usbDev = new USBDeviceManager();
                     usbDev.OpenDev(instClass.VisaAddress);
                     usbDev.OutputDev(instClass.InstCommand);
-                    return instClass.ExpectsResponse ? usbDev.InputDev() : string.Empty;
+                    return instClass.Query ? usbDev.InputDev() : string.Empty;
                 });
             } finally {
                 s_visaLock.Release();
@@ -295,7 +295,7 @@ namespace InspectionTools {
         // CNT測定値取得
         public static async Task<decimal> ReadCnt(CntInstClass cntInstClass) {
 
-            (cntInstClass.InstCommand, cntInstClass.ExpectsResponse) = cntInstClass.SignalType switch {
+            (cntInstClass.InstCommand, cntInstClass.Query) = cntInstClass.SignalType switch {
                 3 => (":MEAS?XNOW", true),
                 _ => throw new ApplicationException(),
             };

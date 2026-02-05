@@ -34,7 +34,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -99,7 +99,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -125,16 +125,16 @@ namespace InspectionTools.Product {
                 (
                     Init: new() {
                         Visa = "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 3.0;*OPC?",
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
-                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;:VOLT:OFFS 3.0;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;*OPC?", ExpectsResponse = true },
-                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
-                        new() { Text = "4:パルス出力回路の確認(最小値)", ExpectsResponse = true },
-                        new() { Text = "5:パルス出力回路の確認(周波数)", ExpectsResponse = true },
-                        new() { Text = "6:大流量での動作確認",           ExpectsResponse = true },
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;:VOLT:OFFS 3.0;*OPC?", Query = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", Query = true },
+                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;*OPC?", Query = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", Query = true },
+                        new() { Text = "4:パルス出力回路の確認(最小値)", Query = true },
+                        new() { Text = "5:パルス出力回路の確認(周波数)", Query = true },
+                        new() { Text = "6:大流量での動作確認",           Query = true },
                     ]
                 );
 
@@ -142,16 +142,16 @@ namespace InspectionTools.Product {
                 (
                     Init: new() {
                         Visa = "*RST;:FUNC SQU;:FREQ 100;:VOLT 0.0VPP;:VOLT:OFFS 2.0;*OPC?",
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
-                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "2:アンプ動作の確認",             ExpectsResponse = true },
-                        new() { Text = "3:パルス出力回路の確認(最大値)", ExpectsResponse = true },
-                        new() { Text = "4:パルス出力回路の確認(最小値)", ExpectsResponse = true },
-                        new() { Text = "5:パルス出力回路の確認(周波数)", ExpectsResponse = true },
-                        new() { Text = "6:大流量での動作確認",           ExpectsResponse = true },
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", Query = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", Query = true },
+                        new() { Text = "2:アンプ動作の確認",             Query = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)", Query = true },
+                        new() { Text = "4:パルス出力回路の確認(最小値)", Query = true },
+                        new() { Text = "5:パルス出力回路の確認(周波数)", Query = true },
+                        new() { Text = "6:大流量での動作確認",           Query = true },
                     ]
                 );
 
@@ -173,13 +173,13 @@ namespace InspectionTools.Product {
                 (
                     Init: new(),
                     Settings: [
-                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1:小流量での動作確認",               Visa = ":VOLT 0.0VPP;*OPC?", ExpectsResponse = true },
-                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;:VOLT:OFFS 3.0;*OPC?", ExpectsResponse = true },
-                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", Query = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":VOLT 0.0VPP;*OPC?", Query = true },
+                        new() { Text = "2:アンプ動作の確認",                 Visa = ":VOLT 5.0VPP;:VOLT:OFFS 3.0;*OPC?", Query = true },
+                        new() { Text = "3:パルス出力回路の確認(最大値)",     Visa = ":VOLT 0.0VPP;:VOLT:OFFS 4.0;*OPC?", Query = true },
                         new() { Text = "4:パルス出力回路の確認(最小値)" },
                         new() { Text = "5:パルス出力回路の確認(周波数)" },
-                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;:VOLT:OFFS 4.0;*OPC?", ExpectsResponse = true },
+                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;:VOLT:OFFS 4.0;*OPC?", Query = true },
                     ]
                 );
 
@@ -187,13 +187,13 @@ namespace InspectionTools.Product {
                 (
                     Init: new(),
                     Settings: [
-                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "0:OFF",                              Visa = ":OUTP OFF;*OPC?", Query = true },
+                        new() { Text = "1:小流量での動作確認",               Visa = ":OUTP ON;*OPC?", Query = true },
                         new() { Text = "2:アンプ動作の確認" },
                         new() { Text = "3:パルス出力回路の確認(最大値)" },
                         new() { Text = "4:パルス出力回路の確認(最小値)" },
                         new() { Text = "5:パルス出力回路の確認(周波数)" },
-                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "6:大流量での動作確認",               Visa = ":OUTP ON;*OPC?", Query = true },
                     ]
                 );
 
@@ -224,7 +224,7 @@ namespace InspectionTools.Product {
                             :MEASUREMENT:MEAS5:TYPE NONE;SOURCE MATH;
                             *OPC?
                             """,
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
                         new(){},
@@ -238,7 +238,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 2.0E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -248,7 +248,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE PK2PK;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -261,7 +261,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 1.0E1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -273,7 +273,7 @@ namespace InspectionTools.Product {
                             :TRIGGER:MAIN:LEVEL 5.0E-2;
                             *OPC?
                             """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -285,7 +285,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 1.0E1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -301,7 +301,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 0.0E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         }
                     ]
                 );
@@ -319,7 +319,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH4;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -334,7 +334,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 2.0E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -346,7 +346,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 1.0E1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -358,7 +358,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 5.0E-2;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -371,7 +371,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 1.0E1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         },
                         new(){
                             Visa =
@@ -383,7 +383,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 0.0E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true
+                            Query = true
                         }
                     ]
                 );
@@ -400,18 +400,18 @@ namespace InspectionTools.Product {
         }
         // 機器初期設定
         private void FormatSet() {
-            (_instDcs.InstCommand, _instDcs.ExpectsResponse) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
-            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
-            (_instFg01.InstCommand, _instFg01.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg01].Init, _instFg01.SignalType);
-            (_instFg02_1.InstCommand, _instFg02_1.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg02_1].Init, _instFg02_1.SignalType);
-            (_instFg02_2.InstCommand, _instFg02_2.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg02_2].Init, _instFg02_2.SignalType);
-            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+            (_instDcs.InstCommand, _instDcs.Query) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instFg01.InstCommand, _instFg01.Query) = ResolveCommand(_dicCommands[_instFg01].Init, _instFg01.SignalType);
+            (_instFg02_1.InstCommand, _instFg02_1.Query) = ResolveCommand(_dicCommands[_instFg02_1].Init, _instFg02_1.SignalType);
+            (_instFg02_2.InstCommand, _instFg02_2.Query) = ResolveCommand(_dicCommands[_instFg02_2].Init, _instFg02_2.SignalType);
+            (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -577,7 +577,7 @@ namespace InspectionTools.Product {
             dcsInstClass.SettingNumber = i;
 
             var sw = settings[dcsInstClass.SettingNumber];
-            dcsInstClass.ExpectsResponse = sw.ExpectsResponse;
+            dcsInstClass.Query = sw.Query;
 
             dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
                 2 => dcsInstClass.InstCommand = sw.Visa,
@@ -661,7 +661,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                instClass.ExpectsResponse = sw.ExpectsResponse;
+                instClass.Query = sw.Query;
                 await MainWindow.ConnectDeviceAsync(instClass);
             }
         }

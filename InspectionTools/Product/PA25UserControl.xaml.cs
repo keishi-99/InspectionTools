@@ -27,7 +27,7 @@ namespace InspectionTools.Product {
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
             public string Gpib { get; init; } = string.Empty;
-            public bool ExpectsResponse { get; init; } = false;
+            public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -65,30 +65,30 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", ExpectsResponse = true },
+                    Init: new() { Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instFg] =
                 (
-                    Init: new() { Visa = "*RST;:FREQ 1;:VOLT 0.44VPP;*OPC?", ExpectsResponse = true },
+                    Init: new() { Visa = "*RST;:FREQ 1;:VOLT 0.44VPP;*OPC?", Query = true },
                     Settings: [
-                        new() { Text = "OFF",   Visa = ":FREQ 1;:OUTPUT OFF;*OPC?", ExpectsResponse = true },
-                        new() { Text = "27",    Visa = ":OUTPUT OFF;:FREQ 27;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "29",    Visa = ":OUTPUT OFF;:FREQ 29;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "400",   Visa = ":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1",     Visa = ":OUTPUT OFF;:FREQ 1;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "10",    Visa = ":OUTPUT OFF;:FREQ 10;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "200",   Visa = ":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", ExpectsResponse = true },
-                        new() { Text = "2200",  Visa = ":OUTPUT OFF;:FREQ 2200;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", ExpectsResponse = true },
-                        new() { Text = "6250",  Visa = ":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "3800",  Visa = ":OUTPUT OFF;:FREQ 3800;:OUTPUT ON;*OPC?", ExpectsResponse = true },
-                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", ExpectsResponse = true },
+                        new() { Text = "OFF",   Visa = ":FREQ 1;:OUTPUT OFF;*OPC?", Query = true },
+                        new() { Text = "27",    Visa = ":OUTPUT OFF;:FREQ 27;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "29",    Visa = ":OUTPUT OFF;:FREQ 29;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "400",   Visa = ":OUTPUT OFF;:FREQ 400;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "1",     Visa = ":OUTPUT OFF;:FREQ 1;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "10",    Visa = ":OUTPUT OFF;:FREQ 10;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "200",   Visa = ":OUTPUT OFF;:FREQ 200;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", Query = true },
+                        new() { Text = "2200",  Visa = ":OUTPUT OFF;:FREQ 2200;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", Query = true },
+                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "OFF",   Visa = ":OUTPUT OFF;:FREQ 1;*OPC?", Query = true },
+                        new() { Text = "6250",  Visa = ":OUTPUT OFF;:FREQ 6250;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "3800",  Visa = ":OUTPUT OFF;:FREQ 3800;:OUTPUT ON;*OPC?", Query = true },
+                        new() { Text = "1000",  Visa = ":OUTPUT OFF;:FREQ 1000;:OUTPUT ON;*OPC?", Query = true },
                     ]
                 );
 
@@ -105,7 +105,7 @@ namespace InspectionTools.Product {
                             :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;
                             *OPC?
                             """,
-                        ExpectsResponse = true
+                        Query = true
                     },
                     Settings: [
                         new() {
@@ -117,7 +117,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 3.0E-1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "2",
                             Visa =
@@ -125,7 +125,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 2.5E-1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "3",
                             Visa =
@@ -133,7 +133,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 2.5E-2;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "4",
                             Visa =
@@ -141,7 +141,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 1.0E-3;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "5",
                             Visa =
@@ -152,7 +152,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE PERIOD;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "6",
                             Visa =
@@ -162,7 +162,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE NWIDTH;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "7",
                             Visa =
@@ -173,7 +173,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "8",
                             Visa =
@@ -182,7 +182,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE NONE;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "9",
                             Visa =
@@ -193,7 +193,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "10",
                             Visa =
@@ -201,7 +201,7 @@ namespace InspectionTools.Product {
                                 :CH1:COUPLING DC;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "11",
                             Visa =
@@ -211,7 +211,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 3.84E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "12",
                             Visa =
@@ -220,7 +220,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 8.44E-1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                     ]
                 );
 
@@ -235,7 +235,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 5.0E-4;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "2",
                             Visa =
@@ -243,7 +243,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 2.5E-1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "3",
                             Visa =
@@ -251,7 +251,7 @@ namespace InspectionTools.Product {
                                 :HORIZONTAL:MAIN:SCALE 2.5E-2;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "4",
                             Visa =
@@ -262,7 +262,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE NONE;SOURCE CH1;                        
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "5",
                             Visa =
@@ -272,7 +272,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE PERIOD;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "6",
                             Visa =
@@ -283,7 +283,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE NONE;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "7",
                             Visa =
@@ -292,7 +292,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS2:TYPE MAXIMUM;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "8",
                             Visa =
@@ -303,7 +303,7 @@ namespace InspectionTools.Product {
                                 :MEASUREMENT:MEAS1:TYPE MINIMUM;SOURCE CH1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "9",
                             Visa =
@@ -311,7 +311,7 @@ namespace InspectionTools.Product {
                                 :CH1:SCALE 2.0E-2;COUPLING AC;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "10",
                             Visa =
@@ -319,7 +319,7 @@ namespace InspectionTools.Product {
                                 :CH1:COUPLING DC;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "11",
                             Visa =
@@ -328,7 +328,7 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 3.84E0;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                         new() {
                             Text = "12",
                             Visa =
@@ -338,22 +338,22 @@ namespace InspectionTools.Product {
                                 :TRIGGER:MAIN:LEVEL 8.44E-1;
                                 *OPC?
                                 """,
-                            ExpectsResponse = true },
+                            Query = true },
                     ]
                 );
         }
 
         // 機器初期設定
         private void FormatSet() {
-            (_instDmm.InstCommand, _instDmm.ExpectsResponse) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
-            (_instFg.InstCommand, _instFg.ExpectsResponse) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
-            (_instOsc.InstCommand, _instOsc.ExpectsResponse) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
+            (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
+            (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool ExpectsResponse) ResolveCommand(SwitchCommand sw, int signalType) {
+        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
-                1 => (sw.Adc, sw.ExpectsResponse),
-                2 => (sw.Visa, sw.ExpectsResponse),
-                3 => (sw.Gpib, sw.ExpectsResponse),
+                1 => (sw.Adc, sw.Query),
+                2 => (sw.Visa, sw.Query),
+                3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
         }
@@ -478,7 +478,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                fgInstClass.ExpectsResponse = sw.ExpectsResponse;
+                fgInstClass.Query = sw.Query;
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -510,7 +510,7 @@ namespace InspectionTools.Product {
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
-                oscInstClass.ExpectsResponse = sw.ExpectsResponse;
+                oscInstClass.Query = sw.Query;
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
