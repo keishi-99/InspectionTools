@@ -48,6 +48,11 @@
             <Button
                 Width="100"
                 Margin="5"
+                Click="EL9220_Click"
+                Content="EL9220" />
+            <Button
+                Width="100"
+                Margin="5"
                 Click="EL9230_Click"
                 Content="EL9230" />
             <Button
