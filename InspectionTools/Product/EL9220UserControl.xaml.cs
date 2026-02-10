@@ -316,7 +316,7 @@ namespace InspectionTools.Product {
         }
 
         // DCSローテーション
-        private async void ActionHotkeyComma() {
+        private async void ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
             await SwitchDcs(_instDcs, true);
         }
@@ -374,7 +374,7 @@ namespace InspectionTools.Product {
 
             if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyComma, ActionHotkeyComma),
+                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
                     new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
