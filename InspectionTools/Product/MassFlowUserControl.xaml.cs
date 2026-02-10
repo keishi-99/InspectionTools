@@ -194,7 +194,7 @@ namespace InspectionTools.Product {
                 (
                     Init: new() {
                         Gpib = "*RST;:CHAN 2;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 2.0;:OUTP:STAT OFF;:CHAN 1;:CHAN:MODE IND;:MODE NORM;:FUNC:SHAP FSQU;:FREQ 100;:VOLT 0.0;:VOLT:OFFS 3.0;:OUTP:STAT OFF;",
-                        Visa = "*RST;:CHAN:MODE IND;:SOUR1:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:FREQ:CW 100HZ;:SOUR1:VOLT:OFFS 3.0;:SOUR2:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR2:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR2:FREQ:CW 100HZ;:SOUR2:VOLT:OFFS 2.0;:OUTP1:STAT OFF;:OUTP2:STAT OFF;*OPC?",
+                        Visa = "*RST;:CHAN:MODE IND;:SOUR1:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR1:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR1:FREQ:CW 100HZ;:SOUR1:VOLT:OFFS 3.0;:SOUR2:FUNC:SHAP SQU;SQU:DCYC 50PCT;:SOUR2:VOLT:LEV:IMM:AMPL 0.0VPP;:SOUR2:FREQ:CW 100HZ;:SOUR2:VOLT:OFFS 2.0;:OUTP1:STAT OFF;:OUTP2:STAT OFF;",
                     },
                     Settings: [
                         new() { Text = "0:OFF",                              Gpib = ":CHAN 2;:OUTP:STAT OFF;:CHAN 1;:OUTP:STAT OFF;:VOLT:OFFS 3.0;",     Visa = ":OUTP1:STAT OFF;:SOUR1:VOLT:OFFS 3.0;:OUTP2:STAT OFF;" },
@@ -496,7 +496,7 @@ namespace InspectionTools.Product {
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
+                2 or 4 => (sw.Visa, sw.Query),
                 3 => (sw.Gpib, sw.Query),
                 _ => (string.Empty, false),
             };
@@ -749,11 +749,14 @@ namespace InspectionTools.Product {
 
                 instClass.InstCommand = instClass.SignalType switch {
                     1 => sw.Adc,
-                    2 => sw.Visa,
+                    2 or 4 => sw.Visa,
                     3 => sw.Gpib,
                     _ => string.Empty,
                 };
                 instClass.Query = sw.Query;
+
+                if (string.IsNullOrEmpty(instClass.InstCommand)) { return; }
+
                 await MainWindow.ConnectDeviceAsync(instClass);
             }
         }
