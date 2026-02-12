@@ -24,6 +24,7 @@ namespace InspectionTools.Product {
         private readonly DcsInstClass _instDcs = new();
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
+        private readonly DmmInstClass _instDmm03 = new();
 
         private record SwitchCommand {
             public string Text { get; init; } = string.Empty;
@@ -68,6 +69,7 @@ namespace InspectionTools.Product {
                     DisposeInstrument(_instDcs);
                     DisposeInstrument(_instDmm01);
                     DisposeInstrument(_instDmm02);
+                    DisposeInstrument(_instDmm03);
 
                     // 辞書のクリア
                     _dicCommands.Clear();
@@ -132,6 +134,7 @@ namespace InspectionTools.Product {
             MainWindow.UpdateComboBox(DcsComboBox, "電流電圧発生器", [2, 3]);
             MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
             MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2]);
+            MainWindow.UpdateComboBox(Dmm03ComboBox, "デジタルマルチメータ", [1, 2]);
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
@@ -146,6 +149,7 @@ namespace InspectionTools.Product {
             MainWindow.GetVisaAddress(_instDcs, DcsComboBox);
             MainWindow.GetVisaAddress(_instDmm01, Dmm01ComboBox);
             MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
+            MainWindow.GetVisaAddress(_instDmm03, Dmm03ComboBox);
         }
         // 機器設定辞書登録
         private void RegDictionary() {
@@ -158,7 +162,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -167,6 +171,16 @@ namespace InspectionTools.Product {
                     Init: new() { Adc = "*RST,F1,R5,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
+
+            _dicCommands[_instDmm03] =
+                (
+                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Settings: [
+                            new() { Text = "DCI",   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?" },
+                            new() { Text = "DCV",   Adc= "*RST,F1,R5,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?" },
+                        ]
+                );
+
             _dicCommands[_instDcs] =
                 (
                     Init: new() { Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
@@ -189,9 +203,10 @@ namespace InspectionTools.Product {
         // 機器初期設定
         private void FormatSet() {
             (_instCnt.InstCommand, _instCnt.Query) = ResolveCommand(_dicCommands[_instCnt].Init, _instCnt.SignalType);
+            (_instDcs.InstCommand, _instDcs.Query) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
             (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
-            (_instDcs.InstCommand, _instDcs.Query) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
+            (_instDmm03.InstCommand, _instDmm03.Query) = ResolveCommand(_dicCommands[_instDmm03].Init, _instDmm03.SignalType);
         }
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
@@ -215,7 +230,7 @@ namespace InspectionTools.Product {
                 SelectInst();
                 ValidateDmmSelection();
 
-                InstClass[] devices = [_instCnt, _instDcs, _instDmm01, _instDmm02];
+                InstClass[] devices = [_instCnt, _instDcs, _instDmm01, _instDmm02, _instDmm03];
                 RegDictionary();
                 FormatSet();
                 var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
@@ -230,6 +245,7 @@ namespace InspectionTools.Product {
                 DcsComboBox.IsEnabled = false;
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
+                Dmm03ComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
 
@@ -242,7 +258,7 @@ namespace InspectionTools.Product {
         }
         // DMMのIDチェック処理
         private void ValidateDmmSelection() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index }
+            var indices = new[] { _instDmm01.Index, _instDmm02.Index, _instDmm03.Index }
                 .Where(i => i >= 1); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
@@ -258,12 +274,14 @@ namespace InspectionTools.Product {
             _instDcs.ResetProperties();
             _instDmm01.ResetProperties();
             _instDmm02.ResetProperties();
+            _instDmm03.ResetProperties();
 
             _mainWindow?.SetButtonEnabled("ProductListButton", true);
             CntComboBox.IsEnabled = true;
             DcsComboBox.IsEnabled = true;
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
+            Dmm03ComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
             HotKeyCheckBox.IsChecked = false;
@@ -331,9 +349,50 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
+        // DMMローテーション
+        private async Task SwitchDmm(DmmInstClass dmmInstClass, bool isNext) {
+
+            ThrowIfDisposed();
+
+            try {
+                VisibleProgressImage(true);
+
+                var settings = _dicCommands[dmmInstClass].Settings;
+                dmmInstClass.SettingNumber = (dmmInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
+
+                var sw = settings[dmmInstClass.SettingNumber];
+                dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
+                    1 => sw.Adc,
+                    2 => sw.Visa,
+                    3 => sw.Gpib,
+                    _ => string.Empty,
+                };
+                dmmInstClass.Query = sw.Query;
+
+                await MainWindow.ConnectDeviceAsync(dmmInstClass);
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
 
         // CNT測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async void ActionHotkeyComma() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                var output = await ReadCnt(_instCnt);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(output.ToString());
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private async void ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -349,11 +408,11 @@ namespace InspectionTools.Product {
             }
         }
         // DCSローテーション
-        private void ActionHotkeyAtsign() {
+        private void ActionHotkeyBracketL() {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, true);
         }
-        private void ActionHotkeyShiftAtsign() {
+        private void ActionHotkeyShiftBracketL() {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, false);
         }
@@ -362,7 +421,7 @@ namespace InspectionTools.Product {
             RotationDcs(_instDcs, true);
         }
         // DMM01測定値コピー
-        private async void ActionHotkeyColon() {
+        private async void ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -377,7 +436,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        private async void ActionHotkeyNumMultiply() {
+        private async void ActionHotkeyHotkeyNumSubtract() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -393,7 +452,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBracketR() {
+        private async void ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -423,6 +482,42 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        // DMM03測定値コピー
+        private async void ActionHotkeyBackSlash() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm03);
+
+                var commandType = _dicCommands[_instDmm03].Settings[_instDmm03.SettingNumber].Text;
+                var outputValue = commandType switch {
+                    "DCI" => output * 1000m,
+                    "DCV" => output,
+                    _ => output,
+                };
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(outputValue.ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        // DMM03切り替え
+        private async void ActionHotkeyBracketR() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+
+                await SwitchDmm(_instDmm03, true);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         // HotKeyの登録
         private void SetHotKey() {
@@ -432,26 +527,33 @@ namespace InspectionTools.Product {
 
             if (!string.IsNullOrEmpty(_instCnt.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                    new(ModNone, HotkeyComma, ActionHotkeyComma),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
-                    new(ModShift, HotkeyAtsign, ActionHotkeyShiftAtsign),
+                    new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
+                    new(ModShift, HotkeyBracketL, ActionHotkeyShiftBracketL),
                     new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyColon, ActionHotkeyColon),
-                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
+                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                    new(ModNone, HotkeyNumSubtract, ActionHotkeyHotkeyNumSubtract),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
+                    new(ModNone, HotkeySlash, ActionHotkeySlash),
                     new(ModNone, HotkeyNumAdd, ActionHotkeyNumAdd),
+                ]);
+            }
+            if (!string.IsNullOrEmpty(_instDmm03.VisaAddress)) {
+                MainWindow.HotkeysList.AddRange([
+                    new(ModNone, HotkeyBackslash, ActionHotkeyBackSlash),
+                    new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
                 ]);
             }
 
