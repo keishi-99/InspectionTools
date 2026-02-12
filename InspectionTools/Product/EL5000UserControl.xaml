@@ -8,7 +8,7 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="220"
-    Height="230"
+    Height="250"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -16,7 +16,7 @@
         x:Name="MainGrid"
         Margin="10"
         ColumnDefinitions="*,*"
-        RowDefinitions="*,*,0.25*,*,*,*">
+        RowDefinitions="*,*,*,0.25*,*,*,*">
 
         <ComboBox
             x:Name="Dmm01ComboBox"
@@ -32,15 +32,22 @@
             materialDesign:HintAssist.Hint="DMM-2"
             IsReadOnly="True" />
         <ComboBox
-            x:Name="CntComboBox"
+            x:Name="Dmm03ComboBox"
             Grid.Row="1"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM-3"
+            IsReadOnly="True" />
+        <ComboBox
+            x:Name="CntComboBox"
+            Grid.Row="2"
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="CNT"
             IsReadOnly="True" />
         <ComboBox
             x:Name="DcsComboBox"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="1"
             Margin="5,0"
             VerticalAlignment="Center"
@@ -49,7 +56,7 @@
 
         <Grid
             x:Name="DcsGrid"
-            Grid.Row="3"
+            Grid.Row="4"
             Grid.Column="1"
             ColumnDefinitions="*,1.5*">
             <TextBox
@@ -73,14 +80,14 @@
 
         <Button
             x:Name="ConnectButton"
-            Grid.Row="4"
+            Grid.Row="5"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="ConnectButton_Click"
             Content="接続" />
         <Button
             x:Name="ReleaseButton"
-            Grid.Row="4"
+            Grid.Row="5"
             Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
@@ -90,7 +97,7 @@
 
         <CheckBox
             x:Name="HotKeyCheckBox"
-            Grid.Row="5"
+            Grid.Row="6"
             Margin="20,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
