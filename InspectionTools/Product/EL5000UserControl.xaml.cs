@@ -436,7 +436,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        private async void ActionHotkeyHotkeyNumSubtract() {
+        private async void ActionHotkeyNumSubtract() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -541,7 +541,7 @@ namespace InspectionTools.Product {
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                    new(ModNone, HotkeyNumSubtract, ActionHotkeyHotkeyNumSubtract),
+                    new(ModNone, HotkeyNumSubtract, ActionHotkeyNumSubtract),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
