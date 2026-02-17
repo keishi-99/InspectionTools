@@ -171,8 +171,11 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDmm];
                 RegDictionary();
                 FormatSet();
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 DmmComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
