@@ -1,7 +1,6 @@
 ﻿using InspectionTools.Common;
 using System.Data;
 using System.Windows;
-using VisaComLib;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainWindow;
@@ -303,8 +302,11 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDmm, _instFg, _instOsc];
                 RegDictionary();
                 FormatSet();
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateBackButton.IsEnabled = true;

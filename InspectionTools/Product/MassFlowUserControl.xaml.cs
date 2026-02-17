@@ -1,5 +1,4 @@
 ﻿using InspectionTools.Common;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -526,8 +525,10 @@ namespace InspectionTools.Product {
                 RegDictionary();
                 FormatSet();
 
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberTextBox.Text = "OFF";

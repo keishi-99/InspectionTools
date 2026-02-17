@@ -204,8 +204,11 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDcs, _instDmm, _instFg];
                 RegDictionary();
                 FormatSet();
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
