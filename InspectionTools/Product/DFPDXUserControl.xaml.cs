@@ -252,8 +252,11 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDmm01, _instDmm02, _instDmm03, _instFg, _instOsc];
                 RegDictionary();
                 FormatSet();
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateRangeTextBox.Text = "OFF";

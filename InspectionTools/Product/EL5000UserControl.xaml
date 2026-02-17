@@ -32,11 +32,11 @@
             materialDesign:HintAssist.Hint="DMM-2"
             IsReadOnly="True" />
         <ComboBox
-            x:Name="Dmm03ComboBox"
+            x:Name="FgComboBox"
             Grid.Row="1"
             Margin="5,0"
             VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="DMM-3"
+            materialDesign:HintAssist.Hint="FG"
             IsReadOnly="True" />
         <ComboBox
             x:Name="CntComboBox"
