@@ -1,5 +1,4 @@
 ﻿using InspectionTools.Common;
-using System;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -239,8 +238,11 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDcs, _instDmm01, _instDmm02, _instOsc];
                 RegDictionary();
                 FormatSet();
-                var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                await Task.WhenAll(tasks);
+
+                await Task.Run(async () => {
+                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
+                    await Task.WhenAll(tasks);
+                });
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
