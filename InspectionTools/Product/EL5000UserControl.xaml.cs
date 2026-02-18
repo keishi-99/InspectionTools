@@ -155,7 +155,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instCnt] =
                 (
-                    Init: new() { Gpib = ":FUNC PWID;:FRUN ON;" },
+                    Init: new() { Gpib = "*RST;:FUNC PWID;:FRUN ON;" },
                     Settings: []
                 );
 
@@ -425,7 +425,7 @@ namespace InspectionTools.Product {
                 var output = await ReadCnt(_instCnt);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString());
+                sim.Keyboard.TextEntry((output * 1000).ToString());
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
@@ -440,7 +440,7 @@ namespace InspectionTools.Product {
                 var output = await ReadCnt(_instCnt);
 
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString());
+                sim.Keyboard.TextEntry((output * 1000).ToString());
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
