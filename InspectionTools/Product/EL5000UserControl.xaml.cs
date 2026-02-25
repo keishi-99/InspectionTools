@@ -1,6 +1,8 @@
 ﻿using InspectionTools.Common;
 using System.Data;
+using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 using WindowsInput;
 using static InspectionTools.Common.Win32Wrapper;
 using static InspectionTools.MainWindow;
@@ -34,9 +36,14 @@ namespace InspectionTools.Product {
             public bool Query { get; init; } = false;
         }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
+        readonly Stopwatch _stopwatch = new();
+        readonly DispatcherTimer _timer = new();
 
         public EL5000UserControl() {
             InitializeComponent();
+
+            _timer.Interval = new TimeSpan(0, 0, 0, 1);
+            _timer.Tick += new EventHandler(TimerMethod);
         }
 
         #region IDisposable Implementation
@@ -59,6 +66,9 @@ namespace InspectionTools.Product {
             }
 
             if (disposing) {
+                _timer.Stop();
+                _timer.Tick -= TimerMethod;
+
                 // マネージドリソースの解放
                 try {
                     // ホットキーのクリア
@@ -300,6 +310,9 @@ namespace InspectionTools.Product {
             HotKeyCheckBox.IsChecked = false;
             DcsNumberLabel.Text = string.Empty;
             DcsRangeLabel.Text = string.Empty;
+            _timer.Stop();
+            _stopwatch.Reset();
+            DcsTimer.Text = "00:00";
         }
 
         // Cnt測定値取得
@@ -369,6 +382,18 @@ namespace InspectionTools.Product {
                 DcsRangeLabel.Text = sw.Text;
 
                 VisibleProgressImage(false);
+
+                if (dcsInstClass.SettingNumber != 0) {
+                    _stopwatch.Restart();
+                    if (!_timer.IsEnabled) {
+                        _timer.Start();
+                    }
+                }
+                else {
+                    _timer.Stop();
+                    _stopwatch.Reset();
+                    DcsTimer.Text = "00:00";
+                }
 
             } catch (Exception ex) {
                 Release();
@@ -583,6 +608,11 @@ namespace InspectionTools.Product {
         }
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
+        }
+
+        private void TimerMethod(object? sender, EventArgs e) {
+            var result = _stopwatch.Elapsed;
+            DcsTimer.Text = $@"{result.Minutes:00}:{result.Seconds:00}";
         }
 
         // イベントハンドラ

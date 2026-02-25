@@ -39,24 +39,24 @@
             materialDesign:HintAssist.Hint="FG"
             IsReadOnly="True" />
         <ComboBox
+            x:Name="DcsComboBox"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DCS"
+            IsReadOnly="True" />
+        <ComboBox
             x:Name="CntComboBox"
             Grid.Row="2"
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="CNT"
             IsReadOnly="True" />
-        <ComboBox
-            x:Name="DcsComboBox"
-            Grid.Row="2"
-            Grid.Column="1"
-            Margin="5,0"
-            VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="DCS"
-            IsReadOnly="True" />
 
         <Grid
             x:Name="DcsGrid"
-            Grid.Row="4"
+            Grid.Row="2"
             Grid.Column="1"
             ColumnDefinitions="*,1.5*">
             <TextBox
@@ -77,6 +77,17 @@
                 IsReadOnly="True"
                 TextWrapping="Wrap" />
         </Grid>
+        <TextBlock
+            x:Name="DcsTimer"
+            Grid.Row="4"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontFamily="Meiryo"
+            FontSize="15"
+            Language="ja-jp"
+            Text="00:00"
+            TextAlignment="Center" />
 
         <Button
             x:Name="ConnectButton"
