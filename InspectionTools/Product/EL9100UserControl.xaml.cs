@@ -438,6 +438,7 @@ namespace InspectionTools.Product {
         private void OcrButton_Click(object sender, RoutedEventArgs e) { Capture(); }
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
+        private void ClipboardCopyButton_Click(object sender, RoutedEventArgs e) { System.Windows.Clipboard.SetText(OcrResult.Text); }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }
 
     }
