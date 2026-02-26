@@ -516,18 +516,30 @@ namespace InspectionTools.Product {
 
                 var value = int.Parse(FgNumberComboBox.Text);
 
-                InstClass[] devices = value switch {
-                    1 => [_instDcs, _instDmm, _instFg01, _instOsc],
-                    2 => [_instDcs, _instDmm, _instFg02_1, _instFg02_2, _instOsc],
-                    _ => [_instDcs, _instDmm, _instOsc] // 1, 2 以外の値の場合のデフォルト
-                };
-
                 RegDictionary();
                 FormatSet();
 
                 await Task.Run(async () => {
-                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                    await Task.WhenAll(tasks);
+                    InstClass[] devices = value switch {
+                        1 => [_instDcs, _instDmm, _instFg01, _instOsc],
+                        2 => [_instDcs, _instDmm, _instFg02_1, _instFg02_2, _instOsc],
+                        _ => [_instDcs, _instDmm, _instOsc] // 1, 2 以外の値の場合のデフォルト
+                    };
+                    var tasks = devices.Select(async device => {
+                        try {
+                            await MainWindow.ConnectDeviceAsync(device);
+                        } catch (Exception ex) {
+                            throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
+                        }
+                    });
+                    var whenAllTask = Task.WhenAll(tasks);
+                    try {
+                        await whenAllTask;
+                    } catch {
+                        if (whenAllTask.Exception != null)
+                            throw whenAllTask.Exception;
+                        throw;
+                    }
                 });
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
@@ -549,6 +561,10 @@ namespace InspectionTools.Product {
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
 
+            } catch (AggregateException aex) {
+                Release();
+                var messages = string.Join("\n", aex.InnerExceptions.Select(e => e.Message));
+                MessageBox.Show(messages, "接続エラー");
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー");
