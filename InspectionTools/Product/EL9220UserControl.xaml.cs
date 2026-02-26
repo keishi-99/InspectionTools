@@ -201,13 +201,26 @@ namespace InspectionTools.Product {
 
                 SelectInst();
 
-                InstClass[] devices = [_instDcs, _instDmm, _instFg];
                 RegDictionary();
                 FormatSet();
 
                 await Task.Run(async () => {
-                    var tasks = devices.Select(device => MainWindow.ConnectDeviceAsync(device));
-                    await Task.WhenAll(tasks);
+                    InstClass[] devices = [_instDcs, _instDmm, _instFg];
+                    var tasks = devices.Select(async device => {
+                        try {
+                            await MainWindow.ConnectDeviceAsync(device);
+                        } catch (Exception ex) {
+                            throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
+                        }
+                    });
+                    var whenAllTask = Task.WhenAll(tasks);
+                    try {
+                        await whenAllTask;
+                    } catch {
+                        if (whenAllTask.Exception != null)
+                            throw whenAllTask.Exception;
+                        throw;
+                    }
                 });
 
                 DcsComboBox.IsEnabled = false;
@@ -216,6 +229,10 @@ namespace InspectionTools.Product {
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
 
+            } catch (AggregateException aex) {
+                Release();
+                var messages = string.Join("\n", aex.InnerExceptions.Select(e => e.Message));
+                MessageBox.Show(messages, "接続エラー");
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー");
