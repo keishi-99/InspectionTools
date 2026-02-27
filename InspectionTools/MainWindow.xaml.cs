@@ -1,7 +1,6 @@
 ﻿using InspectionTools.Common;
 using MaterialDesignThemes.Wpf;
 using System.Data;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
@@ -34,13 +33,9 @@ namespace InspectionTools {
 
         public static bool IsProcessing { get; set; } = false;
 
-        private const int TimeOut = 3;    //タイムアウトまでの時間(sec)
-        private static readonly SemaphoreSlim s_visaLock = new(1, 1);
-        public static readonly SemaphoreSlim s_semaphore = new(1, 1); // 最大1つの接続
-
         public MainWindow() {
             InitializeComponent();
-            Common.HelpManager.LoadHelpFile("help.json");
+            HelpManager.LoadHelpFile("help.json");
             LoadEvents();
 
             // Window が完全に作られたあとにハンドルを取得
@@ -53,6 +48,7 @@ namespace InspectionTools {
             _timer.Start();
         }
 
+        // ----- 初期化 -----
         private void LoadEvents() {
             ShowMainMenu();
             LoadInstList();
@@ -67,8 +63,9 @@ namespace InspectionTools {
             dataSet.ReadXml(XmlFilePath);
             MainWindow.VisaAddressDataTable = dataSet.Tables[0];
         }
+
+        // ----- ページ遷移 -----
         private void ShowMainMenu() {
-            // ドロワーを閉じる
             MainWindowDrawer.IsLeftDrawerOpen = false;
 
             SetButtonEnabled("ProductListButton", false);
@@ -80,43 +77,11 @@ namespace InspectionTools {
 
             this.Title = "Menu";
             _pageName = "MainMenu";
-            if (_isHelpVisible) {
-                var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
-                HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
-                HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
-            }
+            UpdateHelpText();
             HotKeyHelpScrollViewer.Height = mainMenu.Height;
         }
 
-        // テーマ切り替え
-        internal static void SetTheme(BaseTheme baseTheme) {
-            var paletteHelper = new PaletteHelper();
-            var theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(baseTheme);
-            paletteHelper.SetTheme(theme);
-        }
-
-        // 機器リスト表示
-        private void ShowInstList() {
-            Common.InstListWindow frm1 = new() {
-                Owner = this
-            };
-            frm1.ShowDialog();
-            LoadInstList();
-            // ドロワーを閉じる
-            MainWindowDrawer.IsLeftDrawerOpen = false;
-
-        }
-
-        // ボタン名を指定して有効/無効を切り替えるメソッド
-        public void SetButtonEnabled(string buttonName, bool isEnabled) {
-            if (FindName(buttonName) is Button button) {
-                button.IsEnabled = isEnabled;
-            }
-        }
-
         private void OnPageSelected(string pageName) {
-
             SetButtonEnabled("ProductListButton", true);
             SetButtonEnabled("InstListButton", false);
 
@@ -132,97 +97,80 @@ namespace InspectionTools {
                 "EL9220" => new Product.EL9220UserControl(),
                 "EL9230" => new Product.EL9230UserControl(),
                 "EL9240" => new Product.EL9240UserControl(),
-
                 "PA14" => new Product.PA14UserControl(),
                 "PA25" => new Product.PA25UserControl(),
                 "PAF5amp" => new Product.PAF5ampUserControl(),
                 "PAF5" => new Product.PAF5UserControl(),
-
                 "DFPDX" => new Product.DFPDXUserControl(),
                 "MassFlow" => new Product.MassFlowUserControl(),
                 _ => null
             };
 
-            if (page is not null) {
+            if (page is null) return;
 
-                if (page is IMainWindowAware aware) {
-                    aware.SetMainWindow(this);
-                }
+            if (page is IMainWindowAware aware) {
+                aware.SetMainWindow(this);
+            }
 
-                this.Title = pageName;
-                _pageName = pageName;
-                MainMenuContentArea.Content = page;
+            this.Title = pageName;
+            _pageName = pageName;
+            MainMenuContentArea.Content = page;
+            UpdateHelpText();
+            HotKeyHelpScrollViewer.Height = page.Height;
+        }
 
-                if (_isHelpVisible) {
-                    var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
-                    HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
-                    HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
-                }
-                HotKeyHelpScrollViewer.Height = page.Height;
+        // ----- UI ユーティリティ -----
+        public void SetButtonEnabled(string buttonName, bool isEnabled) {
+            if (FindName(buttonName) is Button button) {
+                button.IsEnabled = isEnabled;
             }
         }
-        private void HelpCheckBoxChecked() {
-            _isHelpVisible = true;
 
-
-            HelpTextBlock1.Margin = new Thickness(10);
-            HelpTextBlock2.Margin = new Thickness(10);
-
-            var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
-            HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
-            HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
-        }
-        private void HelpCheckBoxUnchecked() {
-            _isHelpVisible = false;
-            HelpTextBlock1.Margin = new Thickness(0);
-            HelpTextBlock2.Margin = new Thickness(0);
-            HelpTextBlock1.Text = string.Empty;
-            HelpTextBlock2.Text = string.Empty;
-        }
-
-        // ウィンドウサイズ調整
         public static void AdjustWindowSizeToUserControl(Window parentWindow) {
             parentWindow?.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
-        // コンボボックス更新
-        public static void UpdateComboBox(System.Windows.Controls.ComboBox comboBox, string category, List<int> signalTypes) {
-            if (VisaAddressDataTable == null) {
-                return;
-            }
+        // ---- 機器リスト ----
+        public static void UpdateComboBox(
+            System.Windows.Controls.ComboBox comboBox,
+            string category,
+            List<int> signalTypes) {
 
-            var collection = new List<string> { };
+            if (VisaAddressDataTable == null) return;
 
-            foreach (var signalType in signalTypes) {
-                var rows = VisaAddressDataTable.Select($"Category = '{category}' AND SignalType = {signalType}");
-                foreach (var d in rows) {
-                    collection.Add(d["Name"].ToString() ?? string.Empty);
-                }
-            }
+            var collection = signalTypes
+                .SelectMany(st => VisaAddressDataTable
+                    .Select($"Category = '{category}' AND SignalType = {st}")
+                    .Select(row => row["Name"].ToString() ?? string.Empty))
+                .ToList();
+
             comboBox.ItemsSource = collection;
         }
-        // VisaAddress取得
-        public static void GetVisaAddress(InstClass instClass, System.Windows.Controls.ComboBox comboBox) {
-            instClass.ResetProperties();
 
+        public static void GetVisaAddress(
+            InstClass instClass,
+            System.Windows.Controls.ComboBox comboBox) {
+
+            instClass.ResetProperties();
             instClass.Name = comboBox.Text;
             instClass.Index = comboBox.SelectedIndex;
 
-            if (instClass.Index == -1) { return; }
+            if (instClass.Index == -1) return;
 
             var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
             instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
             instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
-            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value ? Convert.ToInt32(dRows[0]["SignalType"]) : 0;
+            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value
+                ? Convert.ToInt32(dRows[0]["SignalType"])
+                : 0;
         }
 
-        // HotKeyの登録
+        // ----- ホットキー -----
         public static void SetHotKey() {
 
             Source = HwndSource.FromHwnd(HWnd);
             Source.AddHook(HwndHook);
 
-            // ホットキーを登録
             foreach (var hotkey in HotkeysList) {
                 RegisterHotKey(HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
             }
@@ -236,171 +184,71 @@ namespace InspectionTools {
         private static IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
             if (msg == WmHotKey) {
                 int id = wParam.ToInt32();
-
                 var hotkey = HotkeysList.FirstOrDefault(h => h.Id == id);
-                hotkey?.Action.Invoke(); // ホットキーに設定されたアクションを実行
+                hotkey?.Action.Invoke();
                 handled = true;
             }
             return IntPtr.Zero;
         }
 
-        // デバイス接続
-        public static async Task<string> ConnectDeviceAsync(InstClass instClass) {
-            return instClass.Index == -1
-                ? ""
-                : instClass.SignalType switch {
-                    1 => await ConnectDeviceAdcAsync(instClass),
-                    2 or 4 => await ConnectDeviceVisaAsync(instClass),
-                    3 => await ConnectDeviceVisaAsync(instClass),
-                    _ => throw new ApplicationException(),
-                };
-        }
-        // Visa接続
-        public static async Task<string> ConnectDeviceVisaAsync(InstClass instClass) {
-            await s_visaLock.WaitAsync();
-            try {
-                return await Task.Run(() => {
-                    using var usbDev = new USBDeviceManager();
-                    usbDev.OpenDev(instClass.VisaAddress);
-                    usbDev.OutputDev(instClass.InstCommand);
-                    return instClass.Query ? usbDev.InputDev() : string.Empty;
-                });
-            } finally {
-                s_visaLock.Release();
-            }
-        }
-        // ADC接続
-        public static async Task<string> ConnectDeviceAdcAsync(InstClass instClass) {
-            await s_semaphore.WaitAsync();
-            try {
-                uint hDev = 0;
-                var rcvDt = "";
-                uint rcvLen = 50;
-                var id = uint.Parse(instClass.VisaAddress);
-                try {
-                    if (AusbWrapper.Start(TimeOut) != 0 || AusbWrapper.Open(ref hDev, id) != 0) { throw new Exception("開始できません"); }
-                    if (!string.IsNullOrEmpty(instClass.InstCommand)) {
-                        if (AusbWrapper.Write(hDev, instClass.InstCommand) != 0) { throw new Exception("コマンドの送信に失敗しました"); }
-                    }
-                    if (AusbWrapper.Read(hDev, ref rcvDt, ref rcvLen) != 0) { throw new Exception("メッセージの受信に失敗しました"); }
-                } finally {
-                    _ = AusbWrapper.Close(hDev);
-                    _ = AusbWrapper.End();
-                }
-                return rcvDt;
-            } finally {
-                s_semaphore.Release();
-            }
+        // ----- テーマ -----
+        internal static void SetTheme(BaseTheme baseTheme) {
+            var paletteHelper = new PaletteHelper();
+            var theme = paletteHelper.GetTheme();
+            theme.SetBaseTheme(baseTheme);
+            paletteHelper.SetTheme(theme);
         }
 
-        // 複数デバイスを並列接続
-        public static class DeviceConnectionHelper {
-            public static async Task ConnectDevicesInParallelAsync(IEnumerable<InstClass> devices) {
-                var tasks = devices.Select(async device => {
-                    try {
-                        await MainWindow.ConnectDeviceAsync(device);
-                    } catch (Exception ex) {
-                        throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
-                    }
-                });
-
-                var whenAllTask = Task.WhenAll(tasks);
-                try {
-                    await whenAllTask;
-                } catch (Exception) {
-                    if (whenAllTask.Exception != null) {
-                        throw whenAllTask.Exception;
-                    }
-                    throw;
-                }
-            }
+        // ----- ヘルプ -----
+        private void UpdateHelpText() {
+            if (!_isHelpVisible) return;
+            var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
+            HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
+            HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
         }
 
-        // CNT測定値取得
-        public static async Task<decimal> ReadCnt(CntInstClass cntInstClass) {
+        private void HelpCheckBoxChecked() {
+            _isHelpVisible = true;
+            HelpTextBlock1.Margin = new Thickness(10);
+            HelpTextBlock2.Margin = new Thickness(10);
+            UpdateHelpText();
+        }
 
-            (cntInstClass.InstCommand, cntInstClass.Query) = cntInstClass.SignalType switch {
-                3 => (":MEAS?XNOW", true),
-                _ => throw new ApplicationException(),
+        private void HelpCheckBoxUnchecked() {
+            _isHelpVisible = false;
+            HelpTextBlock1.Margin = new Thickness(0);
+            HelpTextBlock2.Margin = new Thickness(0);
+            HelpTextBlock1.Text = string.Empty;
+            HelpTextBlock2.Text = string.Empty;
+        }
+
+        // ----- 機器リスト -----
+        private void ShowInstList() {
+            Common.InstListWindow frm1 = new() {
+                Owner = this
             };
+            frm1.ShowDialog();
+            LoadInstList();
+            // ドロワーを閉じる
+            MainWindowDrawer.IsLeftDrawerOpen = false;
 
-            var result = await ConnectDeviceAsync(cntInstClass);
-            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-            return output;
         }
 
-        // DMM測定値取得
-        public static async Task<decimal> ReadDmm(DmmInstClass dmmInstClass) {
-
-            dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
-                1 => string.Empty,
-                2 => "FETC?",
-                _ => throw new ApplicationException(),
-            };
-
-            var result = await ConnectDeviceAsync(dmmInstClass);
-            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-            return output;
-        }
-
-        // FG切り替え
-        public static async Task RotationFgAsync(FgInstClass fgInstClass) {
-            await ConnectDeviceAsync(fgInstClass);
-        }
-
-        // OSC測定値取得
-        public static async Task<decimal> ReadOsc(OscInstClass oscInstClass, int oscMeas) {
-
-            oscInstClass.InstCommand = $"MEASU:MEAS{oscMeas}:VAL?";
-            var result = await ConnectDeviceAsync(oscInstClass);
-            decimal.TryParse(result, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture, out var output);
-
-            return output;
-        }
-
-        // OSC切り替え
-        public static async Task RotationOscAsync(OscInstClass oscInstClass) {
-            await ConnectDeviceAsync(oscInstClass);
-        }
-
-        // イベントハンドラ
-        private void ProductListButton_Click(object sender, RoutedEventArgs e) {
-            ShowMainMenu();
-        }
-        private void InstListButton_Click(object sender, RoutedEventArgs e) {
-            ShowInstList();
-        }
-        private void HelpCheckBox_Checked(object sender, RoutedEventArgs e) {
-            HelpCheckBoxChecked();
-        }
-        private void HelpCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            HelpCheckBoxUnchecked();
-        }
-        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) {
-            var parentWindow = Window.GetWindow(this);
-            parentWindow.Topmost = true;
-        }
-        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            var parentWindow = Window.GetWindow(this);
-            parentWindow.Topmost = false;
-        }
+        // ----- イベントハンドラ -----
+        private void ProductListButton_Click(object sender, RoutedEventArgs e) => ShowMainMenu();
+        private void InstListButton_Click(object sender, RoutedEventArgs e) => ShowInstList();
+        private void HelpCheckBox_Checked(object sender, RoutedEventArgs e) => HelpCheckBoxChecked();
+        private void HelpCheckBox_Unchecked(object sender, RoutedEventArgs e) => HelpCheckBoxUnchecked();
+        private void TopMostCheckBox_Checked(object sender, RoutedEventArgs e) { Window.GetWindow(this).Topmost = true; }
+        private void TopMostCheckBox_Unchecked(object sender, RoutedEventArgs e) { Window.GetWindow(this).Topmost = false; }
         private void ThemeToggle_Loaded(object sender, RoutedEventArgs e) {
             var paletteHelper = new PaletteHelper();
             var theme = paletteHelper.GetTheme();
-
             ThemeToggle.IsChecked = theme.GetBaseTheme() == BaseTheme.Dark;
         }
-        private void ThemeToggle_Checked(object sender, RoutedEventArgs e) {
-            SetTheme(BaseTheme.Dark);
-        }
-        private void ThemeToggle_Unchecked(object sender, RoutedEventArgs e) {
-            SetTheme(BaseTheme.Light);
-        }
-        private void Timer_Tick(object? sender, EventArgs e) {
-            Time.Text = DateTime.Now.ToString("HH:mm:ss");
-        }
+        private void ThemeToggle_Checked(object sender, RoutedEventArgs e) => SetTheme(BaseTheme.Dark);
+        private void ThemeToggle_Unchecked(object sender, RoutedEventArgs e) => SetTheme(BaseTheme.Light);
+        private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
 
 
     }
