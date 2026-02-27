@@ -15,6 +15,8 @@
         private bool _disposed = false;
 
         public void ResetProperties() {
+            if (_disposed) throw new ObjectDisposedException(nameof(InstClass));
+            UsbDev?.Dispose();
             UsbDev = new();
             Name = string.Empty;
             Category = string.Empty;
@@ -23,6 +25,7 @@
             Index = 0;
             Tag = string.Empty;
             InstCommand = string.Empty;
+            Query = false;
             SettingNumber = 0;
         }
         public void Dispose() {
