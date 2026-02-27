@@ -189,7 +189,7 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDmm01, _instDmm02];
 
                 await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
                 Dmm01ComboBox.IsEnabled = false;
@@ -240,7 +240,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await InstrumentService.ReadDmmAsync(dmmInstClass);
 
                 return output;
 
@@ -269,7 +269,7 @@ namespace InspectionTools.Product {
                     _ => throw new ApplicationException(),
                 };
 
-                await MainWindow.ConnectDeviceAsync(dmmInstClass);
+                await DeviceController.ConnectAsync(dmmInstClass);
 
             } finally {
                 VisibleProgressImage(false);

@@ -224,7 +224,7 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDcs, _instDmm, _instFg, _instOsc];
 
                 await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
                 DcsComboBox.IsEnabled = false;
@@ -271,7 +271,7 @@ namespace InspectionTools.Product {
 
             try {
                 (dcsInstClass.InstCommand, dcsInstClass.Query) = ($":OUTPUT {cmd};*OPC?", true);
-                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+                await DeviceController.ConnectAsync(dcsInstClass);
 
             } catch (Exception ex) {
                 Release();
@@ -285,7 +285,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await InstrumentService.ReadDmmAsync(dmmInstClass);
 
                 return output;
 
@@ -315,7 +315,7 @@ namespace InspectionTools.Product {
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationFgAsync(fgInstClass);
+                await InstrumentService.RotateFgAsync(fgInstClass);
 
             } catch (Exception ex) {
                 Release();
@@ -346,7 +346,7 @@ namespace InspectionTools.Product {
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationOscAsync(oscInstClass);
+                await InstrumentService.RotateOscAsync(oscInstClass);
 
             } catch (Exception ex) {
                 Release();

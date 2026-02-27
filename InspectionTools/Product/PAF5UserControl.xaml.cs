@@ -243,7 +243,7 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc];
 
                 await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
@@ -313,7 +313,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await InstrumentService.ReadDmmAsync(dmmInstClass);
 
                 return output;
 
@@ -328,7 +328,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadOsc(oscInstClass, meas);
+                var output = await InstrumentService.ReadOscAsync(oscInstClass, meas);
 
                 return output;
 
@@ -358,7 +358,7 @@ namespace InspectionTools.Product {
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationFgAsync(fgInstClass);
+                await InstrumentService.RotateFgAsync(fgInstClass);
 
                 FgRotateRangeTextBox.Text = sw.Text;
 
@@ -391,7 +391,7 @@ namespace InspectionTools.Product {
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
-                await MainWindow.RotationOscAsync(oscInstClass);
+                await InstrumentService.RotateOscAsync(oscInstClass);
 
                 OscRotateRangeTextBox.Text = sw.Text;
 

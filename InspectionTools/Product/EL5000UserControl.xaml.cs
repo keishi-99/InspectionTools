@@ -258,7 +258,7 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instCnt, _instFg, _instDcs, _instDmm01, _instDmm02];
 
                 await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
@@ -328,7 +328,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadCnt(cntInstClass);
+                var output = await InstrumentService.ReadCntAsync(cntInstClass);
 
                 return output;
 
@@ -355,7 +355,7 @@ namespace InspectionTools.Product {
                 };
                 fgInstClass.Query = sw.Query;
 
-                await MainWindow.ConnectDeviceAsync(fgInstClass);
+                await DeviceController.ConnectAsync(fgInstClass);
 
                 VisibleProgressImage(false);
 
@@ -383,7 +383,7 @@ namespace InspectionTools.Product {
                 };
                 dcsInstClass.Query = sw.Query;
 
-                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+                await DeviceController.ConnectAsync(dcsInstClass);
                 DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
                 DcsRangeLabel.Text = sw.Text;
 
@@ -413,7 +413,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await InstrumentService.ReadDmmAsync(dmmInstClass);
 
                 return output;
 
@@ -441,7 +441,7 @@ namespace InspectionTools.Product {
                 };
                 dmmInstClass.Query = sw.Query;
 
-                await MainWindow.ConnectDeviceAsync(dmmInstClass);
+                await DeviceController.ConnectAsync(dmmInstClass);
 
             } finally {
                 VisibleProgressImage(false);

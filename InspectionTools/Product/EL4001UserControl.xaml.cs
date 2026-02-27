@@ -241,7 +241,7 @@ namespace InspectionTools.Product {
                 InstClass[] devices = [_instDcs, _instDmm01, _instDmm02, _instOsc];
 
                 await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
@@ -307,7 +307,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadDmm(dmmInstClass);
+                var output = await InstrumentService.ReadDmmAsync(dmmInstClass);
 
                 return output;
 
@@ -322,7 +322,7 @@ namespace InspectionTools.Product {
             try {
                 VisibleProgressImage(true);
 
-                var output = await MainWindow.ReadOsc(oscInstClass, meas);
+                var output = await InstrumentService.ReadOscAsync(oscInstClass, meas);
 
                 return output;
 
@@ -349,7 +349,7 @@ namespace InspectionTools.Product {
                 };
                 dcsInstClass.Query = sw.Query;
 
-                await MainWindow.ConnectDeviceAsync(dcsInstClass);
+                await DeviceController.ConnectAsync(dcsInstClass);
                 DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
                 DcsRangeLabel.Text = sw.Text;
 
@@ -373,7 +373,7 @@ namespace InspectionTools.Product {
                     _ => throw new ApplicationException(),
                 };
 
-                await MainWindow.ConnectDeviceAsync(oscInstClass);
+                await DeviceController.ConnectAsync(oscInstClass);
 
                 OscRangeLabel.Text = rangeText;
 
