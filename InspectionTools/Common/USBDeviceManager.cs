@@ -38,7 +38,6 @@ namespace InspectionTools.Common {
             uint cmdCnt;
             int i;
             ulong pBuf;
-            Console.WriteLine(strCmd);
             cmdCnt = (uint)strCmd.Length;
 
             byte[] pBuffer;
@@ -51,9 +50,10 @@ namespace InspectionTools.Common {
             unsafe {
                 fixed (byte* p = &pBuffer[0]) {
                     pBuf = (ulong)p;
+                    ret = IntPtr.Size == 4
+                        ? ausbWrite32(hDev, (uint)pBuf, cmdCnt)
+                        : ausbWrite64(hDev, pBuf, cmdCnt);
                 }
-
-                ret = IntPtr.Size == 4 ? ausbWrite32(hDev, (uint)pBuf, cmdCnt) : ausbWrite64(hDev, pBuf, cmdCnt);
             }
             return ret;
         }
@@ -105,7 +105,7 @@ namespace InspectionTools.Common {
         private ResourceManager? _resourceManager;
         private IMessage? _io;  // IMessageの保持
 
-        public bool disposed = false; // Disposeが既に呼ばれたかどうかのフラグ
+        private bool _disposed = false; // Disposeが既に呼ばれたかどうかのフラグ
 
         public USBDeviceManager() {
             _dev = new FormattedIO488();
@@ -157,16 +157,16 @@ namespace InspectionTools.Common {
         }
 
         protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+            if (!_disposed) {
                 if (disposing) {
                     CloseDev();
                 }
-                disposed = true;
+                _disposed = true;
             }
         }
 
         ~USBDeviceManager() {
-            Dispose();
+            Dispose(false);
         }
     }
 }
