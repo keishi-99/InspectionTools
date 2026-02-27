@@ -255,24 +255,11 @@ namespace InspectionTools.Product {
                 RegDictionary();
                 FormatSet();
 
-                await Task.Run(async () => {
-                    InstClass[] devices = [_instCnt, _instFg, _instDcs, _instDmm01, _instDmm02];
-                    var tasks = devices.Select(async device => {
-                        try {
-                            await MainWindow.ConnectDeviceAsync(device);
-                        } catch (Exception ex) {
-                            throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
-                        }
-                    });
-                    var whenAllTask = Task.WhenAll(tasks);
-                    try {
-                        await whenAllTask;
-                    } catch {
-                        if (whenAllTask.Exception != null)
-                            throw whenAllTask.Exception;
-                        throw;
-                    }
-                });
+                InstClass[] devices = [_instCnt, _instFg, _instDcs, _instDmm01, _instDmm02];
+
+                await Task.Run(() =>
+                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                );
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
