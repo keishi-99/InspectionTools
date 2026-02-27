@@ -456,24 +456,11 @@ namespace InspectionTools.Product {
                 RegDictionary();
                 FormatSet();
 
-                await Task.Run(async () => {
-                    InstClass[] devices = [_instDmm, _instFg, _instOsc];
-                    var tasks = devices.Select(async device => {
-                        try {
-                            await MainWindow.ConnectDeviceAsync(device);
-                        } catch (Exception ex) {
-                            throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
-                        }
-                    });
-                    var whenAllTask = Task.WhenAll(tasks);
-                    try {
-                        await whenAllTask;
-                    } catch {
-                        if (whenAllTask.Exception != null)
-                            throw whenAllTask.Exception;
-                        throw;
-                    }
-                });
+                InstClass[] devices = [_instDmm, _instFg, _instOsc];
+
+                await Task.Run(() =>
+                    DeviceConnectionHelper.ConnectDevicesInParallelAsync(devices)
+                );
 
                 if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                     _instDmm.CurrentMode = DmmMode.DCV;
