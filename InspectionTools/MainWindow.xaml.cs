@@ -293,6 +293,29 @@ namespace InspectionTools {
             }
         }
 
+        // 複数デバイスを並列接続
+        public static class DeviceConnectionHelper {
+            public static async Task ConnectDevicesInParallelAsync(IEnumerable<InstClass> devices) {
+                var tasks = devices.Select(async device => {
+                    try {
+                        await MainWindow.ConnectDeviceAsync(device);
+                    } catch (Exception ex) {
+                        throw new Exception($"[{device.Name}] 接続失敗: {ex.Message}", ex);
+                    }
+                });
+
+                var whenAllTask = Task.WhenAll(tasks);
+                try {
+                    await whenAllTask;
+                } catch (Exception) {
+                    if (whenAllTask.Exception != null) {
+                        throw whenAllTask.Exception;
+                    }
+                    throw;
+                }
+            }
+        }
+
         // CNT測定値取得
         public static async Task<decimal> ReadCnt(CntInstClass cntInstClass) {
 
