@@ -344,8 +344,43 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        private async void ActionHotkeyNumMultiply() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                var output = await ReadDmm(_instDmm);
+
+                var settings = _dicCommands[_instDmm].Settings;
+                var sw = settings[_instDmm.SettingNumber];
+                var outputValue = sw.Text switch {
+                    "DCI" => output * 1000,
+                    "DCV" => output,
+                    _ => output,
+                };
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(outputValue.ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
         // DMM切り替え
         private async void ActionHotkeyComma() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+
+                await SwitchDmm(_instDmm, true);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        private async void ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -367,7 +402,9 @@ namespace InspectionTools.Product {
             if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                    new(ModNone, HotkeyComma, ActionHotkeyComma)
+                    new(ModNone, HotkeyComma, ActionHotkeyComma),
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
