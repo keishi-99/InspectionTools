@@ -530,6 +530,7 @@ namespace InspectionTools.Product {
                 var settings = _dicCommands[dmmInstClass].Settings;
                 var sw = settings.First(s => s.Mode == mode);
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
+                dmmInstClass.CurrentMode = mode;
 
                 await DeviceController.ConnectAsync(dmmInstClass);
 
@@ -641,7 +642,6 @@ namespace InspectionTools.Product {
 
             try {
                 await SwitchDmm(_instDmm, DmmMode.DCV);
-                _instDmm.CurrentMode = DmmMode.DCV;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -653,7 +653,6 @@ namespace InspectionTools.Product {
 
             try {
                 await SwitchDmm(_instDmm, DmmMode.DCI);
-                _instDmm.CurrentMode = DmmMode.DCI;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

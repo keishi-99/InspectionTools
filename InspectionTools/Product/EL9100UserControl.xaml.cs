@@ -147,13 +147,13 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
                     Settings: [
                             new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
                             new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R7,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
@@ -262,6 +262,7 @@ namespace InspectionTools.Product {
                 var settings = _dicCommands[dmmInstClass].Settings;
                 var sw = settings.First(s => s.Mode == mode);
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
+                dmmInstClass.CurrentMode = mode;
 
                 await DeviceController.ConnectAsync(dmmInstClass);
 
@@ -386,7 +387,6 @@ namespace InspectionTools.Product {
 
             try {
                 await SwitchDmm2(_instDmm02, DmmMode.DCI);
-                _instDmm02.CurrentMode = DmmMode.DCI;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -398,7 +398,6 @@ namespace InspectionTools.Product {
 
             try {
                 await SwitchDmm2(_instDmm02, DmmMode.DCV);
-                _instDmm02.CurrentMode = DmmMode.DCV;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
