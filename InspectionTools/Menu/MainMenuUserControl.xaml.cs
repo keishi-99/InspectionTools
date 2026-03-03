@@ -25,6 +25,7 @@ namespace InspectionTools.MainMenu {
         private void EL9240_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL9240"); }
         private void PA14_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PA14"); }
         private void PA25_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PA25"); }
+        private void PA2B_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PA2B"); }
         private void PAF5amp_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PAF5amp"); }
         private void PAF5_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("PAF5"); }
         private void DFPDX_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("DFPDX"); }

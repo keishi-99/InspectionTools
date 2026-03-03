@@ -99,6 +99,7 @@ namespace InspectionTools {
                 "EL9240" => new Product.EL9240UserControl(),
                 "PA14" => new Product.PA14UserControl(),
                 "PA25" => new Product.PA25UserControl(),
+                "PA2B" => new Product.PA2BUserControl(),
                 "PAF5amp" => new Product.PAF5ampUserControl(),
                 "PAF5" => new Product.PAF5UserControl(),
                 "DFPDX" => new Product.DFPDXUserControl(),
