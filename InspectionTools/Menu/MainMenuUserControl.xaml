@@ -75,6 +75,11 @@
             <Button
                 Width="100"
                 Margin="5"
+                Click="PA2B_Click"
+                Content="PA2B" />
+            <Button
+                Width="100"
+                Margin="5"
                 Click="PAF5_Click"
                 Content="PAF5" />
             <Button
