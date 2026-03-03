@@ -26,6 +26,7 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
+            public DmmMode Mode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -158,13 +159,13 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 

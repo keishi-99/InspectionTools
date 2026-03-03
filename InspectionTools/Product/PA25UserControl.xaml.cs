@@ -25,6 +25,7 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
+            public DmmMode Mode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -148,8 +149,11 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", Query = true },
-                    Settings: []
+                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
+                    Settings: [
+                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
+                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 1E-1;*OPC?", Query = true },
+                        ]
                 );
 
             _dicCommands[_instFg] =
@@ -517,25 +521,15 @@ namespace InspectionTools.Product {
         }
 
         // DMM切り替え
-        private async Task SwitchDmm(DmmInstClass dmmInstClass, string func) {
+        private async Task SwitchDmm(DmmInstClass dmmInstClass, DmmMode mode) {
             ThrowIfDisposed();
 
             try {
                 VisibleProgressImage(true);
 
-                (dmmInstClass.InstCommand, dmmInstClass.CurrentMode) = func switch {
-                    "DCI" => dmmInstClass.SignalType switch {
-                        1 => ("*RST,F5,R6,*OPC?", DmmMode.DCI),
-                        2 => ("*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 1E-1;*OPC?", DmmMode.DCI),
-                        _ => throw new ApplicationException(),
-                    },
-                    "DCV" => dmmInstClass.SignalType switch {
-                        1 => ("*RST,F1,R6,*OPC?", DmmMode.DCV),
-                        2 => ("*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", DmmMode.DCV),
-                        _ => throw new ApplicationException(),
-                    },
-                    _ => throw new ApplicationException(),
-                };
+                var settings = _dicCommands[dmmInstClass].Settings;
+                var sw = settings.First(s => s.Mode == mode);
+                (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
 
                 await DeviceController.ConnectAsync(dmmInstClass);
 
@@ -646,7 +640,8 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             try {
-                await SwitchDmm(_instDmm, "DCV");
+                await SwitchDmm(_instDmm, DmmMode.DCV);
+                _instDmm.CurrentMode = DmmMode.DCV;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -657,7 +652,8 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             try {
-                await SwitchDmm(_instDmm, "DCI");
+                await SwitchDmm(_instDmm, DmmMode.DCI);
+                _instDmm.CurrentMode = DmmMode.DCI;
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

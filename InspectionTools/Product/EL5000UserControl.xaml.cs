@@ -29,6 +29,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
 
         private record SwitchCommand {
+            public DmmMode Mode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -180,16 +181,16 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
                     Settings: [
-                            new() { Text = "DCV",   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
-                            new() { Text = "DCI",   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                         ]
                 );
 
@@ -522,9 +523,9 @@ namespace InspectionTools.Product {
 
                 var settings = _dicCommands[_instDmm02].Settings;
                 var sw = settings[_instDmm02.SettingNumber];
-                var outputValue = sw.Text switch {
-                    "DCI" => output * 1000,
-                    "DCV" => output,
+                var outputValue = sw.Mode switch {
+                    DmmMode.DCI => output * 1000,
+                    DmmMode.DCV => output,
                     _ => output,
                 };
 
@@ -545,9 +546,9 @@ namespace InspectionTools.Product {
 
                 var settings = _dicCommands[_instDmm02].Settings;
                 var sw = settings[_instDmm02.SettingNumber];
-                var outputValue = sw.Text switch {
-                    "DCI" => output * 1000,
-                    "DCV" => output,
+                var outputValue = sw.Mode switch {
+                    DmmMode.DCI => output * 1000,
+                    DmmMode.DCV => output,
                     _ => output,
                 };
 
