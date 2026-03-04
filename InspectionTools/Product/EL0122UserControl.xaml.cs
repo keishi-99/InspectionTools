@@ -179,6 +179,10 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
+
                 DmmComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;

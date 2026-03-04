@@ -232,6 +232,13 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
+
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;

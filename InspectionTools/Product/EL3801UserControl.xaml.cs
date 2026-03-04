@@ -203,6 +203,16 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm03.VisaAddress)) {
+                    _instDmm03.CurrentMode = _dicCommands[_instDmm03].Init.DmmMode;
+                }
+
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
                 Dmm03ComboBox.IsEnabled = false;

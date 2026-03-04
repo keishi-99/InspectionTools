@@ -171,15 +171,6 @@ namespace InspectionTools.Product {
                     Settings: []
                 );
 
-            _dicCommands[_instFg] =
-                (
-                    Init: new() { Visa = "*RST;:FUNC SQU;:FREQ 7E3;:VOLT 3.0VPP;:VOLT:OFFS 1.5;*OPC?", Query = true },
-                    Settings: [
-                            new() { Visa = ":OUTP OFF;*OPC?" },
-                            new() { Visa = ":OUTP ON;*OPC?" },
-                    ]
-                );
-
             _dicCommands[_instDmm01] =
                 (
                     Init: new() { DmmMode = DmmMode.ACI, Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
@@ -197,30 +188,39 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
                     Settings: [
-                        new() { Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
-                        new() { Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                        new() { Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
-                        new() { Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
-                        new() { Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
-                        new() { Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
-                        new() { Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                        new() { Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
-                        new() { Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
+                        new() { DcsMode = DcsMode.ON,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                    ]
+                );
+
+            _dicCommands[_instFg] =
+                (
+                    Init: new() { Visa = "*RST;:FUNC SQU;:FREQ 7E3;:VOLT 3.0VPP;:VOLT:OFFS 1.5;*OPC?", Query = true },
+                    Settings: [
+                            new() { Visa = ":OUTP OFF;*OPC?" },
+                            new() { Visa = ":OUTP ON;*OPC?" },
                     ]
                 );
         }
@@ -266,6 +266,10 @@ namespace InspectionTools.Product {
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
                     DcsRangeLabel.Text = "OFF";
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
                 }
                 if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                     _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
