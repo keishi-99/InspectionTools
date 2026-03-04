@@ -672,7 +672,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private async Task<String?> SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
+        private async Task<string?> SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
             var settings = _dicCommands[dcsInstClass].Settings;
             dcsInstClass.SettingNumber = i;
 
