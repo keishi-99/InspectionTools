@@ -151,10 +151,10 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 3.6;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 3.6;*OPC?", Query = true },
                     Settings: [
-                        new() { Text = "OFF",   Visa = $":OUTPUT OFF;*OPC?",    Query = true },
-                        new() { Text = "ON",    Visa = $":OUTPUT ON;*OPC?",     Query = true },
+                        new() { DcsMode = DcsMode.Off,  Visa = $":OUTPUT OFF;*OPC?",    Query = true },
+                        new() { DcsMode = DcsMode.On,   Visa = $":OUTPUT ON;*OPC?",     Query = true },
                     ]
                 );
 
@@ -211,6 +211,13 @@ namespace InspectionTools.Product {
                 await Task.Run(() =>
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
+
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
 
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;

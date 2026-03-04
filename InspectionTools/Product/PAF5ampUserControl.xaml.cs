@@ -158,10 +158,10 @@ namespace InspectionTools.Product {
                 );
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 1.5;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 1.5;*OPC?", Query = true },
                     Settings: [
-                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
-                        new() { DcsMode = DcsMode.OFF, Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.On, Visa = ":OUTPUT ON;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.Off, Visa = ":OUTPUT OFF;*OPC?", Query = true },
                     ]
                 );
             _dicCommands[_instFg] =
@@ -232,6 +232,13 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
+
                 DcsComboBox.IsEnabled = false;
                 DmmComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
@@ -276,7 +283,7 @@ namespace InspectionTools.Product {
 
             try {
                 var settings = _dicCommands[dcsInstClass].Settings;
-                var sw = settings.First(s => s.DcsMode == mode);
+                var sw = settings.FirstOrDefault(s => s.DcsMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
                 (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
                 dcsInstClass.CurrentMode = mode;
 
@@ -355,10 +362,10 @@ namespace InspectionTools.Product {
 
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, DcsMode.ON);
+            await SwitchDcsAsync(_instDcs, DcsMode.On);
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, DcsMode.OFF);
+            await SwitchDcsAsync(_instDcs, DcsMode.Off);
         }
         // DMM測定値コピー
         private async void ActionHotkeySlash() {

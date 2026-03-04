@@ -529,7 +529,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 var settings = _dicCommands[dmmInstClass].Settings;
-                var sw = settings.First(s => s.DmmMode == mode);
+                var sw = settings.FirstOrDefault(s => s.DmmMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
                 dmmInstClass.CurrentMode = mode;
 

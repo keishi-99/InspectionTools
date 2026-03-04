@@ -197,6 +197,9 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
+                }
                 if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                     _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
                 }
@@ -265,7 +268,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 var settings = _dicCommands[dmmInstClass].Settings;
-                var sw = settings.First(s => s.DmmMode == mode);
+                var sw = settings.FirstOrDefault(s => s.DmmMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
                 dmmInstClass.CurrentMode = mode;
 

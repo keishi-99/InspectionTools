@@ -159,10 +159,10 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 24;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 24;*OPC?", Query = true },
                     Settings: [
-                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
-                        new() { Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.On,   Visa = ":OUTPUT ON;*OPC?",  Query = true },
+                        new() { DcsMode = DcsMode.Off,  Visa = ":OUTPUT OFF;*OPC?", Query = true },
                     ]
                 );
 
@@ -242,6 +242,16 @@ namespace InspectionTools.Product {
                 await Task.Run(() =>
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
+
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
+                }
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
@@ -329,7 +339,7 @@ namespace InspectionTools.Product {
 
             try {
                 var settings = _dicCommands[dcsInstClass].Settings;
-                var sw = settings.First(s => s.DcsMode == mode);
+                var sw = settings.FirstOrDefault(s => s.DcsMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
                 (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
                 dcsInstClass.CurrentMode = mode;
                 await DeviceController.ConnectAsync(dcsInstClass);
@@ -348,7 +358,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    await SwitchDcsAsync(_instDcs, DcsMode.ON);
+                    await SwitchDcsAsync(_instDcs, DcsMode.On);
                     await Task.Delay(delay);
                 }
 
@@ -387,7 +397,7 @@ namespace InspectionTools.Product {
                 }
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    await SwitchDcsAsync(_instDcs, DcsMode.OFF);
+                    await SwitchDcsAsync(_instDcs, DcsMode.Off);
                 }
 
             } catch (Exception ex) {
@@ -464,10 +474,10 @@ namespace InspectionTools.Product {
         }
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, DcsMode.ON);
+            await SwitchDcsAsync(_instDcs, DcsMode.On);
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, DcsMode.OFF);
+            await SwitchDcsAsync(_instDcs, DcsMode.Off);
         }
         // 一連の処理
         private async void ActionHotkeyComma() {
