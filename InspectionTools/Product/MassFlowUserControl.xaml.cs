@@ -631,11 +631,10 @@ namespace InspectionTools.Product {
                 }
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    await SwitchDcsAsync(_instDcs, i);
-
-                    var settings = _dicCommands[_instDcs].Settings;
-                    var sw = settings[_instDcs.SettingNumber];
-                    DcsNumberTextBox.Text = sw.Text;
+                    var text = await SwitchDcsAsync(_instDcs, i);
+                    if (text is not null) {
+                        DcsNumberTextBox.Text = text;
+                    }
                 }
 
                 // OFF以外はボタン無効化
@@ -673,7 +672,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
+        private async Task<String?> SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
             var settings = _dicCommands[dcsInstClass].Settings;
             dcsInstClass.SettingNumber = i;
 
@@ -681,8 +680,9 @@ namespace InspectionTools.Product {
             (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
             dcsInstClass.CurrentMode = sw.DcsMode;
 
-            if (string.IsNullOrEmpty(dcsInstClass.InstCommand) || dcsInstClass.UsbDev is null) { return; }
+            if (string.IsNullOrEmpty(dcsInstClass.InstCommand) || dcsInstClass.UsbDev is null) { return null; }
             await DeviceController.ConnectAsync(dcsInstClass);
+            return sw.Text;
         }
 
         // FG&OSCローテーション
