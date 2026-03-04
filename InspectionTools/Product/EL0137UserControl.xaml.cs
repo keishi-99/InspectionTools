@@ -24,7 +24,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -144,7 +145,7 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -359,13 +360,7 @@ namespace InspectionTools.Product {
                 oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[oscInstClass.SettingNumber];
-                oscInstClass.InstCommand = oscInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                oscInstClass.Query = sw.Query;
+                (oscInstClass.InstCommand, oscInstClass.Query) = ResolveCommand(sw, oscInstClass.SignalType);
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 

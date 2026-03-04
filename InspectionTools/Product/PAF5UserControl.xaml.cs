@@ -26,7 +26,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -153,13 +154,13 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -349,13 +350,7 @@ namespace InspectionTools.Product {
                 fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[fgInstClass.SettingNumber];
-                fgInstClass.InstCommand = fgInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                fgInstClass.Query = sw.Query;
+                (fgInstClass.InstCommand, fgInstClass.Query) = ResolveCommand(sw, fgInstClass.SignalType);
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -382,13 +377,7 @@ namespace InspectionTools.Product {
                 oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[oscInstClass.SettingNumber];
-                oscInstClass.InstCommand = oscInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                oscInstClass.Query = sw.Query;
+                (oscInstClass.InstCommand, oscInstClass.Query) = ResolveCommand(sw, oscInstClass.SignalType);
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 

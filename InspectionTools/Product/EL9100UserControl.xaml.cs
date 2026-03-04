@@ -27,7 +27,8 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -147,16 +148,16 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.02;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
                     Settings: [
-                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
-                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R7,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R7,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
                         ]
                 );
         }
@@ -195,6 +196,10 @@ namespace InspectionTools.Product {
                 await Task.Run(() =>
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
+
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
+                }
 
                 Dmm01ComboBox.IsEnabled = false;
                 Dmm02ComboBox.IsEnabled = false;
@@ -253,14 +258,14 @@ namespace InspectionTools.Product {
             }
         }
         // DMM切り替え
-        private async Task SwitchDmm2(DmmInstClass dmmInstClass, DmmMode mode) {
+        private async Task SwitchDmm(DmmInstClass dmmInstClass, DmmMode mode) {
             ThrowIfDisposed();
 
             try {
                 VisibleProgressImage(true);
 
                 var settings = _dicCommands[dmmInstClass].Settings;
-                var sw = settings.First(s => s.Mode == mode);
+                var sw = settings.First(s => s.DmmMode == mode);
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
                 dmmInstClass.CurrentMode = mode;
 
@@ -386,7 +391,7 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             try {
-                await SwitchDmm2(_instDmm02, DmmMode.DCI);
+                await SwitchDmm(_instDmm02, DmmMode.DCI);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -397,7 +402,7 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             try {
-                await SwitchDmm2(_instDmm02, DmmMode.DCV);
+                await SwitchDmm(_instDmm02, DmmMode.DCV);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

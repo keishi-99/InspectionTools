@@ -27,7 +27,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -158,19 +159,22 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 24;*OPC?", Query = true },
-                    Settings: []
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 24;*OPC?", Query = true },
+                    Settings: [
+                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
+                        new() { Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                    ]
                 );
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 0.2;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -320,11 +324,14 @@ namespace InspectionTools.Product {
             }
         }
         // 電源のON-OFF
-        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
+        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, DcsMode mode) {
             ThrowIfDisposed();
 
             try {
-                dcsInstClass.InstCommand = $":OUTPUT {cmd};*OPC?";
+                var settings = _dicCommands[dcsInstClass].Settings;
+                var sw = settings.First(s => s.DcsMode == mode);
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+                dcsInstClass.CurrentMode = mode;
                 await DeviceController.ConnectAsync(dcsInstClass);
 
             } catch (Exception ex) {
@@ -341,7 +348,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    await SwitchDcsAsync(_instDcs, "ON");
+                    await SwitchDcsAsync(_instDcs, DcsMode.ON);
                     await Task.Delay(delay);
                 }
 
@@ -380,7 +387,7 @@ namespace InspectionTools.Product {
                 }
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
-                    await SwitchDcsAsync(_instDcs, "OFF");
+                    await SwitchDcsAsync(_instDcs, DcsMode.OFF);
                 }
 
             } catch (Exception ex) {
@@ -457,10 +464,10 @@ namespace InspectionTools.Product {
         }
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, "ON");
+            await SwitchDcsAsync(_instDcs, DcsMode.ON);
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, "OFF");
+            await SwitchDcsAsync(_instDcs, DcsMode.OFF);
         }
         // 一連の処理
         private async void ActionHotkeyComma() {

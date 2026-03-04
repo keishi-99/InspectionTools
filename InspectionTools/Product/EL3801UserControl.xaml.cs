@@ -25,7 +25,8 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm03 = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -149,19 +150,19 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.RES, Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.RES, Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm03] =
                 (
-                    Init: new() { Mode = DmmMode.RES, Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.RES, Adc = "*RST,F3,R3,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:RES;:RES:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
         }
