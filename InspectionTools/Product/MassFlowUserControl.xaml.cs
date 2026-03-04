@@ -174,13 +174,13 @@ namespace InspectionTools.Product {
             // DCS
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "SVR5,SOV+0,SBY", Gpib = "RCF1R5S0.0O0E" },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "SVR5,SOV+0,SBY", Gpib = "RCF1R5S0.0O0E" },
                     Settings: [
-                        new() { DcsMode = DcsMode.OFF, Text= "OFF",    Visa = "SVR5,SOV+0,SBY", Gpib = "F1R5S0.0O0E" },
-                        new() { DcsMode = DcsMode.ON, Text= "2V",     Visa = "SVR5,SOV+2,OPR", Gpib = "F1R5S2.0O1E" },
-                        new() { DcsMode = DcsMode.ON, Text= "8V",     Visa = "SVR5,SOV+8,OPR", Gpib = "F1R5S8.0O1E" },
-                        new() { DcsMode = DcsMode.ON, Text= "1V",     Visa = "SVR5,SOV+1,OPR", Gpib = "F1R5S1.0O1E" },
-                        new() { DcsMode = DcsMode.ON, Text= "7V",     Visa = "SVR5,SOV+7,OPR", Gpib = "F1R5S7.0O1E" },
+                        new() { DcsMode = DcsMode.Off, Text= "OFF",    Visa = "SVR5,SOV+0,SBY", Gpib = "F1R5S0.0O0E" },
+                        new() { DcsMode = DcsMode.On, Text= "2V",     Visa = "SVR5,SOV+2,OPR", Gpib = "F1R5S2.0O1E" },
+                        new() { DcsMode = DcsMode.On, Text= "8V",     Visa = "SVR5,SOV+8,OPR", Gpib = "F1R5S8.0O1E" },
+                        new() { DcsMode = DcsMode.On, Text= "1V",     Visa = "SVR5,SOV+1,OPR", Gpib = "F1R5S1.0O1E" },
+                        new() { DcsMode = DcsMode.On, Text= "7V",     Visa = "SVR5,SOV+7,OPR", Gpib = "F1R5S7.0O1E" },
                     ]
                 );
 

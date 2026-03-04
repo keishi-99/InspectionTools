@@ -154,10 +154,10 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 30;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 30;*OPC?", Query = true },
                     Settings: [
-                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
-                        new() { DcsMode = DcsMode.OFF, Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.On, Visa = ":OUTPUT ON;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.Off, Visa = ":OUTPUT OFF;*OPC?", Query = true },
                     ]
                 );
 
@@ -307,7 +307,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 var settings = _dicCommands[dcsInstClass].Settings;
-                var sw = settings.First(s => s.DcsMode == mode);
+                var sw = settings.FirstOrDefault(s => s.DcsMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
                 (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
                 dcsInstClass.CurrentMode = mode;
 
@@ -356,11 +356,11 @@ namespace InspectionTools.Product {
         // DCSローテーション
         private async void ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
-            await SwitchDcs(_instDcs, DcsMode.ON);
+            await SwitchDcs(_instDcs, DcsMode.On);
         }
         private async void ActionHotkeyComma() {
             if (MainWindow.IsProcessing) { return; }
-            await SwitchDcs(_instDcs, DcsMode.OFF);
+            await SwitchDcs(_instDcs, DcsMode.Off);
         }
 
         // HotKeyの登録
