@@ -26,7 +26,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -152,13 +153,16 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R7,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 1.5;*OPC?", Query = true },
-                    Settings: []
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 1.5;*OPC?", Query = true },
+                    Settings: [
+                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.OFF, Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                    ]
                 );
             _dicCommands[_instFg] =
                 (
@@ -266,12 +270,16 @@ namespace InspectionTools.Product {
             HotKeyCheckBox.IsChecked = false;
         }
 
-        // 電源のON-OFF
-        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, string cmd) {
+        // DCS切り替え
+        private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, DcsMode mode) {
             ThrowIfDisposed();
 
             try {
-                (dcsInstClass.InstCommand, dcsInstClass.Query) = ($":OUTPUT {cmd};*OPC?", true);
+                var settings = _dicCommands[dcsInstClass].Settings;
+                var sw = settings.First(s => s.DcsMode == mode);
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+                dcsInstClass.CurrentMode = mode;
+
                 await DeviceController.ConnectAsync(dcsInstClass);
 
             } catch (Exception ex) {
@@ -306,13 +314,7 @@ namespace InspectionTools.Product {
                 fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[fgInstClass.SettingNumber];
-                fgInstClass.InstCommand = fgInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                fgInstClass.Query = sw.Query;
+                (fgInstClass.InstCommand, fgInstClass.Query) = ResolveCommand(sw, fgInstClass.SignalType);
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -337,13 +339,7 @@ namespace InspectionTools.Product {
                 oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[oscInstClass.SettingNumber];
-                oscInstClass.InstCommand = oscInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                oscInstClass.Query = sw.Query;
+                (oscInstClass.InstCommand, oscInstClass.Query) = ResolveCommand(sw, oscInstClass.SignalType);
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 
@@ -359,10 +355,10 @@ namespace InspectionTools.Product {
 
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, "ON");
+            await SwitchDcsAsync(_instDcs, DcsMode.ON);
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, "OFF");
+            await SwitchDcsAsync(_instDcs, DcsMode.OFF);
         }
         // DMM測定値コピー
         private async void ActionHotkeySlash() {

@@ -26,7 +26,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -153,19 +154,22 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "*RST;:VOLT 30;*OPC?", Query = true },
-                    Settings: []
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 30;*OPC?", Query = true },
+                    Settings: [
+                        new() { DcsMode = DcsMode.ON, Visa = ":OUTPUT ON;*OPC?", Query = true },
+                        new() { DcsMode = DcsMode.OFF, Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                    ]
                 );
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 200;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -286,13 +290,16 @@ namespace InspectionTools.Product {
             }
         }
         // DCS切り替え
-        private async Task SwitchDcs(DcsInstClass dcsInstClass, string cmd) {
+        private async Task SwitchDcs(DcsInstClass dcsInstClass, DcsMode mode) {
             ThrowIfDisposed();
 
             try {
                 VisibleProgressImage(true);
 
-                (dcsInstClass.InstCommand, dcsInstClass.Query) = ($":OUTPUT {cmd};*OPC?", true);
+                var settings = _dicCommands[dcsInstClass].Settings;
+                var sw = settings.First(s => s.DcsMode == mode);
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+                dcsInstClass.CurrentMode = mode;
 
                 await DeviceController.ConnectAsync(dcsInstClass);
 
@@ -339,11 +346,11 @@ namespace InspectionTools.Product {
         // DCSローテーション
         private async void ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
-            await SwitchDcs(_instDcs, "ON");
+            await SwitchDcs(_instDcs, DcsMode.ON);
         }
         private async void ActionHotkeyComma() {
             if (MainWindow.IsProcessing) { return; }
-            await SwitchDcs(_instDcs, "OFF");
+            await SwitchDcs(_instDcs, DcsMode.OFF);
         }
 
         // HotKeyの登録

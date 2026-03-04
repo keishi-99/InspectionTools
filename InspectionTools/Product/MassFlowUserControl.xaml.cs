@@ -31,7 +31,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -185,7 +186,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCI, Adc = "*RST,F5,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -672,13 +673,7 @@ namespace InspectionTools.Product {
             dcsInstClass.SettingNumber = i;
 
             var sw = settings[dcsInstClass.SettingNumber];
-            dcsInstClass.Query = sw.Query;
-
-            dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
-                2 => dcsInstClass.InstCommand = sw.Visa,
-                3 => dcsInstClass.InstCommand = sw.Gpib,
-                _ => throw new ApplicationException(),
-            };
+            (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
 
             if (string.IsNullOrEmpty(dcsInstClass.InstCommand) || dcsInstClass.UsbDev is null) { return; }
             await DeviceController.ConnectAsync(dcsInstClass);
@@ -752,13 +747,7 @@ namespace InspectionTools.Product {
             if (!string.IsNullOrEmpty(instClass.VisaAddress) && instClass.UsbDev is not null) {
                 var sw = settings[instClass.SettingNumber];
 
-                instClass.InstCommand = instClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 or 4 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                instClass.Query = sw.Query;
+                (instClass.InstCommand, instClass.Query) = ResolveCommand(sw, instClass.SignalType);
 
                 if (string.IsNullOrEmpty(instClass.InstCommand)) { return; }
 
