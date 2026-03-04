@@ -572,7 +572,7 @@ namespace InspectionTools.Product {
                 .Where(i => i >= 1); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
-                throw new Exception("同じ測定器が選択されています。");
+                throw new InvalidOperationException("同じ測定器が選択されています。");
             }
         }
 
@@ -679,6 +679,7 @@ namespace InspectionTools.Product {
 
             var sw = settings[dcsInstClass.SettingNumber];
             (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+            dcsInstClass.CurrentMode = sw.DcsMode;
 
             if (string.IsNullOrEmpty(dcsInstClass.InstCommand) || dcsInstClass.UsbDev is null) { return; }
             await DeviceController.ConnectAsync(dcsInstClass);
