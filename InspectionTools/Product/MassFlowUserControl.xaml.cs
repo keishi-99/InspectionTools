@@ -82,6 +82,7 @@ namespace InspectionTools.Product {
 
                     // 辞書のクリア
                     _dicCommands.Clear();
+                    _dicReverseCommands.Clear();
                 } catch (Exception ex) {
                     // Dispose中のエラーはログに記録するのみ
                     System.Diagnostics.Debug.WriteLine($"Dispose error: {ex.Message}");
