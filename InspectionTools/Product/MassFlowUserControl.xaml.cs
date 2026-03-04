@@ -174,13 +174,13 @@ namespace InspectionTools.Product {
             // DCS
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "SVR5,SOV+0,SBY", Gpib = "RCF1R5S0.0O0E" },
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "SVR5,SOV+0,SBY", Gpib = "RCF1R5S0.0O0E" },
                     Settings: [
-                        new() { Text= "OFF",    Visa = "SVR5,SOV+0,SBY", Gpib = "F1R5S0.0O0E" },
-                        new() { Text= "2V",     Visa = "SVR5,SOV+2,OPR", Gpib = "F1R5S2.0O1E" },
-                        new() { Text= "8V",     Visa = "SVR5,SOV+8,OPR", Gpib = "F1R5S8.0O1E" },
-                        new() { Text= "1V",     Visa = "SVR5,SOV+1,OPR", Gpib = "F1R5S1.0O1E" },
-                        new() { Text= "7V",     Visa = "SVR5,SOV+7,OPR", Gpib = "F1R5S7.0O1E" },
+                        new() { DcsMode = DcsMode.OFF, Text= "OFF",    Visa = "SVR5,SOV+0,SBY", Gpib = "F1R5S0.0O0E" },
+                        new() { DcsMode = DcsMode.ON, Text= "2V",     Visa = "SVR5,SOV+2,OPR", Gpib = "F1R5S2.0O1E" },
+                        new() { DcsMode = DcsMode.ON, Text= "8V",     Visa = "SVR5,SOV+8,OPR", Gpib = "F1R5S8.0O1E" },
+                        new() { DcsMode = DcsMode.ON, Text= "1V",     Visa = "SVR5,SOV+1,OPR", Gpib = "F1R5S1.0O1E" },
+                        new() { DcsMode = DcsMode.ON, Text= "7V",     Visa = "SVR5,SOV+7,OPR", Gpib = "F1R5S7.0O1E" },
                     ]
                 );
 
@@ -531,7 +531,12 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
+
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
                     DcsNumberTextBox.Text = "OFF";
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress) || !string.IsNullOrEmpty(_instFg01.VisaAddress) || !string.IsNullOrEmpty(_instFg02_1.VisaAddress) || !string.IsNullOrEmpty(_instFg02_2.VisaAddress)) {

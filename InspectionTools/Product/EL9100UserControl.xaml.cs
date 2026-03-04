@@ -197,6 +197,9 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
+                }
                 if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                     _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
                 }

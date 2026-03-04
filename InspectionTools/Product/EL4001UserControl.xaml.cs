@@ -153,24 +153,24 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
+                    Init: new() { DcsMode = DcsMode.OFF, Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
                     Settings: [
-                        new() { Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
-                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
-                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
-                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
-                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
-                        new() { Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
-                        new() { Text = "22mA",  Visa = "SOI+22MA,OPR",  Gpib = "F5R6S22.0E-3O1E" },
-                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
-                        new() { Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
-                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
-                        new() { Text = "3.2mA", Visa = "SOI+3.2MA,OPR", Gpib = "F5R6S3.2E-3O1E" },
-                        new() { Text = "22mA",  Visa = "SOI+22MA,OPR",  Gpib = "F5R6S22.0E-3O1E" },
-                        new() { Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
-                        new() { Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
-                        new() { Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
-                        new() { Text = "3.2mA", Visa = "SOI+3.2MA,OPR", Gpib = "F5R6S3.2E-3O1E" },
+                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = "SOI+0MA,SBY",   Gpib = "F5R6S0EO0E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "22mA",  Visa = "SOI+22MA,OPR",  Gpib = "F5R6S22.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "3.2mA", Visa = "SOI+3.2MA,OPR", Gpib = "F5R6S3.2E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "22mA",  Visa = "SOI+22MA,OPR",  Gpib = "F5R6S22.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SOI+20MA,OPR",  Gpib = "F5R6S20.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "12mA",  Visa = "SOI+12MA,OPR",  Gpib = "F5R6S12.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SOI+4MA,OPR",   Gpib = "F5R6S4.0E-3O1E" },
+                        new() { DcsMode = DcsMode.ON,   Text = "3.2mA", Visa = "SOI+3.2MA,OPR", Gpib = "F5R6S3.2E-3O1E" },
                     ]
                 );
 
@@ -252,6 +252,13 @@ namespace InspectionTools.Product {
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
                     DcsRangeLabel.Text = "OFF";
+                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
+                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
+                }
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
                 }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) { OscRangeLabel.Text = "50m"; }
 

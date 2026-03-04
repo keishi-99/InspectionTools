@@ -279,6 +279,9 @@ namespace InspectionTools.Product {
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
 
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                     OscRotateRangeTextBox.Text = "OC入力回路";
                     OscRotateButton.IsEnabled = true;
