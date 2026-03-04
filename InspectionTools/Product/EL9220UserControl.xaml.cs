@@ -151,10 +151,10 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 3.6;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 3.6;*OPC?", Query = true },
                     Settings: [
-                        new() { DcsMode = DcsMode.OFF,  Visa = $":OUTPUT OFF;*OPC?",    Query = true },
-                        new() { DcsMode = DcsMode.ON,   Visa = $":OUTPUT ON;*OPC?",     Query = true },
+                        new() { DcsMode = DcsMode.Off,  Visa = $":OUTPUT OFF;*OPC?",    Query = true },
+                        new() { DcsMode = DcsMode.On,   Visa = $":OUTPUT ON;*OPC?",     Query = true },
                     ]
                 );
 

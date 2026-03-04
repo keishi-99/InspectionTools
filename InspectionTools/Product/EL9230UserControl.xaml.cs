@@ -155,23 +155,23 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs01] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "*RST;:VOLT 7.2;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 7.2;*OPC?", Query = true },
                     Settings: [
-                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = $":OUTPUT OFF;*OPC?",    Query = true },
-                        new() { DcsMode = DcsMode.ON,   Text = "ON",    Visa = $":OUTPUT ON;*OPC?",     Query = true },
+                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = $":OUTPUT OFF;*OPC?",    Query = true },
+                        new() { DcsMode = DcsMode.On,   Text = "ON",    Visa = $":OUTPUT ON;*OPC?",     Query = true },
                     ]
                 );
 
             _dicCommands[_instDcs02] =
                 (
-                    Init: new() { DcsMode = DcsMode.OFF, Visa = "SIR3,SOI+0,SBY" },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "SIR3,SOI+0,SBY" },
                     Settings: [
-                        new() { DcsMode = DcsMode.OFF,  Text = "OFF",   Visa = "SOI+0MA,SBY" },
-                        new() { DcsMode = DcsMode.ON,   Text = "4.0mA", Visa = "SOI+4MA,OPR" },
-                        new() { DcsMode = DcsMode.ON,   Text = "20mA",  Visa = "SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.ON,   Text = "8.0mA", Visa = "SOI+8MA,OPR" },
-                        new() { DcsMode = DcsMode.ON,   Text = "12mA",  Visa = "SOI+12MA,OPR" },
-                        new() { DcsMode = DcsMode.ON,   Text = "16mA",  Visa = "SOI+16MA,OPR" },
+                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SOI+0MA,SBY" },
+                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "8.0mA", Visa = "SOI+8MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SOI+12MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "16mA",  Visa = "SOI+16MA,OPR" },
                     ]
                 );
 

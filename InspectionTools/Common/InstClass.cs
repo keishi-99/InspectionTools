@@ -59,8 +59,8 @@
     }
     public enum DcsMode {
         None,
-        ON,
-        OFF,
+        On,
+        Off,
     }
 
     // DMM用クラス
