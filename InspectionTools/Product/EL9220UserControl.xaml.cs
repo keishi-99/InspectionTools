@@ -283,14 +283,15 @@ namespace InspectionTools.Product {
 
                 var sw = settings[dcsInstClass.SettingNumber];
                 (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+                dcsInstClass.CurrentMode = sw.DcsMode;
 
                 await DeviceController.ConnectAsync(dcsInstClass);
-
-                VisibleProgressImage(false);
 
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                VisibleProgressImage(false);
             }
         }
         // FG切り替え
