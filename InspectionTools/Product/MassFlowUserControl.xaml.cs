@@ -630,12 +630,13 @@ namespace InspectionTools.Product {
                     SetForegroundWindow(hWnd);
                 }
 
-                await SwitchDcsAsync(_instDcs, i);
+                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                    await SwitchDcsAsync(_instDcs, i);
 
-                // テキストボックス更新
-                var settings = _dicCommands[_instDcs].Settings;
-                var sw = settings[_instDcs.SettingNumber];
-                DcsNumberTextBox.Text = sw.Text;
+                    var settings = _dicCommands[_instDcs].Settings;
+                    var sw = settings[_instDcs.SettingNumber];
+                    DcsNumberTextBox.Text = sw.Text;
+                }
 
                 // OFF以外はボタン無効化
                 FgOscRotationButton.IsEnabled = (i == 0) &&
@@ -673,8 +674,6 @@ namespace InspectionTools.Product {
             }
         }
         private async Task SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
-            if (string.IsNullOrEmpty(dcsInstClass.VisaAddress)) { return; }
-
             var settings = _dicCommands[dcsInstClass].Settings;
             dcsInstClass.SettingNumber = i;
 
