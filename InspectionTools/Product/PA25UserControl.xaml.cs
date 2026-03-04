@@ -25,7 +25,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -149,10 +150,10 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
                     Settings: [
-                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
-                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 1E-1;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 10;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;:CURR:DC:RANG 1E-1;*OPC?", Query = true },
                         ]
                 );
 
@@ -467,7 +468,7 @@ namespace InspectionTools.Product {
                 );
 
                 if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
-                    _instDmm.CurrentMode = DmmMode.DCV;
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
                 }
                 if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
                     FgRotateRangeTextBox.Text = "OFF";
@@ -528,7 +529,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 var settings = _dicCommands[dmmInstClass].Settings;
-                var sw = settings.First(s => s.Mode == mode);
+                var sw = settings.First(s => s.DmmMode == mode);
                 (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
                 dmmInstClass.CurrentMode = mode;
 
@@ -565,13 +566,7 @@ namespace InspectionTools.Product {
                 fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[fgInstClass.SettingNumber];
-                fgInstClass.InstCommand = fgInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                fgInstClass.Query = sw.Query;
+                (fgInstClass.InstCommand, fgInstClass.Query) = ResolveCommand(sw, fgInstClass.SignalType);
 
                 if (fgInstClass.InstCommand == string.Empty) { return; }
 
@@ -599,13 +594,7 @@ namespace InspectionTools.Product {
                 oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[oscInstClass.SettingNumber];
-                oscInstClass.InstCommand = oscInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                oscInstClass.Query = sw.Query;
+                (oscInstClass.InstCommand, oscInstClass.Query) = ResolveCommand(sw, oscInstClass.SignalType);
 
                 if (oscInstClass.InstCommand == string.Empty) { return; }
 

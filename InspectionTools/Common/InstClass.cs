@@ -15,7 +15,8 @@
         private bool _disposed = false;
 
         public void ResetProperties() {
-            if (_disposed) throw new ObjectDisposedException(nameof(InstClass));
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             UsbDev?.Dispose();
             UsbDev = new();
             Name = string.Empty;
@@ -53,7 +54,14 @@
     public class CntInstClass : InstClass { }
 
     // DCS用クラス
-    public class DcsInstClass : InstClass { }
+    public class DcsInstClass : InstClass {
+        public DcsMode CurrentMode { get; set; } = DcsMode.None;
+    }
+    public enum DcsMode {
+        None,
+        ON,
+        OFF,
+    }
 
     // DMM用クラス
     public class DmmInstClass : InstClass {
@@ -61,9 +69,11 @@
     }
     public enum DmmMode {
         None,
-        DCV,
+        ACI,
+        ACV,
         DCI,
-        RES
+        DCV,
+        RES,
     }
 
     // FG用クラス

@@ -26,7 +26,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -175,13 +176,13 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 20;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R5,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R5,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG 2;*OPC?", Query = true },
                     Settings: []
                 );
 
@@ -204,7 +205,10 @@ namespace InspectionTools.Product {
                             """,
                         Query = true
                     },
-                    Settings: []
+                    Settings: [
+                            new() { Text = "500us", Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-4;POSITION 0.0;*OPC?", Query = true },
+                            new() { Text = "50ms", Visa = ":HORIZONTAL:MAIN:SCALE 5.0E-2;POSITION 1.0E-1;*OPC?", Query = true },
+                        ]
                 );
         }
         // 機器初期設定
@@ -342,13 +346,7 @@ namespace InspectionTools.Product {
                 dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[dcsInstClass.SettingNumber];
-                dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                dcsInstClass.Query = sw.Query;
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
 
                 await DeviceController.ConnectAsync(dcsInstClass);
                 DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
@@ -362,24 +360,26 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private async void RotationOsc(OscInstClass oscInstClass) {
+        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
             ThrowIfDisposed();
 
             try {
                 VisibleProgressImage(true);
 
-                (oscInstClass.InstCommand, oscInstClass.Query, var rangeText) = oscInstClass.SettingNumber switch {
-                    0 => (":HORIZONTAL:MAIN:SCALE 5.0E-4;POSITION 0.0;*OPC?", true, "500u"),
-                    1 => (":HORIZONTAL:MAIN:SCALE 5.0E-2;POSITION 1.0E-1;*OPC?", true, "50ms"),
-                    _ => throw new ApplicationException(),
-                };
+                if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
+                VisibleProgressImage(true);
 
-                await DeviceController.ConnectAsync(oscInstClass);
+                var settings = _dicCommands[oscInstClass].Settings;
+                oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
-                OscRangeLabel.Text = rangeText;
+                var sw = settings[oscInstClass.SettingNumber];
+                (oscInstClass.InstCommand, oscInstClass.Query) = ResolveCommand(sw, oscInstClass.SignalType);
 
-                // 設定番号を反転
-                oscInstClass.SettingNumber = (oscInstClass.SettingNumber == 0) ? 1 : 0;
+                if (oscInstClass.InstCommand == string.Empty) { return; }
+
+                await InstrumentService.RotateOscAsync(oscInstClass);
+
+                OscRangeLabel.Text = sw.Text;
 
                 VisibleProgressImage(false);
             } catch (Exception ex) {
@@ -453,7 +453,7 @@ namespace InspectionTools.Product {
         // OSCローテーション
         private void ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc);
+            RotationOsc(_instOsc, true);
         }
         // OSC meas1測定値コピー
         private async void ActionHotkeySlash() {

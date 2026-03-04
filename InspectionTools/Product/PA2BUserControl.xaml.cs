@@ -24,7 +24,8 @@ namespace InspectionTools.Product {
         private readonly OscInstClass _instOsc = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -144,10 +145,10 @@ namespace InspectionTools.Product {
         private void RegDictionary() {
             _dicCommands[_instDmm] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
                     Settings: [
-                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
-                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                         ]
                 );
 
@@ -213,6 +214,10 @@ namespace InspectionTools.Product {
                 await Task.Run(() =>
                     DeviceConnectionHelper.ConnectInParallelAsync(devices)
                 );
+
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
+                }
 
                 DmmComboBox.IsEnabled = false;
                 OscComboBox.IsEnabled = false;
@@ -288,13 +293,8 @@ namespace InspectionTools.Product {
                 dmmInstClass.SettingNumber = (dmmInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[dmmInstClass.SettingNumber];
-                dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                dmmInstClass.Query = sw.Query;
+                (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
+                dmmInstClass.CurrentMode = sw.DmmMode;
 
                 await DeviceController.ConnectAsync(dmmInstClass);
 
@@ -307,19 +307,31 @@ namespace InspectionTools.Product {
         private async void ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
-            var output = await ReadOsc(_instOsc, 2);
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry(output.ToString("0.00"));
-            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            try {
+
+                var output = await ReadOsc(_instOsc, 2);
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry(output.ToString("0.00"));
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         // OSC mes3値コピー
         private async void ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
-            var output = await ReadOsc(_instOsc, 3);
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry((output * 1000).ToString("0"));
-            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            try {
+
+                var output = await ReadOsc(_instOsc, 3);
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0"));
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         // DMM測定値コピー
         private async void ActionHotkeyPeriod() {
@@ -328,9 +340,7 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm);
 
-                var settings = _dicCommands[_instDmm].Settings;
-                var sw = settings[_instDmm.SettingNumber];
-                var outputValue = sw.Mode switch {
+                var outputValue = _instDmm.CurrentMode switch {
                     DmmMode.DCI => output * 1000,
                     DmmMode.DCV => output,
                     _ => output,
@@ -351,9 +361,7 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm);
 
-                var settings = _dicCommands[_instDmm].Settings;
-                var sw = settings[_instDmm.SettingNumber];
-                var outputValue = sw.Mode switch {
+                var outputValue = _instDmm.CurrentMode switch {
                     DmmMode.DCI => output * 1000,
                     DmmMode.DCV => output,
                     _ => output,

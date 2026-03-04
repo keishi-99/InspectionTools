@@ -29,7 +29,8 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
 
         private record SwitchCommand {
-            public DmmMode Mode { get; init; }
+            public DcsMode DcsMode { get; init; }
+            public DmmMode DmmMode { get; init; }
             public string Text { get; init; } = string.Empty;
             public string Adc { get; init; } = string.Empty;
             public string Visa { get; init; } = string.Empty;
@@ -181,16 +182,16 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDmm01] =
                 (
-                    Init: new() { Mode = DmmMode.DCI, Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.ACI, Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
                     Settings: []
                 );
 
             _dicCommands[_instDmm02] =
                 (
-                    Init: new() { Mode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
                     Settings: [
-                            new() { Mode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
-                            new() { Mode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
                         ]
                 );
 
@@ -265,6 +266,9 @@ namespace InspectionTools.Product {
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
                     DcsRangeLabel.Text = "OFF";
+                }
+                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
                 }
 
                 CntComboBox.IsEnabled = false;
@@ -348,13 +352,7 @@ namespace InspectionTools.Product {
                 fgInstClass.SettingNumber = (fgInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[fgInstClass.SettingNumber];
-                fgInstClass.InstCommand = fgInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                fgInstClass.Query = sw.Query;
+                (fgInstClass.InstCommand, fgInstClass.Query) = ResolveCommand(sw, fgInstClass.SignalType);
 
                 await DeviceController.ConnectAsync(fgInstClass);
 
@@ -376,13 +374,7 @@ namespace InspectionTools.Product {
                 dcsInstClass.SettingNumber = (dcsInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[dcsInstClass.SettingNumber];
-                dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                dcsInstClass.Query = sw.Query;
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
 
                 await DeviceController.ConnectAsync(dcsInstClass);
                 DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
@@ -434,13 +426,8 @@ namespace InspectionTools.Product {
                 dmmInstClass.SettingNumber = (dmmInstClass.SettingNumber + (isNext ? 1 : -1) + settings.Count) % settings.Count;
 
                 var sw = settings[dmmInstClass.SettingNumber];
-                dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
-                    1 => sw.Adc,
-                    2 => sw.Visa,
-                    3 => sw.Gpib,
-                    _ => string.Empty,
-                };
-                dmmInstClass.Query = sw.Query;
+                (dmmInstClass.InstCommand, dmmInstClass.Query) = ResolveCommand(sw, dmmInstClass.SignalType);
+                dmmInstClass.CurrentMode = sw.DmmMode;
 
                 await DeviceController.ConnectAsync(dmmInstClass);
 
@@ -521,9 +508,7 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm02);
 
-                var settings = _dicCommands[_instDmm02].Settings;
-                var sw = settings[_instDmm02.SettingNumber];
-                var outputValue = sw.Mode switch {
+                var outputValue = _instDmm02.CurrentMode switch {
                     DmmMode.DCI => output * 1000,
                     DmmMode.DCV => output,
                     _ => output,
@@ -544,9 +529,7 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm02);
 
-                var settings = _dicCommands[_instDmm02].Settings;
-                var sw = settings[_instDmm02.SettingNumber];
-                var outputValue = sw.Mode switch {
+                var outputValue = _instDmm02.CurrentMode switch {
                     DmmMode.DCI => output * 1000,
                     DmmMode.DCV => output,
                     _ => output,
