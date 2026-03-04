@@ -448,7 +448,7 @@ namespace InspectionTools.Product {
         }
 
         // 機器接続
-        private async void ConnectInstAsync() {
+        private async Task ConnectInstAsync() {
             ThrowIfDisposed();
 
             try {
@@ -811,7 +811,7 @@ namespace InspectionTools.Product {
 
         // イベントハンドラ
         private void UserControl_Loaded(object sender, RoutedEventArgs e) { LoadEvents(); }
-        private void ConnectButton_Click(object sender, RoutedEventArgs e) { ConnectInstAsync(); }
+        private async void ConnectButton_Click(object sender, RoutedEventArgs e) { await ConnectInstAsync(); }
         private void ReleaseButton_Click(object sender, RoutedEventArgs e) { Release(); }
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
