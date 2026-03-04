@@ -12,9 +12,9 @@
         public bool Query { get; set; } = false;
         public int SettingNumber { get; set; } = 0;
 
-        private bool _disposed = false;
+        protected bool _disposed = false;
 
-        public void ResetProperties() {
+        public virtual void ResetProperties() {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
             UsbDev?.Dispose();
@@ -48,6 +48,11 @@
 
             _disposed = true;
         }
+
+        ~InstClass() {
+            Dispose(false);
+        }
+
     }
 
     // CNT用クラス
@@ -56,6 +61,11 @@
     // DCS用クラス
     public class DcsInstClass : InstClass {
         public DcsMode CurrentMode { get; set; } = DcsMode.None;
+
+        public override void ResetProperties() {
+            base.ResetProperties();
+            CurrentMode = DcsMode.None;
+        }
     }
     public enum DcsMode {
         None,
@@ -66,6 +76,11 @@
     // DMM用クラス
     public class DmmInstClass : InstClass {
         public DmmMode CurrentMode { get; set; } = DmmMode.None;
+
+        public override void ResetProperties() {
+            base.ResetProperties();
+            CurrentMode = DmmMode.None;
+        }
     }
     public enum DmmMode {
         None,
