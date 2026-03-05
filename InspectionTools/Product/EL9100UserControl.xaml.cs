@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -25,6 +25,8 @@ namespace InspectionTools.Product {
 
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
+
+        private TesseractEngine? _tesseractEngine;
 
         private record SwitchCommand {
             public DcsMode DcsMode { get; init; }
@@ -69,6 +71,10 @@ namespace InspectionTools.Product {
                     // 計測器の解放
                     DisposeInstrument(_instDmm01);
                     DisposeInstrument(_instDmm02);
+
+                    // OCRエンジンの解放
+                    _tesseractEngine?.Dispose();
+                    _tesseractEngine = null;
 
                     // 辞書のクリア
                     _dicCommands.Clear();
@@ -193,9 +199,7 @@ namespace InspectionTools.Product {
 
                 InstClass[] devices = [_instDmm01, _instDmm02];
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                     _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
@@ -223,7 +227,7 @@ namespace InspectionTools.Product {
         // DMMのIDチェック処理
         private void ValidateDmmSelection() {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1); // 未選択(0以下)は無視
+                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
@@ -317,14 +321,13 @@ namespace InspectionTools.Product {
 
             return bitmapImage;
         }
-        public static string PerformOCR(Bitmap image) {
+        public string PerformOCR(Bitmap image) {
             try {
                 // tessdata フォルダのパス（exe と同じ階層に配置）
                 string tessDataPath = Path.Combine(Environment.CurrentDirectory, "tessdata");
 
-                // OCRエンジンの初期化（日本語＋英語）
-
-                using var engine = new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
+                // OCRエンジンをキャッシュ（初回のみ初期化）
+                _tesseractEngine ??= new TesseractEngine(tessDataPath, "jpn+eng", EngineMode.Default);
 
                 using var ms = new MemoryStream();
                 // Bitmap → メモリストリーム（PNG形式）
@@ -333,7 +336,7 @@ namespace InspectionTools.Product {
 
                 // MemoryStream → Pix に変換
                 using var pix = Pix.LoadFromMemory(ms.ToArray());
-                using var page = engine.Process(pix);
+                using var page = _tesseractEngine.Process(pix);
                 // 認識結果のテキストを取得
                 string text = page.GetText();
                 return text.Trim();

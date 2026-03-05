@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -175,9 +175,7 @@ namespace InspectionTools.Product {
 
                 InstClass[] devices = [_instDmm];
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                     _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;

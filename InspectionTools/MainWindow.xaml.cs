@@ -139,9 +139,13 @@ namespace InspectionTools {
 
             if (VisaAddressDataTable == null) return;
 
+            var rows = VisaAddressDataTable.AsEnumerable();
             var collection = signalTypes
-                .SelectMany(st => VisaAddressDataTable
-                    .Select($"Category = '{category}' AND SignalType = {st}")
+                .SelectMany(st => rows
+                    .Where(row =>
+                        (row["Category"] as string) == category &&
+                        row["SignalType"] != DBNull.Value &&
+                        Convert.ToInt32(row["SignalType"]) == st)
                     .Select(row => row["Name"].ToString() ?? string.Empty))
                 .ToList();
 
@@ -158,11 +162,14 @@ namespace InspectionTools {
 
             if (instClass.Index == -1) return;
 
-            var dRows = VisaAddressDataTable.Select($"Name = '{instClass.Name}'");
-            instClass.Category = dRows[0]["Category"] as string ?? string.Empty;
-            instClass.VisaAddress = dRows[0]["VisaAddress"] as string ?? string.Empty;
-            instClass.SignalType = dRows[0]["SignalType"] != DBNull.Value
-                ? Convert.ToInt32(dRows[0]["SignalType"])
+            var dRow = VisaAddressDataTable.AsEnumerable()
+                .FirstOrDefault(row => (row["Name"] as string) == instClass.Name);
+            if (dRow == null) return;
+
+            instClass.Category = dRow["Category"] as string ?? string.Empty;
+            instClass.VisaAddress = dRow["VisaAddress"] as string ?? string.Empty;
+            instClass.SignalType = dRow["SignalType"] != DBNull.Value
+                ? Convert.ToInt32(dRow["SignalType"])
                 : 0;
         }
 
