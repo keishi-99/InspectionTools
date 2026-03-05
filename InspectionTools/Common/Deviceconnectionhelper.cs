@@ -42,7 +42,13 @@
                 }
             }).ToList();
 
-            return await Task.WhenAll(tasks);
+            var whenAllTask = Task.WhenAll(tasks);
+            try {
+                return await whenAllTask;
+            } catch {
+                var errors = whenAllTask.Exception?.InnerExceptions;
+                throw new AggregateException("複数デバイスの接続に失敗しました", errors!);
+            }
         }
     }
 }

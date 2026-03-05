@@ -89,17 +89,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -452,7 +443,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -505,7 +496,7 @@ namespace InspectionTools.Product {
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             DmmComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;
@@ -698,45 +689,11 @@ namespace InspectionTools.Product {
         }
 
         // OSC meas測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async void ActionHotkeyBackslash() => await ReadOscAndSendAsync();
+        private async void ActionHotkeyNumAdd()    => await ReadOscAndSendAsync();
+
+        private async Task ReadOscAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var meas = _instOsc.SettingNumber switch {
-                    4 or 5 or 7 => 1,
-                    6 => 2,
-                    _ => 0,
-                };
-                if (meas == 0) { return; }
-
-                for (var i = 1; i <= meas; i++) {
-                    var output = await ReadOsc(_instOsc, i);
-
-                    var sim = new InputSimulator();
-                    var value = _instOsc.SettingNumber switch {
-                        4 => output * 1000,
-                        5 => output * 1000000,
-                        7 => output,
-                        6 => i switch {
-                            1 => output * 1000,
-                            2 => output,
-                            _ => output,
-                        },
-                        _ => output,
-                    };
-                    sim.Keyboard.TextEntry(value.ToString("0.000"));
-                    await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-                }
-
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumAdd() {
-            if (MainWindow.IsProcessing) { return; }
-
             try {
                 var meas = _instOsc.SettingNumber switch {
                     4 or 5 or 7 => 1,

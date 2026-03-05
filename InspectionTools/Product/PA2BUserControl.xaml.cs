@@ -85,17 +85,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -199,7 +190,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -241,7 +232,7 @@ namespace InspectionTools.Product {
             _instDmm.ResetProperties();
             _instOsc.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             DmmComboBox.IsEnabled = true;
             OscComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
@@ -332,30 +323,11 @@ namespace InspectionTools.Product {
             }
         }
         // DMM測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async void ActionHotkeyPeriod()      => await ReadDmmAndSendAsync();
+        private async void ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync();
+
+        private async Task ReadDmmAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm);
-
-                var outputValue = _instDmm.CurrentMode switch {
-                    DmmMode.DCI => output * 1000,
-                    DmmMode.DCV => output,
-                    _ => output,
-                };
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(outputValue.ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
-
             try {
                 var output = await ReadDmm(_instDmm);
 
