@@ -90,7 +90,7 @@ namespace InspectionTools.Product {
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
             try {
-                instrument.Dispose();
+                instrument?.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
