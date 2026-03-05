@@ -25,13 +25,16 @@ namespace InspectionTools {
         // タイマー
         private readonly DispatcherTimer _timer;
 
+        public const string ProductListButtonName = "ProductListButton";
+        public const string InstListButtonName = "InstListButton";
+
         public static IntPtr HWnd { get; set; }
         public static HwndSource? Source { get; set; }
         public static List<Hotkey> HotkeysList { get; set; } = [];
 
         public static DataTable VisaAddressDataTable { get; set; } = new();
 
-        public static bool IsProcessing { get; set; } = false;
+        public static volatile bool IsProcessing = false;
 
         public MainWindow() {
             InitializeComponent();

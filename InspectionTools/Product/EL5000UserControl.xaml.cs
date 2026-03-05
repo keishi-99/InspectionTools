@@ -100,17 +100,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -246,7 +237,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -312,7 +303,7 @@ namespace InspectionTools.Product {
             _instDmm01.ResetProperties();
             _instDmm02.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             CntComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
             DcsComboBox.IsEnabled = true;
@@ -439,27 +430,13 @@ namespace InspectionTools.Product {
         }
 
         // CNT測定値コピー
-        private async void ActionHotkeyComma() {
-            if (MainWindow.IsProcessing) { return; }
+        private async void ActionHotkeyComma()       => await ReadCntAndSendAsync();
+        private async void ActionHotkeyNumMultiply() => await ReadCntAndSendAsync();
 
+        private async Task ReadCntAndSendAsync() {
+            if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadCnt(_instCnt);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString());
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadCnt(_instCnt);
-
                 var sim = new InputSimulator();
                 sim.Keyboard.TextEntry((output * 1000).ToString());
                 await Task.Delay(100);
@@ -504,30 +481,11 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() {
+        private async void ActionHotkeySlash()  => await ReadDmm02AndSendAsync();
+        private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
+
+        private async Task ReadDmm02AndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                var outputValue = _instDmm02.CurrentMode switch {
-                    DmmMode.DCI => output * 1000,
-                    DmmMode.DCV => output,
-                    _ => output,
-                };
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(outputValue.ToString("0.0000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumAdd() {
-            if (MainWindow.IsProcessing) { return; }
-
             try {
                 var output = await ReadDmm(_instDmm02);
 

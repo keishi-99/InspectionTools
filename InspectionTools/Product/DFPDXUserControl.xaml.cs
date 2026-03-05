@@ -91,17 +91,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -243,7 +234,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -315,7 +306,7 @@ namespace InspectionTools.Product {
             _instFg.ResetProperties();
             _instOsc.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             Dmm03ComboBox.IsEnabled = true;

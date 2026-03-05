@@ -91,17 +91,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -226,7 +217,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -290,7 +281,7 @@ namespace InspectionTools.Product {
             _instOsc.ResetProperties();
             _instDcs.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             Dmm01ComboBox.IsEnabled = true;
             Dmm02ComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
@@ -489,15 +480,10 @@ namespace InspectionTools.Product {
             }
         }
         // 一連の処理
-        private async void ActionHotkeyComma() {
-            if (int.TryParse(WaitTimeTextBox.Text, out var delay)) {
-                await ProcessAllDataAsync(delay);
-            }
-            else {
-                MessageBox.Show("数値に変換できません。", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumAdd() {
+        private async void ActionHotkeyComma()  => await ProcessAllDataWithDelayAsync();
+        private async void ActionHotkeyNumAdd() => await ProcessAllDataWithDelayAsync();
+
+        private async Task ProcessAllDataWithDelayAsync() {
             if (int.TryParse(WaitTimeTextBox.Text, out var delay)) {
                 await ProcessAllDataAsync(delay);
             }
