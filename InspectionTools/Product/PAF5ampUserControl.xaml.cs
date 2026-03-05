@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -228,9 +228,7 @@ namespace InspectionTools.Product {
 
                 InstClass[] devices = [_instDcs, _instDmm, _instFg, _instOsc];
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
@@ -362,10 +360,20 @@ namespace InspectionTools.Product {
 
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, DcsMode.On);
+            try {
+                await SwitchDcsAsync(_instDcs, DcsMode.On);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, DcsMode.Off);
+            try {
+                await SwitchDcsAsync(_instDcs, DcsMode.Off);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         // DMM測定値コピー
         private async void ActionHotkeySlash() {
