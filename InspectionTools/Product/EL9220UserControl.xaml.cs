@@ -65,9 +65,9 @@ namespace InspectionTools.Product {
                     ClearHotKey();
 
                     // 計測器の解放
-                    DisposeInstrument(_instDcs);
-                    DisposeInstrument(_instDmm);
-                    DisposeInstrument(_instFg);
+                    InstrumentHelper.SafeDispose(_instDcs);
+                    InstrumentHelper.SafeDispose(_instDmm);
+                    InstrumentHelper.SafeDispose(_instFg);
 
                     // 辞書のクリア
                     _dicCommands.Clear();
@@ -83,16 +83,6 @@ namespace InspectionTools.Product {
             _disposed = true;
         }
 
-        /// <summary>
-        /// 個別の計測器インスタンスを解放
-        /// </summary>
-        private static void DisposeInstrument(InstClass instrument) {
-            try {
-                instrument?.Dispose();
-            } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
-            }
-        }
 
         /// <summary>
         /// オブジェクトが破棄済みかチェック
