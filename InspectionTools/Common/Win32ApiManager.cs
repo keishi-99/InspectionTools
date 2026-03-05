@@ -213,9 +213,9 @@ namespace InspectionTools.Common {
 
         // ホットキーを表すクラス
         public class Hotkey(uint modifier, System.Windows.Input.Key key, Action action) {
-            private static int s_nextId = 1;
+            private static int s_nextId = 0;
 
-            public int Id { get; } = s_nextId++;
+            public int Id { get; } = System.Threading.Interlocked.Increment(ref s_nextId);
             public uint Modifier { get; set; } = modifier;
             public int VirtualKey { get; set; } = KeyInterop.VirtualKeyFromKey(key); // Key -> VKコード
             public Action Action { get; set; } = action ?? throw new ArgumentNullException(nameof(action));

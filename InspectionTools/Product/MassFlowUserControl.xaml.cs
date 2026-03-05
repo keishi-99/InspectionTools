@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -528,9 +528,7 @@ namespace InspectionTools.Product {
                     _ => [_instDcs, _instDmm, _instOsc] // 1, 2 以外の値の場合のデフォルト
                 };
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                     _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;

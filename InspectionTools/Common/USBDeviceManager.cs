@@ -35,17 +35,12 @@ namespace InspectionTools.Common {
         public static partial int reset(uint hDev);
 
         public static int Write(uint hDev, string strCmd) {
-            uint cmdCnt;
-            int i;
             ulong pBuf;
-            cmdCnt = (uint)strCmd.Length;
 
-            byte[] pBuffer;
-            pBuffer = new byte[cmdCnt + 1];
+            byte[] pBuffer = System.Text.Encoding.ASCII.GetBytes(strCmd);
+            uint cmdCnt = (uint)pBuffer.Length;
+            Array.Resize(ref pBuffer, pBuffer.Length + 1); // null terminator
 
-            for (i = 0; i < cmdCnt; i++) {
-                pBuffer[i] = (byte)strCmd[i];
-            }
             var ret = 0;
             unsafe {
                 fixed (byte* p = &pBuffer[0]) {

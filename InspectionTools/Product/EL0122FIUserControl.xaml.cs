@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -239,9 +239,7 @@ namespace InspectionTools.Product {
 
                 InstClass[] devices = [_instDmm01, _instDmm02, _instFg, _instOsc, _instDcs];
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
@@ -275,7 +273,7 @@ namespace InspectionTools.Product {
         // DMMのIDチェック処理
         private void ValidateDmmSelection() {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1); // 未選択(0以下)は無視
+                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
@@ -475,10 +473,20 @@ namespace InspectionTools.Product {
         }
         // 電源ON-OFF
         private async void ActionHotkeyAtsign() {
-            await SwitchDcsAsync(_instDcs, DcsMode.On);
+            try {
+                await SwitchDcsAsync(_instDcs, DcsMode.On);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         private async void ActionHotkeyBracketL() {
-            await SwitchDcsAsync(_instDcs, DcsMode.Off);
+            try {
+                await SwitchDcsAsync(_instDcs, DcsMode.Off);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         // 一連の処理
         private async void ActionHotkeyComma() {

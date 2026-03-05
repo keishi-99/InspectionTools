@@ -1,4 +1,4 @@
-﻿using InspectionTools.Common;
+using InspectionTools.Common;
 using System.Data;
 using System.Diagnostics;
 using System.Windows;
@@ -259,9 +259,7 @@ namespace InspectionTools.Product {
 
                 InstClass[] devices = [_instCnt, _instFg, _instDcs, _instDmm01, _instDmm02];
 
-                await Task.Run(() =>
-                    DeviceConnectionHelper.ConnectInParallelAsync(devices)
-                );
+                await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
@@ -297,7 +295,7 @@ namespace InspectionTools.Product {
         // DMMのIDチェック処理
         private void ValidateDmmSelection() {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1); // 未選択(0以下)は無視
+                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
             if (indices.Count() != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
