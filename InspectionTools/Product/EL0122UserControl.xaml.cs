@@ -83,17 +83,8 @@ namespace InspectionTools.Product {
         /// 個別の計測器インスタンスを解放
         /// </summary>
         private static void DisposeInstrument(InstClass instrument) {
-            if (instrument == null) return;
-
             try {
-                // 計測器がIDisposableを実装している場合
-                if (instrument is IDisposable disposable) {
-                    disposable.Dispose();
-                }
-                else {
-                    // ResetPropertiesで状態をリセット
-                    instrument.ResetProperties();
-                }
+                instrument.Dispose();
             } catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
             }
@@ -163,7 +154,7 @@ namespace InspectionTools.Product {
             ThrowIfDisposed();
 
             try {
-                _mainWindow?.SetButtonEnabled("ProductListButton", false);
+                _mainWindow?.SetButtonEnabled(ProductListButtonName, false);
 
                 HotKeyCheckBox.IsChecked = false;
                 VisibleProgressImage(true);
@@ -203,7 +194,7 @@ namespace InspectionTools.Product {
 
             _instDmm.ResetProperties();
 
-            _mainWindow?.SetButtonEnabled("ProductListButton", true);
+            _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             DmmComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
@@ -227,61 +218,19 @@ namespace InspectionTools.Product {
         }
 
         // DMM測定値コピー
-        private async void ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
+        private async void ActionHotkeySlash()       => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
+        private async void ActionHotkeyNumDivide()   => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
+        private async void ActionHotkeyBackslash()   => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
+        private async void ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
 
+        private async Task ReadDmmAndSendAsync(VirtualKeyCode key) {
+            if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadDmm(_instDmm);
-
                 var sim = new InputSimulator();
                 sim.Keyboard.TextEntry(output.ToString("0.00"));
                 await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.00"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumDivide() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.00"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        private async void ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm);
-
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.00"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                sim.Keyboard.KeyPress(key);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
