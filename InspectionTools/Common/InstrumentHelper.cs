@@ -7,7 +7,10 @@ namespace InspectionTools.Common {
             try {
                 instrument?.Dispose();
             } catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Instrument dispose error: {ex.Message}");
+                var label = string.IsNullOrEmpty(instrument?.Name)
+                    ? instrument?.GetType().Name ?? "Unknown"
+                    : instrument.Name;
+                System.Diagnostics.Debug.WriteLine($"Instrument dispose error [{label}]: {ex.Message}");
             }
         }
     }
