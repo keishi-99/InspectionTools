@@ -51,11 +51,12 @@ namespace InspectionTools {
             _timer.Start();
         }
 
-        // ----- 初期化 -----
+        // アプリ起動時の初期化処理（メインメニュー表示と計測器リスト読み込み）
         private void LoadEvents() {
             ShowMainMenu();
             LoadInstList();
         }
+        // XMLファイルからVISAアドレス一覧を読み込んでDataTableに格納する
         private static void LoadInstList() {
             const string XmlFilePath = "VisaAddress.xml";
             if (!System.IO.File.Exists(XmlFilePath)) {
@@ -67,7 +68,7 @@ namespace InspectionTools {
             MainWindow.VisaAddressDataTable = dataSet.Tables[0];
         }
 
-        // ----- ページ遷移 -----
+        // ドロワーを閉じてメインメニューUserControlを表示する
         private void ShowMainMenu() {
             MainWindowDrawer.IsLeftDrawerOpen = false;
 
@@ -84,6 +85,7 @@ namespace InspectionTools {
             HotKeyHelpScrollViewer.Height = mainMenu.Height;
         }
 
+        // ページ名に対応したUserControlを生成してコンテンツエリアに切り替える
         private void OnPageSelected(string pageName) {
             SetButtonEnabled("ProductListButton", true);
             SetButtonEnabled("InstListButton", false);
@@ -123,18 +125,19 @@ namespace InspectionTools {
             HotKeyHelpScrollViewer.Height = page.Height;
         }
 
-        // ----- UI ユーティリティ -----
+        // 指定名のButtonの有効/無効を切り替える
         public void SetButtonEnabled(string buttonName, bool isEnabled) {
             if (FindName(buttonName) is Button button) {
                 button.IsEnabled = isEnabled;
             }
         }
 
+        // 親ウィンドウのサイズをUserControlのコンテンツに合わせて自動調整する
         public static void AdjustWindowSizeToUserControl(Window parentWindow) {
             parentWindow?.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
-        // ---- 機器リスト ----
+        // カテゴリと信号種別でフィルタリングした計測器名をコンボボックスに設定する
         public static void UpdateComboBox(
             System.Windows.Controls.ComboBox comboBox,
             string category,
@@ -155,6 +158,7 @@ namespace InspectionTools {
             comboBox.ItemsSource = collection;
         }
 
+        // コンボボックスで選択した計測器のVISAアドレスとプロパティをInstClassに設定する
         public static void GetVisaAddress(
             InstClass instClass,
             System.Windows.Controls.ComboBox comboBox) {
@@ -176,7 +180,7 @@ namespace InspectionTools {
                 : 0;
         }
 
-        // ----- ホットキー -----
+        // HotkeysList に登録されたホットキーをすべてWindowsに登録する
         public static void SetHotKey() {
 
             Source = HwndSource.FromHwnd(HWnd);
@@ -186,12 +190,14 @@ namespace InspectionTools {
                 RegisterHotKey(HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
             }
         }
+        // 登録済みホットキーをすべてWindowsから解除してリストをクリアする
         public static void ClearHotKey() {
             foreach (var hotkey in HotkeysList) {
                 UnregisterHotKey(HWnd, hotkey.Id);
             }
             HotkeysList.Clear();
         }
+        // Windowsメッセージをフックしてホットキーイベントを処理する
         private static IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
             if (msg == WmHotKey) {
                 int id = wParam.ToInt32();
@@ -202,7 +208,7 @@ namespace InspectionTools {
             return IntPtr.Zero;
         }
 
-        // ----- テーマ -----
+        // アプリのカラーテーマ（ライト/ダーク）を切り替える
         internal static void SetTheme(BaseTheme baseTheme) {
             var paletteHelper = new PaletteHelper();
             var theme = paletteHelper.GetTheme();
@@ -210,7 +216,7 @@ namespace InspectionTools {
             paletteHelper.SetTheme(theme);
         }
 
-        // ----- ヘルプ -----
+        // ヘルプが表示中であれば現在ページのキーと説明文を更新する
         private void UpdateHelpText() {
             if (!_isHelpVisible) return;
             var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
@@ -218,6 +224,7 @@ namespace InspectionTools {
             HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
         }
 
+        // ヘルプを表示状態にしてテキストを更新する
         private void HelpCheckBoxChecked() {
             _isHelpVisible = true;
             HelpTextBlock1.Margin = new Thickness(10);
@@ -225,6 +232,7 @@ namespace InspectionTools {
             UpdateHelpText();
         }
 
+        // ヘルプを非表示状態にしてテキストを空にする
         private void HelpCheckBoxUnchecked() {
             _isHelpVisible = false;
             HelpTextBlock1.Margin = new Thickness(0);
@@ -233,7 +241,7 @@ namespace InspectionTools {
             HelpTextBlock2.Text = string.Empty;
         }
 
-        // ----- 機器リスト -----
+        // 機器リストウィンドウをダイアログ表示してXMLを再読み込みする
         private void ShowInstList() {
             Common.InstListWindow frm1 = new() {
                 Owner = this

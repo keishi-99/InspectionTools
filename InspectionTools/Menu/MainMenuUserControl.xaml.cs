@@ -12,6 +12,7 @@ namespace InspectionTools.MainMenu {
             InitializeComponent();
         }
 
+        // 各製品ページへ遷移するPageSelectedイベントを発行するクリックハンドラ群
         private void EL0122FI_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL0122FI"); }
         private void EL0122_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL0122"); }
         private void EL0137_Click(object sender, RoutedEventArgs e) { PageSelected?.Invoke("EL0137"); }

@@ -19,6 +19,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -107,13 +108,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
@@ -153,6 +155,7 @@ namespace InspectionTools.Product {
             (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -264,7 +267,7 @@ namespace InspectionTools.Product {
             }
         }
 
-        // OCR処理
+        // スクリーンキャプチャを取得してOCRを実行しテキストと画像をUIに表示する
         private void Capture() {
             var captureWindow = new ScreenCaptureWindow();
             using Bitmap? captured = captureWindow.Capture("EL9100", 150, 30);
@@ -288,6 +291,7 @@ namespace InspectionTools.Product {
             // 結果を表示
             OcrResult.Text = ocrResult;
         }
+        // BitmapをWPF表示用のBitmapSourceに変換する
         public static BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap) {
             using var memory = new MemoryStream();
             bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
@@ -302,6 +306,7 @@ namespace InspectionTools.Product {
 
             return bitmapImage;
         }
+        // Tesseractを使用して画像からテキストをOCRで認識する
         public string PerformOCR(Bitmap image) {
             try {
                 // tessdata フォルダのパス（exe と同じ階層に配置）
@@ -342,7 +347,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // DMM02測定値コピー
+        // DMM02測定値をmA単位に変換してキーボード入力としてEnterまで送信する
         private async void ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
@@ -358,6 +363,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+        // DMM02測定値をV単位でキーボード入力としてEnterまで送信する
         private async void ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
@@ -418,6 +424,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }

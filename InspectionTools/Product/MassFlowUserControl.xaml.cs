@@ -19,6 +19,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -119,13 +120,14 @@ namespace InspectionTools.Product {
         private const int MenuItemIdA2H = 32809;
         private const int MenuItemIdAnalogTrim = 32815;
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(DcsComboBox, "電流電圧発生器", [2, 3]);
@@ -476,6 +478,7 @@ namespace InspectionTools.Product {
             (_instFg02_2.InstCommand, _instFg02_2.Query) = ResolveCommand(_dicCommands[_instFg02_2].Init, _instFg02_2.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -651,6 +654,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
+        // インデックスで指定したDCS設定を送信して設定名テキストを返す
         private async Task<string?> SwitchDcsAsync(DcsInstClass dcsInstClass, int i) {
             var settings = _dicCommands[dcsInstClass].Settings;
             dcsInstClass.SettingNumber = i;
@@ -664,7 +668,7 @@ namespace InspectionTools.Product {
             return sw.Text;
         }
 
-        // FG&OSCローテーション
+        // FG&OSCを1ステップ回転する（FG台数に応じてオーバーロードを選択）
         private async void RotationFgOsc(bool isNext) {
             ThrowIfDisposed();
 
@@ -704,6 +708,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
+        // FG1台とOSCを1ステップ回転する
         private async Task RotationFgOscAsync(FgInstClass fgInstClass, OscInstClass oscInstClass, bool isNext) {
             var dic = isNext ? _dicCommands : _dicReverseCommands;
             var fgSettings = dic[fgInstClass].Settings;
@@ -715,6 +720,7 @@ namespace InspectionTools.Product {
             await ConnectAndSendCommand(fgSettings, fgInstClass);
             await ConnectAndSendCommand(oscSettings, oscInstClass);
         }
+        // FG2台とOSCを1ステップ回転する
         private async Task RotationFgOscAsync(FgInstClass fgInstClass2_1, FgInstClass fgInstClass2_2, OscInstClass oscInstClass, bool isNext) {
             var dic = isNext ? _dicCommands : _dicReverseCommands;
             var fg2_1Settings = dic[fgInstClass2_1].Settings;
@@ -728,6 +734,7 @@ namespace InspectionTools.Product {
             await ConnectAndSendCommand(fg2_2Settings, fgInstClass2_2);
             await ConnectAndSendCommand(oscSettings, oscInstClass);
         }
+        // 指定設定番号のコマンドをInstClassに送信する
         private static async Task ConnectAndSendCommand(List<SwitchCommand> settings, InstClass instClass) {
             if (!string.IsNullOrEmpty(instClass.VisaAddress) && instClass.UsbDev is not null) {
                 var sw = settings[instClass.SettingNumber];
@@ -1204,6 +1211,7 @@ namespace InspectionTools.Product {
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry("4");
         }
+        // アクティブウィンドウに応じてアナログトリムを開くか7をキー入力する
         private void ActionHotkeyNum7() {
             var (hWnd, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
@@ -1256,6 +1264,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }
@@ -1324,6 +1333,7 @@ namespace InspectionTools.Product {
         private void SerialBack_Click(object sender, RoutedEventArgs e) { SerialIncrement(-1); }
         private void SerialNext_Click(object sender, RoutedEventArgs e) { SerialIncrement(1); }
 
+        // FG番号変更時にFGパネルの表示を切り替える
         private void FgNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (!IsLoaded) return;
             FgPanelVisible();

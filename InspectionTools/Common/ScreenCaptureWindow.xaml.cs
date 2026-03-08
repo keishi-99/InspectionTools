@@ -22,6 +22,7 @@ namespace InspectionTools.Common {
             InitializeComponent();
         }
 
+        // モーダルウィンドウを開きマウスドラッグでキャプチャ領域を指定してBitmapを返す
         public Bitmap? Capture(string? model = null, int width = 0, int height = 0) {
             _model = model;
 
@@ -36,6 +37,7 @@ namespace InspectionTools.Common {
             return _capturedImage;
         }
 
+        // ロード時にプライマリスクリーンサイズでウィンドウを全画面に拡張する
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             // プライマリスクリーンサイズの取得
             var screen = System.Windows.Forms.Screen.PrimaryScreen
@@ -51,6 +53,7 @@ namespace InspectionTools.Common {
             this.ScreenArea.Geometry1 = new RectangleGeometry(new Rect(0, 0, screen.Bounds.Width, screen.Bounds.Height));
         }
 
+        // マウスボタン押下時に開始座標を記録しドラッグモードを有効にする
         private void DrawingPath_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             if (sender is not Path path) {
                 return;
@@ -66,6 +69,7 @@ namespace InspectionTools.Common {
             path.CaptureMouse();
         }
 
+        // マウスボタン解放時にキャプチャを実行してウィンドウを閉じる
         private void DrawingPath_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
             if (sender is not Path path) {
                 return;
@@ -92,6 +96,7 @@ namespace InspectionTools.Common {
             this.Close();
         }
 
+        // ドラッグ中に選択矩形を描画する
         private void DrawingPath_MouseMove(object sender, System.Windows.Input.MouseEventArgs e) {
             if (!_trimEnable) {
                 return;
@@ -114,6 +119,7 @@ namespace InspectionTools.Common {
             }
         }
 
+        // 汎用の矩形選択枠を描画する
         private void DrawStroke(System.Windows.Point point) {
             // 矩形の描画
             var x = _position.X < point.X ? _position.X : point.X;
@@ -129,6 +135,7 @@ namespace InspectionTools.Common {
             }
         }
 
+        // ドラッグ領域のスクリーンショットをBitmapで返す
         private Bitmap? CaptureScreen(System.Windows.Point point) {
             // 座標変換
             var start = PointToScreen(_position);
@@ -152,6 +159,7 @@ namespace InspectionTools.Common {
             return bmp;
         }
 
+        // EL9100用の固定サイズ矩形選択枠を描画する
         private void DrawStrokeEL9100(System.Windows.Point point) {
             // 矩形の描画
             var x = point.X;
@@ -166,6 +174,7 @@ namespace InspectionTools.Common {
                 SelectionBorder.Visibility = Visibility.Visible;
             }
         }
+        // EL9100用の固定サイズ領域のスクリーンショットをBitmapで返す
         private Bitmap? CaptureScreenEL9100(System.Windows.Point point) {
 
             // キャプチャエリアの取得

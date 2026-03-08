@@ -6,7 +6,7 @@ namespace InspectionTools.Common {
 
         private static Dictionary<string, (string[] Keys, string[] Descriptions)>? s_helpTexts;
 
-        // JSONファイルの読み込み
+        // JSONファイルを読み込んでヘルプテキストをs_helpTexts辞書にデシリアライズして格納する
         public static void LoadHelpFile(string path) {
             if (!File.Exists(path)) {
                 s_helpTexts = [];
@@ -54,6 +54,7 @@ namespace InspectionTools.Common {
             return string.Join(Environment.NewLine, lines);
         }
 
+        // 指定ページ名のキー配列と説明文配列を取得する
         public static (string[] Keys, string[] Descriptions) GetHelpData(string pageName) {
             if (s_helpTexts == null) {
                 throw new InvalidOperationException("HelpManager: JSONファイルが読み込まれていません。");

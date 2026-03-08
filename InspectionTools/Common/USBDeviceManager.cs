@@ -34,6 +34,7 @@ namespace InspectionTools.Common {
         [LibraryImport("ausb.dll", EntryPoint = "ausb_reset")]
         public static partial int reset(uint hDev);
 
+        // コマンド文字列をASCIIバイト列に変換してUSBデバイスに書き込む
         public static int Write(uint hDev, string strCmd) {
             ulong pBuf;
 
@@ -75,21 +76,27 @@ namespace InspectionTools.Common {
     }
 
     public static class AusbWrapper {
+        // USBドライバを初期化する
         public static int Start(uint dwTmout) {
             return NativeMethods.start(dwTmout);
         }
+        // 指定IDのUSBデバイスをオープンする
         public static int Open(ref uint hDev, uint dwMyid) {
             return NativeMethods.open(ref hDev, dwMyid);
         }
+        // コマンド文字列をUSBデバイスに書き込む
         public static int Write(uint hDev, string strCmd) {
             return NativeMethods.Write(hDev, strCmd);
         }
+        // USBデバイスからデータを読み取る
         public static int Read(uint hDev, ref string readDt, ref uint rdCnt, uint lngCnt = 256) {
             return NativeMethods.Read(hDev, ref readDt, ref rdCnt, lngCnt);
         }
+        // 指定USBデバイスをクローズする
         public static int Close(uint hDev) {
             return NativeMethods.close(hDev);
         }
+        // USBドライバを終了する
         public static int End() {
             return NativeMethods.end();
         }
@@ -106,6 +113,7 @@ namespace InspectionTools.Common {
             _dev = new FormattedIO488();
         }
 
+        // VISAアドレスを指定してデバイスに接続する
         public void OpenDev(string visaaddress) {
             try {
                 _resourceManager = new ResourceManager();
@@ -117,10 +125,12 @@ namespace InspectionTools.Common {
             }
         }
 
+        // デバイスにコマンドを送信する
         public void OutputDev(string cmd) {
             _dev.WriteString(cmd);
         }
 
+        // デバイスからデータを読み取る
         public string InputDev() {
             try {
                 return _dev.ReadString();
@@ -129,6 +139,7 @@ namespace InspectionTools.Common {
             }
         }
 
+        // デバイスの接続をクローズする
         public void CloseDev() {
             if (_io != null) {
                 try {
@@ -151,6 +162,7 @@ namespace InspectionTools.Common {
             GC.SuppressFinalize(this);
         }
 
+        // マネージドリソースを解放する
         protected virtual void Dispose(bool disposing) {
             if (!_disposed) {
                 if (disposing) {
@@ -160,6 +172,7 @@ namespace InspectionTools.Common {
             }
         }
 
+        // ファイナライザ
         ~USBDeviceManager() {
             Dispose(false);
         }

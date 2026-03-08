@@ -16,6 +16,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -100,13 +101,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
@@ -153,6 +155,7 @@ namespace InspectionTools.Product {
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
             (_instDmm03.InstCommand, _instDmm03.Query) = ResolveCommand(_dicCommands[_instDmm03].Init, _instDmm03.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -325,6 +328,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }
