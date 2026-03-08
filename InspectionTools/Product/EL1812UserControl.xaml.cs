@@ -16,6 +16,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -105,7 +106,7 @@ namespace InspectionTools.Product {
         private int _rotateMenuNumber = 0;
         private List<string> _listRotateMenuTitle = [];
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
@@ -113,6 +114,7 @@ namespace InspectionTools.Product {
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2]);
@@ -241,6 +243,7 @@ namespace InspectionTools.Product {
             (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -392,6 +395,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
+        // FGにコマンドを直接送信する
         private static async Task OutputFgAsync(FgInstClass fgInstClass, string cmd) {
             fgInstClass.InstCommand = $"{cmd};";
             await DeviceController.ConnectAsync(fgInstClass);
@@ -766,11 +770,13 @@ namespace InspectionTools.Product {
         private void ActionHotkeyNum5() { ActionSwitchFg(true); }
         private void ActionHotkeyShiftBackslash() { ActionSwitchFg(false); }
         private void ActionHotkeyShiftNum5() { ActionSwitchFg(false); }
+        // Tabキー送信後にFGを次へローテーション
         private void ActionHotkeyNum2() {
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             ActionSwitchFg(true);
         }
+        // Tabキー送信後にFG+OSCをローテーション（パルス出力幅ウィンドウのみ有効）
         private void ActionHotkeyNum3() {
             if (MainWindow.IsProcessing) { return; }
 
@@ -838,6 +844,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }

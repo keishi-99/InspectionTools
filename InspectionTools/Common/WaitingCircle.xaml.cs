@@ -64,6 +64,7 @@ namespace InspectionTools.Tool {
             MainTrans.BeginAnimation(RotateTransform.AngleProperty, kf);
         }
 
+        // CircleColorプロパティ変更時にCanvasの全Pathストロークカラーを更新する
         public void OnCircleColorPropertyChanged(DependencyPropertyChangedEventArgs _) {
             if (null == MainCanvas) {
                 return;

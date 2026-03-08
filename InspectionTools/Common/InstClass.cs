@@ -14,6 +14,7 @@
 
         protected bool _disposed = false;
 
+        // 計測器のプロパティを初期値にリセットしUSBデバイスを再生成する
         public virtual void ResetProperties() {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -29,11 +30,13 @@
             Query = false;
             SettingNumber = 0;
         }
+        // IDisposableパターンの実装
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        // マネージドリソースを解放する
         protected virtual void Dispose(bool disposing) {
             if (_disposed) {
                 return;
@@ -49,6 +52,7 @@
             _disposed = true;
         }
 
+        // ファイナライザ
         ~InstClass() {
             Dispose(false);
         }
@@ -62,6 +66,7 @@
     public class DcsInstClass : InstClass {
         public DcsMode CurrentMode { get; set; } = DcsMode.None;
 
+        // DCS固有プロパティをリセットしてから基底クラスのリセットを呼ぶ
         public override void ResetProperties() {
             base.ResetProperties();
             CurrentMode = DcsMode.None;
@@ -77,6 +82,7 @@
     public class DmmInstClass : InstClass {
         public DmmMode CurrentMode { get; set; } = DmmMode.None;
 
+        // DMM固有プロパティをリセットしてから基底クラスのリセットを呼ぶ
         public override void ResetProperties() {
             base.ResetProperties();
             CurrentMode = DmmMode.None;

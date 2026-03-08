@@ -18,6 +18,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -113,13 +114,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(CntComboBox, "ユニバーサルカウンタ", [3]);
@@ -213,6 +215,7 @@ namespace InspectionTools.Product {
             (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -423,6 +426,7 @@ namespace InspectionTools.Product {
         private async void ActionHotkeyComma()       => await ReadCntAndSendAsync();
         private async void ActionHotkeyNumMultiply() => await ReadCntAndSendAsync();
 
+        // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
@@ -474,6 +478,7 @@ namespace InspectionTools.Product {
         private async void ActionHotkeySlash()  => await ReadDmm02AndSendAsync();
         private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
+        // DMM02測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
@@ -546,10 +551,12 @@ namespace InspectionTools.Product {
             }
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }
 
+        // タイマーTickごとにストップウォッチの経過時間をDCSタイマーラベルに表示する
         private void TimerMethod(object? sender, EventArgs e) {
             var result = _stopwatch.Elapsed;
             DcsTimer.Text = $@"{result.Minutes:00}:{result.Seconds:00}";
