@@ -16,6 +16,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -104,13 +105,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
@@ -210,6 +212,7 @@ namespace InspectionTools.Product {
             (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -396,11 +399,12 @@ namespace InspectionTools.Product {
             }
         }
 
-        // FGローテーション
+        // FGを次の設定に切り替える
         private void ActionHotkeyAtsign() {
             if (MainWindow.IsProcessing) { return; }
             RotationFg(_instFg, true);
         }
+        // FGを前の設定に切り替える
         private void ActionHotkeyShiftAtsign() {
             if (MainWindow.IsProcessing) { return; }
             RotationFg(_instFg, false);
@@ -453,11 +457,12 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // OSCローテーション
+        // OSCを次の設定に切り替える
         private void ActionHotkeyBracketL() {
             if (MainWindow.IsProcessing) { return; }
             RotationOsc(_instOsc, true);
         }
+        // OSCを前の設定に切り替える
         private void ActionHotkeyShiftBracketL() {
             if (MainWindow.IsProcessing) { return; }
             RotationOsc(_instOsc, false);
@@ -516,6 +521,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }
@@ -527,10 +533,12 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
+        // FGを次の設定に切り替えるボタンハンドラ
         private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
             RotationFg(_instFg, true);
         }
+        // OSCを次の設定に切り替えるボタンハンドラ
         private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
             RotationOsc(_instOsc, true);

@@ -16,6 +16,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -102,13 +103,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(DcsComboBox, "電流電圧発生器", [2, 3]);
@@ -199,6 +201,7 @@ namespace InspectionTools.Product {
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -377,6 +380,7 @@ namespace InspectionTools.Product {
         private async void ActionHotkeyColon()       => await ReadDmm01AndSendAsync();
         private async void ActionHotkeyNumMultiply() => await ReadDmm01AndSendAsync();
 
+        // DMM01測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm01AndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
@@ -394,6 +398,7 @@ namespace InspectionTools.Product {
         private async void ActionHotkeyBracketR() => await ReadDmm02AndSendAsync();
         private async void ActionHotkeyNumAdd()   => await ReadDmm02AndSendAsync();
 
+        // DMM02測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
@@ -449,6 +454,7 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, true);
         }
+        // DCSローテーション逆方向
         private void ActionHotkeyShiftAtsign() {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, false);
@@ -493,6 +499,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }

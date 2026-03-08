@@ -16,6 +16,7 @@ namespace InspectionTools.Product {
         private MainWindow? _mainWindow;
         private bool _disposed = false;
 
+        // MainWindowへの参照をセットする
         public void SetMainWindow(MainWindow mainWindow) {
             _mainWindow = mainWindow;
         }
@@ -96,13 +97,14 @@ namespace InspectionTools.Product {
 
         #endregion
 
-        // 起動時
+        // UserControl読み込み時に計測器一覧を更新してウィンドウサイズを調整する
         private void LoadEvents() {
             ThrowIfDisposed();
             InstListImport();
             var parentWindow = Window.GetWindow(this);
             MainWindow.AdjustWindowSizeToUserControl(parentWindow);
         }
+        // 計測器カテゴリ別にコンボボックスのアイテムを更新する
         private void InstListImport() {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2]);
@@ -130,6 +132,7 @@ namespace InspectionTools.Product {
         private void FormatSet() {
             (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
         }
+        // 信号種別に応じたコマンド文字列とクエリフラグを返す
         private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
             return signalType switch {
                 1 => (sw.Adc, sw.Query),
@@ -213,6 +216,7 @@ namespace InspectionTools.Product {
         private async void ActionHotkeyBackslash()   => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
         private async void ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
 
+        // DMM測定値を取得して指定キー（TabまたはEnter）で送信する
         private async Task ReadDmmAndSendAsync(VirtualKeyCode key) {
             if (MainWindow.IsProcessing) { return; }
             try {
@@ -244,6 +248,7 @@ namespace InspectionTools.Product {
 
             MainWindow.SetHotKey();
         }
+        // 登録済みホットキーを解除する
         private static void ClearHotKey() {
             MainWindow.ClearHotKey();
         }
