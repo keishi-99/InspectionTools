@@ -1,0 +1,62 @@
+<?xml version="1.0" standalone="yes"?>
+<!--
+  測定器接続設定テンプレート
+  このファイルをコピーして "VisaAddress.xml" にリネームし、
+  実際の測定器情報に書き換えてください。
+
+  SignalType の値:
+    1 = ADC（USB直結、VisaAddress はチャンネル番号の整数）
+    2 = VISA USB（例: USB0::0x1234::0x5678::SN000001::INSTR）
+    3 = VISA GPIB（例: GPIB0::22::INSTR）
+    4 = VISA（その他）
+-->
+<dsInstList xmlns="http://tempuri.org/dsInstList.xsd">
+
+  <!-- ===== デジタルマルチメータ ===== -->
+  <tblInstList>
+    <Category>デジタルマルチメータ</Category>
+    <Name>DMM-01</Name>
+    <VisaAddress>1</VisaAddress>
+    <SignalType>1</SignalType>
+  </tblInstList>
+
+  <tblInstList>
+    <Category>デジタルマルチメータ</Category>
+    <Name>DMM-02</Name>
+    <VisaAddress>USB0::0x1334::0x0204::SN000001::INSTR</VisaAddress>
+    <SignalType>2</SignalType>
+  </tblInstList>
+
+  <!-- ===== オシロスコープ ===== -->
+  <tblInstList>
+    <Category>オシロスコープ</Category>
+    <Name>OSC-01</Name>
+    <VisaAddress>USB0::0x0699::0x0408::SN000001::INSTR</VisaAddress>
+    <SignalType>2</SignalType>
+  </tblInstList>
+
+  <!-- ===== ファンクションジェネレータ ===== -->
+  <tblInstList>
+    <Category>ファンクションジェネレータ</Category>
+    <Name>FG-01</Name>
+    <VisaAddress>GPIB0::10::INSTR</VisaAddress>
+    <SignalType>3</SignalType>
+  </tblInstList>
+
+  <!-- ===== パワーサプライ ===== -->
+  <tblInstList>
+    <Category>パワーサプライ</Category>
+    <Name>DCS-01</Name>
+    <VisaAddress>USB0::0x1AB1::0x0E11::SN000001::INSTR</VisaAddress>
+    <SignalType>2</SignalType>
+  </tblInstList>
+
+  <!-- ===== ユニバーサルカウンタ ===== -->
+  <tblInstList>
+    <Category>ユニバーサルカウンタ</Category>
+    <Name>CNT-01</Name>
+    <VisaAddress>GPIB0::22::INSTR</VisaAddress>
+    <SignalType>3</SignalType>
+  </tblInstList>
+
+</dsInstList>
