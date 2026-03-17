@@ -65,7 +65,12 @@ namespace InspectionTools {
             }
             using DataSet dataSet = new();
             dataSet.ReadXml(XmlFilePath);
-            MainWindow.VisaAddressDataTable = dataSet.Tables[0];
+            // DataSet から切り離してから静的フィールドへ格納する
+            // （切り離さないと DataTable が DataSet への参照を保持し続け、
+            //   using による DataSet Dispose 後も GC されなくなる）
+            var table = dataSet.Tables[0];
+            dataSet.Tables.Remove(table);
+            MainWindow.VisaAddressDataTable = table;
         }
 
         // ドロワーを閉じてメインメニューUserControlを表示する
@@ -184,6 +189,8 @@ namespace InspectionTools {
         public static void SetHotKey() {
 
             Source = HwndSource.FromHwnd(HWnd);
+            // 重複登録を防ぐため、追加前に一度削除する
+            Source.RemoveHook(HwndHook);
             Source.AddHook(HwndHook);
 
             foreach (var hotkey in HotkeysList) {
@@ -196,6 +203,8 @@ namespace InspectionTools {
                 UnregisterHotKey(HWnd, hotkey.Id);
             }
             HotkeysList.Clear();
+            // フックを削除してリークを防ぐ
+            Source?.RemoveHook(HwndHook);
         }
         // Windowsメッセージをフックしてホットキーイベントを処理する
         private static IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {

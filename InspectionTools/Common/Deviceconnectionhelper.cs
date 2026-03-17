@@ -20,9 +20,9 @@
             try {
                 await whenAllTask;
             } catch {
+                // タスクが Faulted 状態のとき Exception は必ず非 null
                 // 全デバイスのエラーを AggregateException にまとめてスロー
-                var errors = whenAllTask.Exception?.InnerExceptions;
-                throw new AggregateException("複数デバイスの接続に失敗しました", errors!);
+                throw new AggregateException("複数デバイスの接続に失敗しました", whenAllTask.Exception!.InnerExceptions);
             }
         }
 
@@ -46,8 +46,8 @@
             try {
                 return await whenAllTask;
             } catch {
-                var errors = whenAllTask.Exception?.InnerExceptions;
-                throw new AggregateException("複数デバイスの接続に失敗しました", errors!);
+                // タスクが Faulted 状態のとき Exception は必ず非 null
+                throw new AggregateException("複数デバイスの接続に失敗しました", whenAllTask.Exception!.InnerExceptions);
             }
         }
     }
