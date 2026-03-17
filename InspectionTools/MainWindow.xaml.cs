@@ -190,8 +190,9 @@ namespace InspectionTools {
 
             Source = HwndSource.FromHwnd(HWnd);
             // 重複登録を防ぐため、追加前に一度削除する
-            Source.RemoveHook(HwndHook);
-            Source.AddHook(HwndHook);
+            // FromHwnd が null を返す場合に備えて ?. で安全に呼び出す
+            Source?.RemoveHook(HwndHook);
+            Source?.AddHook(HwndHook);
 
             foreach (var hotkey in HotkeysList) {
                 RegisterHotKey(HWnd, hotkey.Id, hotkey.Modifier, (uint)hotkey.VirtualKey);
