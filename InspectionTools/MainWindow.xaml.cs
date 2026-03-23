@@ -34,7 +34,8 @@ namespace InspectionTools {
 
         public static DataTable VisaAddressDataTable { get; set; } = new();
 
-        public static volatile bool IsProcessing = false;
+        private static bool _isProcessing;
+        public static bool IsProcessing { get => _isProcessing; set => _isProcessing = value; }
 
         public MainWindow() {
             InitializeComponent();

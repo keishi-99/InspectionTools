@@ -10,7 +10,7 @@ namespace InspectionTools.Common {
     /// WaitingCircle.xaml の相互作用ロジック
     /// </summary>
     public partial class WaitingCircle : UserControl {
-        public static readonly DependencyProperty s_circleColorProperty =
+        public static readonly DependencyProperty CircleColorProperty =
             DependencyProperty.Register(
                 "CircleColor", // プロパティ名を指定
                 typeof(Color), // プロパティの型を指定
@@ -18,7 +18,7 @@ namespace InspectionTools.Common {
                 new UIPropertyMetadata(Color.FromRgb(90, 117, 153),
                     (d, e) => { ((WaitingCircle)d).OnCircleColorPropertyChanged(e); }));
         public Color CircleColor {
-            get => (Color)GetValue(s_circleColorProperty); set => SetValue(s_circleColorProperty, value);
+            get => (Color)GetValue(CircleColorProperty); set => SetValue(CircleColorProperty, value);
         }
 
         public WaitingCircle() {

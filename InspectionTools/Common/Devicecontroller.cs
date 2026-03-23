@@ -5,8 +5,8 @@
     public static class DeviceController {
 
         private const int TimeOut = 3; // タイムアウトまでの時間(sec)
-        private static readonly SemaphoreSlim s_visaLock = new(1, 1);
-        private static readonly SemaphoreSlim s_adcLock = new(1, 1);
+        private static readonly SemaphoreSlim _visaLock = new(1, 1);
+        private static readonly SemaphoreSlim _adcLock = new(1, 1);
 
         /// <summary>
         /// デバイスの SignalType に応じて接続メソッドを振り分ける
@@ -25,7 +25,7 @@
         /// VISA接続
         /// </summary>
         public static async Task<string> ConnectVisaAsync(InstClass instClass) {
-            await s_visaLock.WaitAsync();
+            await _visaLock.WaitAsync();
             try {
                 return await Task.Run(() => {
                     using var usbDev = new USBDeviceManager();
@@ -34,7 +34,7 @@
                     return instClass.Query ? usbDev.InputDev() : string.Empty;
                 });
             } finally {
-                s_visaLock.Release();
+                _visaLock.Release();
             }
         }
 
@@ -42,7 +42,7 @@
         /// ADC接続
         /// </summary>
         public static async Task<string> ConnectAdcAsync(InstClass instClass) {
-            await s_adcLock.WaitAsync();
+            await _adcLock.WaitAsync();
             try {
                 uint hDev = 0;
                 var rcvDt = "";
@@ -66,7 +66,7 @@
                 }
                 return rcvDt;
             } finally {
-                s_adcLock.Release();
+                _adcLock.Release();
             }
         }
     }

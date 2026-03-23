@@ -4,12 +4,12 @@ using System.Text.Json;
 namespace InspectionTools.Common {
     public static class HelpManager {
 
-        private static Dictionary<string, (string[] Keys, string[] Descriptions)>? s_helpTexts;
+        private static Dictionary<string, (string[] Keys, string[] Descriptions)>? _helpTexts;
 
-        // JSONファイルを読み込んでヘルプテキストをs_helpTexts辞書にデシリアライズして格納する
+        // JSONファイルを読み込んでヘルプテキストを_helpTexts辞書にデシリアライズして格納する
         public static void LoadHelpFile(string path) {
             if (!File.Exists(path)) {
-                s_helpTexts = [];
+                _helpTexts = [];
                 return;
             }
 
@@ -18,7 +18,7 @@ namespace InspectionTools.Common {
             // 一旦、Dictionary<string, List<Dictionary<string, string>>> で読み込む
             var rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
 
-            s_helpTexts = [];
+            _helpTexts = [];
 
             if (rawData == null) {
                 return;
@@ -35,17 +35,17 @@ namespace InspectionTools.Common {
                     }
                 }
 
-                s_helpTexts[kvp.Key] = (keys.ToArray(), descriptions.ToArray());
+                _helpTexts[kvp.Key] = (keys.ToArray(), descriptions.ToArray());
             }
         }
 
         // 指定キーのヘルプテキストを取得（KeyとDescriptionを結合して表示用）
         public static string GetHelpText(string key) {
-            if (s_helpTexts == null) {
+            if (_helpTexts == null) {
                 throw new InvalidOperationException("HelpManager: JSONファイルが読み込まれていません。");
             }
 
-            if (!s_helpTexts.TryGetValue(key, out var data) || data.Keys.Length == 0) {
+            if (!_helpTexts.TryGetValue(key, out var data) || data.Keys.Length == 0) {
                 return "ヘルプ情報が登録されていません。";
             }
 
@@ -56,11 +56,11 @@ namespace InspectionTools.Common {
 
         // 指定ページ名のキー配列と説明文配列を取得する
         public static (string[] Keys, string[] Descriptions) GetHelpData(string pageName) {
-            if (s_helpTexts == null) {
+            if (_helpTexts == null) {
                 throw new InvalidOperationException("HelpManager: JSONファイルが読み込まれていません。");
             }
 
-            if (!s_helpTexts.TryGetValue(pageName, out var data)) {
+            if (!_helpTexts.TryGetValue(pageName, out var data)) {
                 return (Array.Empty<string>(), Array.Empty<string>());
             }
 
