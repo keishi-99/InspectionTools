@@ -5,7 +5,7 @@ using System.Windows.Shapes;
 using Color = System.Windows.Media.Color;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace InspectionTools.Tool {
+namespace InspectionTools.Common {
     /// <summary>
     /// WaitingCircle.xaml の相互作用ロジック
     /// </summary>

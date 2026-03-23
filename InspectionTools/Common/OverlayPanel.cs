@@ -8,6 +8,10 @@ namespace InspectionTools.Common {
         private readonly System.Windows.Forms.Timer _timer;
         private float _angle;
 
+        // OnPaint が約60fps で呼ばれるため、Pen をフィールドにキャッシュしてGC負荷を軽減
+        private readonly Pen _bgPen;
+        private readonly Pen _arcPen;
+
         public OverlayPanel() {
             SetStyle(
                 ControlStyles.SupportsTransparentBackColor |
@@ -16,6 +20,15 @@ namespace InspectionTools.Common {
                 ControlStyles.OptimizedDoubleBuffer,
                 true);
             BackColor = Color.Transparent;
+
+            _bgPen = new Pen(Color.FromArgb(220, 220, 220), 5f) {
+                StartCap = LineCap.Round,
+                EndCap = LineCap.Round
+            };
+            _arcPen = new Pen(Color.SteelBlue, 5f) {
+                StartCap = LineCap.Round,
+                EndCap = LineCap.Round
+            };
 
             // 約60fps でスピナーを回転
             _timer = new System.Windows.Forms.Timer { Interval = 16 };
@@ -38,20 +51,16 @@ namespace InspectionTools.Common {
                 SpinnerSize,
                 SpinnerSize);
 
-            using (var bgPen = new Pen(Color.FromArgb(220, 220, 220), 5f)) {
-                bgPen.StartCap = LineCap.Round;
-                bgPen.EndCap = LineCap.Round;
-                g.DrawEllipse(bgPen, spinnerRect);
-            }
-
-            using var arcPen = new Pen(Color.SteelBlue, 5f);
-            arcPen.StartCap = LineCap.Round;
-            arcPen.EndCap = LineCap.Round;
-            g.DrawArc(arcPen, spinnerRect, _angle, 90f);
+            g.DrawEllipse(_bgPen, spinnerRect);
+            g.DrawArc(_arcPen, spinnerRect, _angle, 90f);
         }
 
         protected override void Dispose(bool disposing) {
-            if (disposing) _timer.Dispose();
+            if (disposing) {
+                _timer.Dispose();
+                _bgPen.Dispose();
+                _arcPen.Dispose();
+            }
             base.Dispose(disposing);
         }
     }

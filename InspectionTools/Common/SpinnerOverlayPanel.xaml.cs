@@ -2,7 +2,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace InspectionTools.Tool {
+namespace InspectionTools.Common {
     /// <summary>
     /// SpinnerOverlayPanel.xaml の相互作用ロジック
     /// </summary>
