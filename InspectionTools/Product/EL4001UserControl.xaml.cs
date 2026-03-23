@@ -267,7 +267,7 @@ namespace InspectionTools.Product {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
                 .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
-            if (indices.Count() != indices.Distinct().Count()) {
+            if (indices.Count != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
             }
         }
@@ -377,7 +377,7 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyColon()       => await ReadDmm01AndSendAsync();
+        private async void ActionHotkeyColon() => await ReadDmm01AndSendAsync();
         private async void ActionHotkeyNumMultiply() => await ReadDmm01AndSendAsync();
 
         // DMM01測定値（DCV）をキーボード入力としてEnterまで送信する
@@ -396,7 +396,7 @@ namespace InspectionTools.Product {
         }
         // DMM02測定値コピー
         private async void ActionHotkeyBracketR() => await ReadDmm02AndSendAsync();
-        private async void ActionHotkeyNumAdd()   => await ReadDmm02AndSendAsync();
+        private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {

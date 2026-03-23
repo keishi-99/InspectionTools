@@ -261,7 +261,7 @@ namespace InspectionTools.Product {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
                 .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
-            if (indices.Count() != indices.Distinct().Count()) {
+            if (indices.Count != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
             }
         }
@@ -375,7 +375,7 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyAtsign()    => await ReadDmm01AndSendAsync();
+        private async void ActionHotkeyAtsign() => await ReadDmm01AndSendAsync();
         private async void ActionHotkeyNumDivide() => await ReadDmm01AndSendAsync();
 
         // DMM01測定値をV単位でキーボード入力としてEnterまで送信する
@@ -393,7 +393,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBracketL()  => await ReadDmm02AndSendAsync();
+        private async void ActionHotkeyBracketL() => await ReadDmm02AndSendAsync();
         private async void ActionHotkeyNumMultiply() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値をmA単位に変換してキーボード入力としてEnterまで送信する
@@ -412,9 +412,9 @@ namespace InspectionTools.Product {
         }
         // FGローテーション
         private void ActionHotkeyBracketR() { if (MainWindow.IsProcessing) { return; } RotationFg(_instFg, true); }
-        private void ActionHotkeyNumAdd()   { if (MainWindow.IsProcessing) { return; } RotationFg(_instFg, false); }
+        private void ActionHotkeyNumAdd() { if (MainWindow.IsProcessing) { return; } RotationFg(_instFg, false); }
         // OSCローテーション
-        private void ActionHotkeyColon()       { if (MainWindow.IsProcessing) { return; } RotationOsc(_instOsc, true); }
+        private void ActionHotkeyColon() { if (MainWindow.IsProcessing) { return; } RotationOsc(_instOsc, true); }
         private void ActionHotkeyNumSubtract() { if (MainWindow.IsProcessing) { return; } RotationOsc(_instOsc, true); }
         // OSC meas1測定値コピー
         private async void ActionHotkeyComma() {

@@ -281,7 +281,7 @@ namespace InspectionTools.Product {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index }
                 .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
-            if (indices.Count() != indices.Distinct().Count()) {
+            if (indices.Count != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
             }
         }
@@ -423,7 +423,7 @@ namespace InspectionTools.Product {
         }
 
         // CNT測定値コピー
-        private async void ActionHotkeyComma()       => await ReadCntAndSendAsync();
+        private async void ActionHotkeyComma() => await ReadCntAndSendAsync();
         private async void ActionHotkeyNumMultiply() => await ReadCntAndSendAsync();
 
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
@@ -475,7 +475,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash()  => await ReadDmm02AndSendAsync();
+        private async void ActionHotkeySlash() => await ReadDmm02AndSendAsync();
         private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
