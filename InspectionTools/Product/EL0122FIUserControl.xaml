@@ -99,7 +99,7 @@
             Text="待機時間(ms)" />
 
 
-        <Common:WaitingCircle
+        <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
             Grid.Row="1"
             Grid.RowSpan="7"

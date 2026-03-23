@@ -76,7 +76,7 @@
             Unchecked="HotKeyCheckBox_Unchecked" />
 
 
-        <Common:WaitingCircle
+        <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
             Grid.RowSpan="5"
             Grid.ColumnSpan="2"

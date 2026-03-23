@@ -310,7 +310,7 @@
         </Grid>
 
 
-        <Common:WaitingCircle
+        <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
             Grid.RowSpan="3"
             Padding="20,20,20,20"

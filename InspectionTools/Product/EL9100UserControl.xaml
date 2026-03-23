@@ -69,10 +69,11 @@
         <Button
             x:Name="ClipboardCopyButton"
             Grid.Row="4"
+            Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="ClipboardCopyButton_Click"
-            Content="コピー" Grid.Column="1" />
+            Content="コピー" />
 
         <TextBox
             x:Name="OcrResult"
@@ -97,7 +98,7 @@
             Stretch="Uniform" />
 
 
-        <Common:WaitingCircle
+        <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
             Grid.RowSpan="5"
             Grid.ColumnSpan="2"

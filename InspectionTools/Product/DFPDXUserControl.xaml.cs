@@ -284,7 +284,7 @@ namespace InspectionTools.Product {
             var indices = new[] { _instDmm01.Index, _instDmm02.Index, _instDmm03.Index }
                 .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
 
-            if (indices.Count() != indices.Distinct().Count()) {
+            if (indices.Count != indices.Distinct().Count()) {
                 throw new InvalidOperationException("同じ測定器が選択されています。");
             }
         }

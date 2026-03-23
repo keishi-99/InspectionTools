@@ -122,7 +122,7 @@
             IsReadOnly="true" />
 
 
-        <Common:WaitingCircle
+        <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
             Grid.RowSpan="9"
             Grid.ColumnSpan="2"

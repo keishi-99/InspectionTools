@@ -1,0 +1,43 @@
+<UserControl
+    x:Class="InspectionTools.Tool.SpinnerOverlayPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="96" Height="96">
+            <!--  背景の薄い円  -->
+            <Ellipse
+                Canvas.Left="0"
+                Canvas.Top="0"
+                Width="96"
+                Height="96"
+                Stroke="#DCDCDC"
+                StrokeThickness="10" />
+            <!--  回転する円弧（90度弧）  -->
+            <Canvas Width="96" Height="96">
+                <Path
+                    Stroke="SteelBlue"
+                    StrokeEndLineCap="Round"
+                    StrokeStartLineCap="Round"
+                    StrokeThickness="10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="48,5">
+                                <ArcSegment
+                                    IsLargeArc="False"
+                                    Point="91,48"
+                                    Size="43,43"
+                                    SweepDirection="Clockwise" />
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+                <Canvas.RenderTransform>
+                    <RotateTransform x:Name="SpinnerRotation" CenterX="48" CenterY="48" />
+                </Canvas.RenderTransform>
+            </Canvas>
+        </Canvas>
+    </Viewbox>
+</UserControl>
