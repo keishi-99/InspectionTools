@@ -35,7 +35,7 @@ namespace InspectionTools {
         public static DataTable VisaAddressDataTable { get; set; } = new();
 
         private static bool _isProcessing;
-        public static bool IsProcessing { get => _isProcessing; set => _isProcessing = value; }
+        public static bool IsProcessing { get => System.Threading.Volatile.Read(ref _isProcessing); set => System.Threading.Volatile.Write(ref _isProcessing, value); }
 
         public MainWindow() {
             InitializeComponent();
