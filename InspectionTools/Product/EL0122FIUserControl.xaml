@@ -101,12 +101,8 @@
 
         <Common:SpinnerOverlayPanel
             x:Name="ProgressRing"
-            Grid.Row="1"
             Grid.RowSpan="7"
             Grid.ColumnSpan="2"
-            Padding="20,20,20,20"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             Visibility="Collapsed" />
 
     </Grid>

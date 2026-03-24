@@ -117,9 +117,6 @@
             x:Name="ProgressRing"
             Grid.RowSpan="8"
             Grid.ColumnSpan="2"
-            Padding="20,20,20,20"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             Visibility="Collapsed" />
 
     </Grid>

@@ -5,18 +5,40 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Viewbox Stretch="Uniform">
-        <Canvas Width="96" Height="96">
-            <!--  背景の薄い円  -->
-            <Ellipse
-                Canvas.Left="0"
-                Canvas.Top="0"
-                Width="96"
-                Height="96"
-                Stroke="#DCDCDC"
-                StrokeThickness="10" />
-            <!--  回転する円弧（90度弧）  -->
+    <UserControl.Triggers>
+        <!--  Loaded 時にスピナーを約1秒で1回転するアニメーションを開始  -->
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation
+                        RepeatBehavior="Forever"
+                        Storyboard.TargetName="SpinnerRotation"
+                        Storyboard.TargetProperty="Angle"
+                        From="0"
+                        To="360"
+                        Duration="0:0:0.96" />
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </UserControl.Triggers>
+    <Grid>
+        <!--  半透明の暗いオーバーレイ背景（約40%不透明度）  -->
+        <Rectangle Fill="#66000000" />
+        <!--  スピナー（中央固定サイズ 100x100）  -->
+        <Viewbox
+            Width="100"
+            Height="100"
+            Stretch="Uniform">
             <Canvas Width="96" Height="96">
+                <!--  背景の薄い円  -->
+                <Ellipse
+                    Canvas.Left="0"
+                    Canvas.Top="0"
+                    Width="96"
+                    Height="96"
+                    Stroke="#DCDCDC"
+                    StrokeThickness="10" />
+                <!--  回転する円弧（90度弧）  -->
                 <Path
                     Stroke="SteelBlue"
                     StrokeEndLineCap="Round"
@@ -33,11 +55,11 @@
                             </PathFigure>
                         </PathGeometry>
                     </Path.Data>
+                    <Path.RenderTransform>
+                        <RotateTransform x:Name="SpinnerRotation" CenterX="48" CenterY="48" />
+                    </Path.RenderTransform>
                 </Path>
-                <Canvas.RenderTransform>
-                    <RotateTransform x:Name="SpinnerRotation" CenterX="48" CenterY="48" />
-                </Canvas.RenderTransform>
             </Canvas>
-        </Canvas>
-    </Viewbox>
+        </Viewbox>
+    </Grid>
 </UserControl>
