@@ -122,13 +122,17 @@ namespace InspectionTools.Common {
 
         // デバイスにコマンドを送信する
         public void OutputDev(string cmd) {
-            _session!.RawIO.Write(cmd + "\n");
+            if (_session == null)
+                throw new InvalidOperationException("デバイスに接続されていません。先に OpenDev() を呼んでください。");
+            _session.RawIO.Write(cmd + "\n");
         }
 
         // デバイスからデータを読み取る
         public string InputDev() {
+            if (_session == null)
+                throw new InvalidOperationException("デバイスに接続されていません。先に OpenDev() を呼んでください。");
             try {
-                return _session!.RawIO.ReadString().Trim();
+                return _session.RawIO.ReadString().Trim();
             } catch (Exception ex) {
                 throw new ApplicationException("データ取得中にエラーが発生しました。", ex);
             }
