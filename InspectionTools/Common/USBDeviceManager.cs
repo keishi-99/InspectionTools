@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using VisaComLib;
+using Ivi.Visa;
+using NationalInstruments.Visa;
 
 namespace InspectionTools.Common {
     internal static partial class NativeMethods {
@@ -103,23 +104,17 @@ namespace InspectionTools.Common {
     }
 
     public class USBDeviceManager : IDisposable {
-        private readonly FormattedIO488 _dev;
+        private MessageBasedSession? _session;
         private ResourceManager? _resourceManager;
-        private IMessage? _io;  // IMessageの保持
 
         private bool _disposed = false; // Disposeが既に呼ばれたかどうかのフラグ
-
-        public USBDeviceManager() {
-            _dev = new FormattedIO488();
-        }
 
         // VISAアドレスを指定してデバイスに接続する
         public void OpenDev(string visaaddress) {
             try {
                 _resourceManager = new ResourceManager();
-                _io = (IMessage)_resourceManager.Open(visaaddress, AccessMode.NO_LOCK);
-                _dev.IO = _io;
-                _dev.IO.Timeout = 20000;
+                _session = (MessageBasedSession)_resourceManager.Open(visaaddress);
+                _session.TimeoutMilliseconds = 20000;
             } catch (Exception ex) {
                 throw new ApplicationException("接続中にエラーが発生しました。", ex);
             }
@@ -127,13 +122,13 @@ namespace InspectionTools.Common {
 
         // デバイスにコマンドを送信する
         public void OutputDev(string cmd) {
-            _dev.WriteString(cmd);
+            _session!.RawIO.Write(cmd + "\n");
         }
 
         // デバイスからデータを読み取る
         public string InputDev() {
             try {
-                return _dev.ReadString();
+                return _session!.RawIO.ReadString().Trim();
             } catch (Exception ex) {
                 throw new ApplicationException("データ取得中にエラーが発生しました。", ex);
             }
@@ -141,19 +136,11 @@ namespace InspectionTools.Common {
 
         // デバイスの接続をクローズする
         public void CloseDev() {
-            if (_io != null) {
-                try {
-                    _io.Close();
-                } finally {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(_io);
-                    _io = null;
-                }
-            }
+            _session?.Dispose();
+            _session = null;
 
-            if (_resourceManager != null) {
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(_resourceManager);
-                _resourceManager = null;
-            }
+            _resourceManager?.Dispose();
+            _resourceManager = null;
         }
 
         // IDisposableの実装
