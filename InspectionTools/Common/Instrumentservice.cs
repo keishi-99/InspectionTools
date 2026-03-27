@@ -25,7 +25,7 @@ namespace InspectionTools.Common {
         /// </summary>
         public static async Task<decimal> ReadCntAsync(CntInstClass cntInstClass) {
             (cntInstClass.InstCommand, cntInstClass.Query) = cntInstClass.SignalType switch {
-                3 => (":MEAS?XNOW;FRUN ON;", true),
+                3 => (":MEAS?XNOW;FRUN ON", true),
                 _ => throw new ApplicationException($"未対応の SignalType: {cntInstClass.SignalType}"),
             };
 
