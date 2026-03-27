@@ -150,7 +150,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instCnt] =
                 (
-                    Init: new() { Gpib = "*RST;:FUNC PWID;:FRUN ON;" },
+                    Init: new() { Gpib = "*RST;:FUNC PWID;:INPA:COUP DC;:INPA:LPF ON;:INPA:SLOP NEG;:FRUN ON;" },
                     Settings: []
                 );
 
