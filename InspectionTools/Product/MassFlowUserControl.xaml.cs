@@ -728,6 +728,7 @@ namespace InspectionTools.Product {
             var oscSettings = dic[oscInstClass].Settings;
 
             fgInstClass2_1.SettingNumber = (fgInstClass2_1.SettingNumber + (isNext ? 1 : -1) + fg2_1Settings.Count) % fg2_1Settings.Count;
+            fgInstClass2_2.SettingNumber = (fgInstClass2_2.SettingNumber + (isNext ? 1 : -1) + fg2_2Settings.Count) % fg2_2Settings.Count;
             oscInstClass.SettingNumber = (oscInstClass.SettingNumber + (isNext ? 1 : -1) + oscSettings.Count) % oscSettings.Count;
 
             await ConnectAndSendCommand(fg2_1Settings, fgInstClass2_1);
