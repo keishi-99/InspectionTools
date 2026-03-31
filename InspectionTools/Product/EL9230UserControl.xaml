@@ -75,13 +75,6 @@
             Content="HotKey"
             Unchecked="HotKeyCheckBox_Unchecked" />
 
-
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Grid.RowSpan="5"
-            Grid.ColumnSpan="2"
-            Visibility="Collapsed" />
-
     </Grid>
 </UserControl>
 

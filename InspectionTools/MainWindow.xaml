@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools"
+    xmlns:Common="clr-namespace:InspectionTools.Common"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
@@ -160,5 +161,9 @@
                 </ScrollViewer>
             </Grid>
         </materialDesign:DrawerHost>
+        <!--  全面スピナーオーバーレイ（DrawerHostの後に配置することで最前面）  -->
+        <Common:SpinnerOverlayPanel
+            x:Name="ProgressRing"
+            Visibility="Collapsed" />
     </Grid>
 </Window>

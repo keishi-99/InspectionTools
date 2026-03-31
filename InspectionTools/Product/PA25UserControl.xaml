@@ -140,12 +140,5 @@
             Focusable="False"
             IsReadOnly="True" />
 
-
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Grid.RowSpan="9"
-            Grid.ColumnSpan="2"
-            Visibility="Collapsed" />
-
     </Grid>
 </UserControl>

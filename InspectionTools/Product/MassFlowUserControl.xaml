@@ -272,12 +272,5 @@
 
         </Grid>
 
-
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Grid.RowSpan="3"
-            Grid.ColumnSpan="2"
-            Visibility="Collapsed" />
-
     </Grid>
 </UserControl>
