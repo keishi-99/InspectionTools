@@ -324,9 +324,11 @@ namespace InspectionTools.Product {
                 var output = await InstrumentService.ReadCntAsync(cntInstClass);
 
                 var settings = _dicCommands[cntInstClass].Settings;
-
-                var sw = settings[cntInstClass.SettingNumber];
-                (cntInstClass.InstCommand, cntInstClass.Query) = ResolveCommand(sw, cntInstClass.SignalType);
+                if (settings.Count > cntInstClass.SettingNumber) {
+                    var sw = settings[cntInstClass.SettingNumber];
+                    (cntInstClass.InstCommand, cntInstClass.Query) = ResolveCommand(sw, cntInstClass.SignalType);
+                    await DeviceController.ConnectAsync(cntInstClass);
+                }
 
                 return output;
 
