@@ -150,7 +150,9 @@ namespace InspectionTools.Product {
             _dicCommands[_instCnt] =
                 (
                     Init: new() { Gpib = "*RST;:FUNC PWID;:INPA:COUP DC;:INPA:LPF ON;:INPA:SLOP NEG;:FRUN ON;" },
-                    Settings: []
+                    Settings: [
+                            new() { Gpib= ":FRUN ON",   Query = false },
+                    ]
                 );
 
             _dicCommands[_instDmm01] =
@@ -320,6 +322,13 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 var output = await InstrumentService.ReadCntAsync(cntInstClass);
+
+                var settings = _dicCommands[cntInstClass].Settings;
+                if (settings.Count > cntInstClass.SettingNumber) {
+                    var sw = settings[cntInstClass.SettingNumber];
+                    (cntInstClass.InstCommand, cntInstClass.Query) = ResolveCommand(sw, cntInstClass.SignalType);
+                    await DeviceController.ConnectAsync(cntInstClass);
+                }
 
                 return output;
 
