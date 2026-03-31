@@ -308,11 +308,5 @@
             </Grid>
 
         </Grid>
-
-
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Grid.RowSpan="3"
-            Visibility="Collapsed" />
     </Grid>
 </UserControl>

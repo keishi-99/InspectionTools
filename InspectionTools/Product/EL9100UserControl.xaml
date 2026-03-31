@@ -97,12 +97,5 @@
             Margin="10"
             Stretch="Uniform" />
 
-
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Grid.RowSpan="7"
-            Grid.ColumnSpan="2"
-            Visibility="Collapsed" />
-
     </Grid>
 </UserControl>

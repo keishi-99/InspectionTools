@@ -141,7 +141,7 @@ namespace InspectionTools.Product {
         private void VisibleProgressImage(bool isVisible) {
             MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
-            ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            _mainWindow?.ShowSpinner(isVisible);
         }
 
         // 選択した機器のVisaAddressを取得
