@@ -37,8 +37,9 @@ namespace InspectionTools {
         private static bool _isProcessing;
         public static bool IsProcessing { get => System.Threading.Volatile.Read(ref _isProcessing); set => System.Threading.Volatile.Write(ref _isProcessing, value); }
 
-        // スピナーオーバーレイを表示/非表示にする
+        // スピナーオーバーレイを表示/非表示にする（IsProcessing の更新も一括管理）
         public void ShowSpinner(bool isVisible) {
+            IsProcessing = isVisible;
             ProgressRing.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 

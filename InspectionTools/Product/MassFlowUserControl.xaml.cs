@@ -139,7 +139,6 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
-            MainWindow.IsProcessing = isVisible;
             MainGrid.IsEnabled = !isVisible;
             _mainWindow?.ShowSpinner(isVisible);
         }
