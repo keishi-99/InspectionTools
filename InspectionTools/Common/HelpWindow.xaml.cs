@@ -6,14 +6,8 @@ namespace InspectionTools.Common {
         public HelpWindow() {
             InitializeComponent();
 
-            // コンテンツに合わせて高さを自動調整するが、画面の作業領域を超える場合は上限を設ける
-            Loaded += (s, e) => {
-                double workAreaHeight = System.Windows.SystemParameters.WorkArea.Height;
-                if (Height > workAreaHeight) {
-                    SizeToContent = SizeToContent.Manual;
-                    Height = workAreaHeight;
-                }
-            };
+            // 画面の作業領域を超えないよう最大高を設定する（ページ切り替え後の動的更新にも対応）
+            MaxHeight = SystemParameters.WorkArea.Height;
         }
 
         // 表示するヘルプエントリ一覧を更新する

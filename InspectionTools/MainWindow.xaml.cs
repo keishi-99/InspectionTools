@@ -241,7 +241,7 @@ namespace InspectionTools {
         // ヘルプウィンドウを開いてエントリ一覧を更新する
         private void HelpCheckBoxChecked() {
             _isHelpVisible = true;
-            _helpWindow = new Common.HelpWindow { Owner = this };
+            _helpWindow = new Common.HelpWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             _helpWindow.Closed += (s, e) => {
                 _helpWindow = null;
                 HelpCheckBox.IsChecked = false;
