@@ -2,9 +2,9 @@
     x:Class="InspectionTools.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Common="clr-namespace:InspectionTools.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:InspectionTools"
-    xmlns:Common="clr-namespace:InspectionTools.Common"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
@@ -143,27 +143,64 @@
                     x:Name="HotKeyHelpScrollViewer"
                     Grid.RowSpan="2"
                     Grid.Column="1"
-                    Height="0"
                     BorderThickness="1,0,0,0"
                     VerticalScrollBarVisibility="Auto"
-                    Visibility="Visible">
-                    <Grid ColumnDefinitions="Auto,Auto">
+                    Visibility="Collapsed">
 
-                        <TextBlock
-                            x:Name="HelpTextBlock1"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            x:Name="HelpTextBlock2"
-                            Grid.Column="1"
-                            TextWrapping="Wrap" />
-                    </Grid>
+                    <ItemsControl x:Name="HelpItemsControl" Margin="8,6">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <!--  セパレーター  -->
+                                    <Separator Margin="0,2" />
+
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <!--  デフォルトのスタイル  -->
+                                                    <Setter Property="BorderBrush" Value="Gray" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="CornerRadius" Value="3" />
+                                                    <Setter Property="Padding" Value="5,1" />
+                                                    <!--  Key が空のときは枠と余白を消す  -->
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Key}" Value="">
+                                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                                            <Setter Property="BorderThickness" Value="0" />
+                                                            <Setter Property="Padding" Value="0" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock
+                                                FontFamily="Consolas"
+                                                FontSize="11"
+                                                Text="{Binding Key}" />
+                                        </Border>
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Description}" />
+                                    </Grid>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                 </ScrollViewer>
             </Grid>
         </materialDesign:DrawerHost>
         <!--  全面スピナーオーバーレイ（DrawerHostの後に配置することで最前面）  -->
-        <Common:SpinnerOverlayPanel
-            x:Name="ProgressRing"
-            Visibility="Collapsed" />
+        <Common:SpinnerOverlayPanel x:Name="ProgressRing" Visibility="Collapsed" />
     </Grid>
 </Window>

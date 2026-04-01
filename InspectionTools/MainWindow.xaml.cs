@@ -233,29 +233,24 @@ namespace InspectionTools {
             paletteHelper.SetTheme(theme);
         }
 
-        // ヘルプが表示中であれば現在ページのキーと説明文を更新する
+        // ヘルプが表示中であれば現在ページのエントリ一覧を更新する
         private void UpdateHelpText() {
             if (!_isHelpVisible) return;
-            var (keys, descriptions) = Common.HelpManager.GetHelpData(_pageName);
-            HelpTextBlock1.Text = string.Join(Environment.NewLine, keys);
-            HelpTextBlock2.Text = string.Join(Environment.NewLine, descriptions);
+            HelpItemsControl.ItemsSource = Common.HelpManager.GetHelpData(_pageName);
         }
 
-        // ヘルプを表示状態にしてテキストを更新する
+        // ヘルプを表示状態にしてエントリ一覧を更新する
         private void HelpCheckBoxChecked() {
             _isHelpVisible = true;
-            HelpTextBlock1.Margin = new Thickness(10);
-            HelpTextBlock2.Margin = new Thickness(10);
+            HotKeyHelpScrollViewer.Visibility = Visibility.Visible;
             UpdateHelpText();
         }
 
         // ヘルプを非表示状態にしてテキストを空にする
         private void HelpCheckBoxUnchecked() {
             _isHelpVisible = false;
-            HelpTextBlock1.Margin = new Thickness(0);
-            HelpTextBlock2.Margin = new Thickness(0);
-            HelpTextBlock1.Text = string.Empty;
-            HelpTextBlock2.Text = string.Empty;
+            HotKeyHelpScrollViewer.Visibility = Visibility.Collapsed;
+            HelpItemsControl.ItemsSource = null;
         }
 
         // 機器リストウィンドウをダイアログ表示してXMLを再読み込みする

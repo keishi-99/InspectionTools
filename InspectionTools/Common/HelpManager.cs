@@ -4,9 +4,9 @@ using System.Text.Json;
 namespace InspectionTools.Common {
     public static class HelpManager {
 
-        private static Dictionary<string, (string[] Keys, string[] Descriptions)>? _helpTexts;
+        private static Dictionary<string, List<HelpEntry>>? _helpTexts;
 
-        // JSONファイルを読み込んでヘルプテキストを_helpTexts辞書にデシリアライズして格納する
+        // JSONファイルを読み込んでヘルプテキストを_helpTexts辞書に格納する
         public static void LoadHelpFile(string path) {
             if (!File.Exists(path)) {
                 _helpTexts = [];
@@ -14,57 +14,34 @@ namespace InspectionTools.Common {
             }
 
             string json = File.ReadAllText(path);
-
-            // 一旦、Dictionary<string, List<Dictionary<string, string>>> で読み込む
             var rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
 
             _helpTexts = [];
 
-            if (rawData == null) {
-                return;
-            }
+            if (rawData == null) return;
 
             foreach (var kvp in rawData) {
-                var keys = new List<string>();
-                var descriptions = new List<string>();
+                var entries = new List<HelpEntry>();
 
                 foreach (var item in kvp.Value) {
                     foreach (var pair in item) {
-                        keys.Add(pair.Key);
-                        descriptions.Add(pair.Value);
+                        entries.Add(new HelpEntry(pair.Key, pair.Value));
                     }
                 }
 
-                _helpTexts[kvp.Key] = (keys.ToArray(), descriptions.ToArray());
+                _helpTexts[kvp.Key] = entries;
             }
         }
 
-        // 指定キーのヘルプテキストを取得（KeyとDescriptionを結合して表示用）
-        public static string GetHelpText(string key) {
-            if (_helpTexts == null) {
+        // 指定ページ名のヘルプエントリ一覧を取得する
+        public static IReadOnlyList<HelpEntry> GetHelpData(string pageName) {
+            if (_helpTexts == null)
                 throw new InvalidOperationException("HelpManager: JSONファイルが読み込まれていません。");
-            }
 
-            if (!_helpTexts.TryGetValue(key, out var data) || data.Keys.Length == 0) {
-                return "ヘルプ情報が登録されていません。";
-            }
+            if (!_helpTexts.TryGetValue(pageName, out var entries))
+                return [];
 
-            // Key と Description を結合して見やすく表示
-            var lines = data.Keys.Zip(data.Descriptions, (k, d) => $"{k}\t= {d}");
-            return string.Join(Environment.NewLine, lines);
-        }
-
-        // 指定ページ名のキー配列と説明文配列を取得する
-        public static (string[] Keys, string[] Descriptions) GetHelpData(string pageName) {
-            if (_helpTexts == null) {
-                throw new InvalidOperationException("HelpManager: JSONファイルが読み込まれていません。");
-            }
-
-            if (!_helpTexts.TryGetValue(pageName, out var data)) {
-                return (Array.Empty<string>(), Array.Empty<string>());
-            }
-
-            return data;
+            return entries;
         }
     }
 }
