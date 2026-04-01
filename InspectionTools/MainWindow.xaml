@@ -147,7 +147,7 @@
                     VerticalScrollBarVisibility="Auto"
                     Visibility="Collapsed">
 
-                    <ItemsControl x:Name="HelpItemsControl" Margin="8,6">
+                    <ItemsControl x:Name="HelpItemsControl" Margin="8,6" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
@@ -156,7 +156,7 @@
 
                                     <Grid Margin="0,3">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="HelpKeyColumn" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
@@ -189,6 +189,7 @@
 
                                         <TextBlock
                                             Grid.Column="1"
+                                            Margin="8,0,0,0"
                                             VerticalAlignment="Center"
                                             Text="{Binding Description}" />
                                     </Grid>

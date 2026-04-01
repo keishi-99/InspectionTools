@@ -14,7 +14,15 @@ namespace InspectionTools.Common {
             }
 
             string json = File.ReadAllText(path);
-            var rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
+
+            Dictionary<string, List<Dictionary<string, string>>>? rawData;
+            try {
+                rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
+            } catch (JsonException) {
+                // JSONが不正な形式の場合は空データで初期化してクラッシュを防ぐ
+                _helpTexts = [];
+                return;
+            }
 
             _helpTexts = [];
 
