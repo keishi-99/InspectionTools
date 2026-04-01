@@ -1,8 +1,15 @@
 ﻿using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace InspectionTools.Common {
     public static class HelpManager {
+
+        // JSONエントリのデシリアライズ用DTO
+        private record HelpEntryDto(
+            [property: JsonPropertyName("keys")] string[] Keys,
+            [property: JsonPropertyName("description")] string Description
+        );
 
         private static Dictionary<string, List<HelpEntry>>? _helpTexts;
 
@@ -15,9 +22,9 @@ namespace InspectionTools.Common {
 
             string json = File.ReadAllText(path);
 
-            Dictionary<string, List<Dictionary<string, string>>>? rawData;
+            Dictionary<string, List<HelpEntryDto>>? rawData;
             try {
-                rawData = JsonSerializer.Deserialize<Dictionary<string, List<Dictionary<string, string>>>>(json);
+                rawData = JsonSerializer.Deserialize<Dictionary<string, List<HelpEntryDto>>>(json);
             } catch (JsonException) {
                 // JSONが不正な形式の場合は空データで初期化してクラッシュを防ぐ
                 _helpTexts = [];
@@ -32,9 +39,7 @@ namespace InspectionTools.Common {
                 var entries = new List<HelpEntry>();
 
                 foreach (var item in kvp.Value) {
-                    foreach (var pair in item) {
-                        entries.Add(new HelpEntry(pair.Key, pair.Value));
-                    }
+                    entries.Add(new HelpEntry(item.Keys, item.Description));
                 }
 
                 _helpTexts[kvp.Key] = entries;

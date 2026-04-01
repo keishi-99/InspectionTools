@@ -433,7 +433,7 @@ namespace InspectionTools.Product {
 
         // CNT測定値コピー
         private async void ActionHotkeyComma() => await ReadCntAndSendAsync();
-        private async void ActionHotkeyNumMultiply() => await ReadCntAndSendAsync();
+        private async void ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
 
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
@@ -463,7 +463,7 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, false);
         }
-        private void ActionHotkeyNumDivide() {
+        private void ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
             RotationDcs(_instDcs, true);
         }
@@ -531,7 +531,7 @@ namespace InspectionTools.Product {
             if (!string.IsNullOrEmpty(_instCnt.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyComma, ActionHotkeyComma),
-                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
+                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instFg.VisaAddress)) {
@@ -543,7 +543,7 @@ namespace InspectionTools.Product {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
                     new(ModShift, HotkeyBracketR, ActionHotkeyShiftBracketR),
-                    new(ModNone, HotkeyNumDivide, ActionHotkeyNumDivide),
+                    new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
             if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {

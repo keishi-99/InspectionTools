@@ -43,7 +43,7 @@
                     </StackPanel>
                 </DockPanel>
             </materialDesign:DrawerHost.LeftDrawerContent>
-            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+            <Grid RowDefinitions="Auto,*">
 
                 <materialDesign:ColorZone Padding="5" Mode="PrimaryDark">
                     <UniformGrid Columns="3">
@@ -137,68 +137,6 @@
 
                 </materialDesign:ColorZone>
                 <ContentControl x:Name="MainMenuContentArea" Grid.Row="1" />
-
-                <!--  右側: ヘルプパネル（初期非表示）  -->
-                <ScrollViewer
-                    x:Name="HotKeyHelpScrollViewer"
-                    Grid.RowSpan="2"
-                    Grid.Column="1"
-                    BorderThickness="1,0,0,0"
-                    VerticalScrollBarVisibility="Auto"
-                    Visibility="Collapsed">
-
-                    <ItemsControl x:Name="HelpItemsControl" Margin="8,6" Grid.IsSharedSizeScope="True">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <!--  セパレーター  -->
-                                    <Separator Margin="0,2" />
-
-                                    <Grid Margin="0,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" SharedSizeGroup="HelpKeyColumn" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <Border
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <!--  デフォルトのスタイル  -->
-                                                    <Setter Property="BorderBrush" Value="Gray" />
-                                                    <Setter Property="BorderThickness" Value="1" />
-                                                    <Setter Property="CornerRadius" Value="3" />
-                                                    <Setter Property="Padding" Value="5,1" />
-                                                    <!--  Key が空のときは枠と余白を消す  -->
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Key}" Value="">
-                                                            <Setter Property="BorderBrush" Value="Transparent" />
-                                                            <Setter Property="BorderThickness" Value="0" />
-                                                            <Setter Property="Padding" Value="0" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <TextBlock
-                                                FontFamily="Consolas"
-                                                FontSize="11"
-                                                Text="{Binding Key}" />
-                                        </Border>
-
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Margin="8,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Description}" />
-                                    </Grid>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                </ScrollViewer>
             </Grid>
         </materialDesign:DrawerHost>
         <!--  全面スピナーオーバーレイ（DrawerHostの後に配置することで最前面）  -->

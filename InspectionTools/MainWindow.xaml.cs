@@ -16,6 +16,7 @@ namespace InspectionTools {
     public partial class MainWindow : Window {
 
         private bool _isHelpVisible = false;
+        private Common.HelpWindow? _helpWindow;
         private string _pageName = string.Empty;
 
         public interface IMainWindowAware {
@@ -94,7 +95,6 @@ namespace InspectionTools {
             this.Title = "Menu";
             _pageName = "MainMenu";
             UpdateHelpText();
-            HotKeyHelpScrollViewer.Height = mainMenu.Height;
         }
 
         // ページ名に対応したUserControlを生成してコンテンツエリアに切り替える
@@ -134,7 +134,6 @@ namespace InspectionTools {
             _pageName = pageName;
             MainMenuContentArea.Content = page;
             UpdateHelpText();
-            HotKeyHelpScrollViewer.Height = page.Height;
         }
 
         // 指定名のButtonの有効/無効を切り替える
@@ -236,21 +235,25 @@ namespace InspectionTools {
         // ヘルプが表示中であれば現在ページのエントリ一覧を更新する
         private void UpdateHelpText() {
             if (!_isHelpVisible) return;
-            HelpItemsControl.ItemsSource = Common.HelpManager.GetHelpData(_pageName);
+            _helpWindow?.UpdateHelpData(Common.HelpManager.GetHelpData(_pageName));
         }
 
-        // ヘルプを表示状態にしてエントリ一覧を更新する
+        // ヘルプウィンドウを開いてエントリ一覧を更新する
         private void HelpCheckBoxChecked() {
             _isHelpVisible = true;
-            HotKeyHelpScrollViewer.Visibility = Visibility.Visible;
+            _helpWindow = new Common.HelpWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            _helpWindow.Closed += (s, e) => {
+                _helpWindow = null;
+                HelpCheckBox.IsChecked = false;
+            };
+            _helpWindow.Show();
             UpdateHelpText();
         }
 
-        // ヘルプを非表示状態にしてテキストを空にする
+        // ヘルプウィンドウを閉じる
         private void HelpCheckBoxUnchecked() {
             _isHelpVisible = false;
-            HotKeyHelpScrollViewer.Visibility = Visibility.Collapsed;
-            HelpItemsControl.ItemsSource = null;
+            _helpWindow?.Close();
         }
 
         // 機器リストウィンドウをダイアログ表示してXMLを再読み込みする
