@@ -18,6 +18,11 @@ namespace InspectionTools {
         private Common.HelpWindow? _helpWindow;
         private string _pageName = string.Empty;
 
+        // スナップ機能用フィールド
+        private const double SnapThreshold = 20.0;
+        private bool _isSnapped = false;
+        private bool _isSyncingHelpPosition = false;
+
         public interface IMainWindowAware {
             void SetMainWindow(MainWindow mainWindow);
         }
@@ -238,13 +243,57 @@ namespace InspectionTools {
 
         // ヘルプウィンドウを開いてエントリ一覧を更新する
         private void HelpCheckBoxChecked() {
-            _helpWindow = new Common.HelpWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            _helpWindow = new Common.HelpWindow {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.Manual
+            };
+            _helpWindow.LocationChanged += HelpWindow_LocationChanged;
             _helpWindow.Closed += (s, e) => {
                 _helpWindow = null;
+                _isSnapped = false;
                 HelpCheckBox.IsChecked = false;
             };
+            // Show() 前に位置を設定してちらつきを防ぐ
+            _helpWindow.Left = Left + ActualWidth;
+            _helpWindow.Top = Top;
             _helpWindow.Show();
+            _isSnapped = true;
             UpdateHelpText();
+        }
+
+        // HelpWindow をメインウィンドウの右端に配置する
+        private void SnapHelpWindow() {
+            if (_helpWindow == null) return;
+            _isSyncingHelpPosition = true;
+            _helpWindow.Left = Left + ActualWidth;
+            _helpWindow.Top = Top;
+            _isSyncingHelpPosition = false;
+        }
+
+        // HelpWindow がスナップ位置（右端・上端揃え）に近いか判定する
+        private bool IsNearSnapPosition() {
+            if (_helpWindow == null) return false;
+            double expectedLeft = Left + ActualWidth;
+            double expectedTop = Top;
+            return Math.Abs(_helpWindow.Left - expectedLeft) < SnapThreshold
+                && Math.Abs(_helpWindow.Top - expectedTop) < SnapThreshold;
+        }
+
+        // HelpWindow が移動したとき：スナップ離脱または吸着を判定する
+        private void HelpWindow_LocationChanged(object? sender, EventArgs e) {
+            // MainWindow 側の同期処理中は無視してフィードバックループを防ぐ
+            if (_isSyncingHelpPosition) return;
+
+            if (_isSnapped) {
+                // スナップ中にユーザーが引っ張ったとき → 離脱
+                if (!IsNearSnapPosition()) _isSnapped = false;
+            } else {
+                // 非スナップ中にスナップ位置へ近づいたとき → 吸着
+                if (IsNearSnapPosition()) {
+                    _isSnapped = true;
+                    SnapHelpWindow();
+                }
+            }
         }
 
         // ヘルプウィンドウを閉じる
@@ -279,6 +328,14 @@ namespace InspectionTools {
         private void ThemeToggle_Checked(object sender, RoutedEventArgs e) => SetTheme(BaseTheme.Dark);
         private void ThemeToggle_Unchecked(object sender, RoutedEventArgs e) => SetTheme(BaseTheme.Light);
         private void Timer_Tick(object? sender, EventArgs e) { Time.Text = DateTime.Now.ToString("HH:mm:ss"); }
+        private void MainWindow_LocationChanged(object? sender, EventArgs e) {
+            // スナップ中は HelpWindow を追従させる
+            if (_isSnapped) SnapHelpWindow();
+        }
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e) {
+            // ページ切り替え等でサイズが変わったとき、スナップ中なら HelpWindow 位置を更新する
+            if (_isSnapped) SnapHelpWindow();
+        }
 
 
     }
