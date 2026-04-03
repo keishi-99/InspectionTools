@@ -4,9 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     Title="ヘルプ"
-    Width="280"
+    MinWidth="280"
+    MaxWidth="800"
     ResizeMode="CanResizeWithGrip"
-    SizeToContent="Height"
+    SizeToContent="WidthAndHeight"
     Style="{StaticResource MaterialDesignWindow}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -70,7 +71,7 @@
                                 Grid.Column="1"
                                 Margin="8,0,0,0"
                                 VerticalAlignment="Center"
-                                TextWrapping="Wrap"
+                                TextWrapping="NoWrap"
                                 Text="{Binding Description}" />
                         </Grid>
                     </StackPanel>
