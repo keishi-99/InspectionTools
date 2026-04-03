@@ -9,7 +9,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainWindow"
     Icon="/sine.ico"
+    LocationChanged="MainWindow_LocationChanged"
     ResizeMode="CanMinimize"
+    SizeChanged="MainWindow_SizeChanged"
     SizeToContent="WidthAndHeight"
     Style="{StaticResource MaterialDesignWindow}"
     mc:Ignorable="d">
