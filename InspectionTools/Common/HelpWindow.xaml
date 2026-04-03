@@ -10,7 +10,7 @@
     SizeToContent="WidthAndHeight"
     Style="{StaticResource MaterialDesignWindow}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
         <ItemsControl
             x:Name="HelpItemsControl"
             Margin="8,6"
