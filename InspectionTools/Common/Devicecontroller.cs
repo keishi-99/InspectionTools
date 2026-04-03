@@ -47,7 +47,8 @@
                 uint hDev = 0;
                 var rcvDt = "";
                 uint rcvLen = 50;
-                var id = uint.Parse(instClass.VisaAddress);
+                if (!uint.TryParse(instClass.VisaAddress, out var id))
+                    throw new Exception($"VisaAddressが不正な形式です: '{instClass.VisaAddress}'");
                 try {
                     if (AusbWrapper.Start(TimeOut) != 0 || AusbWrapper.Open(ref hDev, id) != 0) {
                         throw new Exception("開始できません");

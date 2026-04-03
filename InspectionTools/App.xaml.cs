@@ -40,8 +40,9 @@ namespace InspectionTools {
                 MessageBoxImage.Error
             );
 
-            // ログ保存例
-            File.AppendAllText("error.log", $"{DateTime.Now}\n{ex}\n\n");
+            var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "InspectionTools");
+            Directory.CreateDirectory(logDir);
+            File.AppendAllText(Path.Combine(logDir, "error.log"), $"{DateTime.Now}\n{ex}\n\n");
         }
 
     }

@@ -1,4 +1,5 @@
 using InspectionTools.Common;
+using static InspectionTools.Common.InstrumentHelper;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -24,15 +25,6 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly OscInstClass _instOsc = new();
 
-        private record SwitchCommand {
-            public DcsMode DcsMode { get; init; }
-            public DmmMode DmmMode { get; init; }
-            public string Text { get; init; } = string.Empty;
-            public string Adc { get; init; } = string.Empty;
-            public string Visa { get; init; } = string.Empty;
-            public string Gpib { get; init; } = string.Empty;
-            public bool Query { get; init; } = false;
-        }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
         public PA2BUserControl() {
@@ -167,16 +159,6 @@ namespace InspectionTools.Product {
             (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        // 信号種別に応じたコマンド文字列とクエリフラグを返す
-        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
-            return signalType switch {
-                1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
-                3 => (sw.Gpib, sw.Query),
-                _ => (string.Empty, false),
-            };
-        }
-
         // 機器接続
         private async Task ConnectInstAsync() {
             ThrowIfDisposed();

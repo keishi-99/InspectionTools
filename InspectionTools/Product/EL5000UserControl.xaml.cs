@@ -1,4 +1,5 @@
 using InspectionTools.Common;
+using static InspectionTools.Common.InstrumentHelper;
 using System.Data;
 using System.Diagnostics;
 using System.Windows;
@@ -29,15 +30,6 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
 
-        private record SwitchCommand {
-            public DcsMode DcsMode { get; init; }
-            public DmmMode DmmMode { get; init; }
-            public string Text { get; init; } = string.Empty;
-            public string Adc { get; init; } = string.Empty;
-            public string Visa { get; init; } = string.Empty;
-            public string Gpib { get; init; } = string.Empty;
-            public bool Query { get; init; } = false;
-        }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         readonly Stopwatch _stopwatch = new();
         readonly DispatcherTimer _timer = new();
@@ -80,6 +72,7 @@ namespace InspectionTools.Product {
                     // 計測器の解放
                     InstrumentHelper.SafeDispose(_instCnt);
                     InstrumentHelper.SafeDispose(_instDcs);
+                    InstrumentHelper.SafeDispose(_instFg);
                     InstrumentHelper.SafeDispose(_instDmm01);
                     InstrumentHelper.SafeDispose(_instDmm02);
 
@@ -216,16 +209,6 @@ namespace InspectionTools.Product {
             (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
         }
-        // 信号種別に応じたコマンド文字列とクエリフラグを返す
-        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
-            return signalType switch {
-                1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
-                3 => (sw.Gpib, sw.Query),
-                _ => (string.Empty, false),
-            };
-        }
-
         // 機器接続
         private async Task ConnectInstAsync() {
             ThrowIfDisposed();
@@ -237,7 +220,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                ValidateDmmSelection();
+                ValidateDmmSelection(_instDmm01.Index, _instDmm02.Index);
 
                 RegDictionary();
                 FormatSet();
@@ -277,17 +260,6 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        // DMMのIDチェック処理
-        private void ValidateDmmSelection() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
-
-            if (indices.Count == indices.Distinct().Count()) {
-                return;
-            }
-            throw new InvalidOperationException("同じ測定器が選択されています。");
-        }
-
         // 解除
         private void Release() {
             VisibleProgressImage(false);
@@ -338,7 +310,7 @@ namespace InspectionTools.Product {
         }
         // FGローテーション
         private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
-            ThrowIfDisposed();
+            if (_disposed) return;
 
             try {
                 VisibleProgressImage(true);
@@ -351,16 +323,16 @@ namespace InspectionTools.Product {
 
                 await DeviceController.ConnectAsync(fgInstClass);
 
-                VisibleProgressImage(false);
-
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                VisibleProgressImage(false);
             }
         }
         // DCSローテーション
         private async void RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
-            ThrowIfDisposed();
+            if (_disposed) return;
 
             try {
                 VisibleProgressImage(true);
@@ -374,8 +346,6 @@ namespace InspectionTools.Product {
                 await DeviceController.ConnectAsync(dcsInstClass);
                 DcsNumberLabel.Text = dcsInstClass.SettingNumber.ToString("00");
                 DcsRangeLabel.Text = sw.Text;
-
-                VisibleProgressImage(false);
 
                 if (dcsInstClass.SettingNumber != 0) {
                     _stopwatch.Restart();
@@ -392,6 +362,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                VisibleProgressImage(false);
             }
         }
         // DMM測定値取得

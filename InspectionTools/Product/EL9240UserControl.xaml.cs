@@ -1,4 +1,5 @@
 using InspectionTools.Common;
+using static InspectionTools.Common.InstrumentHelper;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -26,15 +27,6 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
         private readonly OscInstClass _instOsc = new();
 
-        private record SwitchCommand {
-            public DcsMode DcsMode { get; init; }
-            public DmmMode DmmMode { get; init; }
-            public string Text { get; init; } = string.Empty;
-            public string Adc { get; init; } = string.Empty;
-            public string Visa { get; init; } = string.Empty;
-            public string Gpib { get; init; } = string.Empty;
-            public bool Query { get; init; } = false;
-        }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
         public EL9240UserControl() {
@@ -178,16 +170,6 @@ namespace InspectionTools.Product {
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        // 信号種別に応じたコマンド文字列とクエリフラグを返す
-        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
-            return signalType switch {
-                1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
-                3 => (sw.Gpib, sw.Query),
-                _ => (string.Empty, false),
-            };
-        }
-
         // 機器接続
         private async Task ConnectInstAsync() {
             ThrowIfDisposed();
@@ -199,7 +181,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                ValidateDmmSelection();
+                ValidateDmmSelection(_instDmm01.Index, _instDmm02.Index);
 
                 RegDictionary();
                 FormatSet();
@@ -236,17 +218,6 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        // DMMのIDチェック処理
-        private void ValidateDmmSelection() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
-
-            if (indices.Count == indices.Distinct().Count()) {
-                return;
-            }
-            throw new InvalidOperationException("同じ測定器が選択されています。");
-        }
-
         // 解除
         private void Release() {
             VisibleProgressImage(false);

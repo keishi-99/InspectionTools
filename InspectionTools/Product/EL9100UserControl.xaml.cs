@@ -1,4 +1,5 @@
 using InspectionTools.Common;
+using static InspectionTools.Common.InstrumentHelper;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -29,15 +30,6 @@ namespace InspectionTools.Product {
 
         private TesseractEngine? _tesseractEngine;
 
-        private record SwitchCommand {
-            public DcsMode DcsMode { get; init; }
-            public DmmMode DmmMode { get; init; }
-            public string Text { get; init; } = string.Empty;
-            public string Adc { get; init; } = string.Empty;
-            public string Visa { get; init; } = string.Empty;
-            public string Gpib { get; init; } = string.Empty;
-            public bool Query { get; init; } = false;
-        }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
         public EL9100UserControl() {
@@ -154,16 +146,6 @@ namespace InspectionTools.Product {
             (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
             (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
         }
-        // 信号種別に応じたコマンド文字列とクエリフラグを返す
-        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
-            return signalType switch {
-                1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
-                3 => (sw.Gpib, sw.Query),
-                _ => (string.Empty, false),
-            };
-        }
-
         // 機器接続
         private async Task ConnectInstAsync() {
             ThrowIfDisposed();
@@ -175,7 +157,7 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                ValidateDmmSelection();
+                ValidateDmmSelection(_instDmm01.Index, _instDmm02.Index);
 
                 RegDictionary();
                 FormatSet();
@@ -207,17 +189,6 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        // DMMのIDチェック処理
-        private void ValidateDmmSelection() {
-            var indices = new[] { _instDmm01.Index, _instDmm02.Index }
-                .Where(i => i >= 1).ToList(); // 未選択(0以下)は無視
-
-            if (indices.Count == indices.Distinct().Count()) {
-                return;
-            }
-            throw new InvalidOperationException("同じ測定器が選択されています。");
-        }
-
         // 解除
         private void Release() {
             VisibleProgressImage(false);
@@ -279,14 +250,8 @@ namespace InspectionTools.Product {
             OcrImage.Source = ConvertBitmapToBitmapSource(captured);
 
             // 画像ファイルをOCRを実行
-            string ocrResult;
-            try {
-                var returnOcr = PerformOCR(captured);
-                ocrResult = returnOcr.Replace(" ", string.Empty);
-                //ocrResult = new string([.. returnOcr.Where(c => !char.IsWhiteSpace(c))]);
-            } finally {
-                captured.Dispose();
-            }
+            var returnOcr = PerformOCR(captured);
+            string ocrResult = returnOcr.Replace(" ", string.Empty);
 
             // 結果を表示
             OcrResult.Text = ocrResult;
