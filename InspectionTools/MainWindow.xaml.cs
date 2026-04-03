@@ -249,6 +249,7 @@ namespace InspectionTools {
             };
             _helpWindow.LocationChanged += HelpWindow_LocationChanged;
             _helpWindow.Closed += (s, e) => {
+                if (s is Window w) w.LocationChanged -= HelpWindow_LocationChanged;
                 _helpWindow = null;
                 _isSnapped = false;
                 HelpCheckBox.IsChecked = false;
@@ -264,10 +265,13 @@ namespace InspectionTools {
         // HelpWindow をメインウィンドウの右端に配置する
         private void SnapHelpWindow() {
             if (_helpWindow == null) return;
-            _isSyncingHelpPosition = true;
-            _helpWindow.Left = Left + ActualWidth;
-            _helpWindow.Top = Top;
-            _isSyncingHelpPosition = false;
+            try {
+                _isSyncingHelpPosition = true;
+                _helpWindow.Left = Left + ActualWidth;
+                _helpWindow.Top = Top;
+            } finally {
+                _isSyncingHelpPosition = false;
+            }
         }
 
         // HelpWindow がスナップ位置（右端・上端揃え）に近いか判定する
