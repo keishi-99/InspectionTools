@@ -10,7 +10,6 @@ namespace InspectionTools.Common {
             MaxHeight = SystemParameters.WorkArea.Height;
         }
 
-        // 表示するヘルプエントリ一覧を更新する
         public void UpdateHelpData(IReadOnlyList<HelpEntry> entries) {
             HelpItemsControl.ItemsSource = entries;
         }

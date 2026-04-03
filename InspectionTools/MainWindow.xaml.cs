@@ -15,7 +15,6 @@ namespace InspectionTools {
     /// </summary>
     public partial class MainWindow : Window {
 
-        private bool _isHelpVisible = false;
         private Common.HelpWindow? _helpWindow;
         private string _pageName = string.Empty;
 
@@ -234,13 +233,11 @@ namespace InspectionTools {
 
         // ヘルプが表示中であれば現在ページのエントリ一覧を更新する
         private void UpdateHelpText() {
-            if (!_isHelpVisible) return;
             _helpWindow?.UpdateHelpData(Common.HelpManager.GetHelpData(_pageName));
         }
 
         // ヘルプウィンドウを開いてエントリ一覧を更新する
         private void HelpCheckBoxChecked() {
-            _isHelpVisible = true;
             _helpWindow = new Common.HelpWindow { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             _helpWindow.Closed += (s, e) => {
                 _helpWindow = null;
@@ -252,7 +249,6 @@ namespace InspectionTools {
 
         // ヘルプウィンドウを閉じる
         private void HelpCheckBoxUnchecked() {
-            _isHelpVisible = false;
             _helpWindow?.Close();
         }
 

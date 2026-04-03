@@ -1,4 +1,5 @@
 using InspectionTools.Common;
+using static InspectionTools.Common.InstrumentHelper;
 using System.Data;
 using System.Windows;
 using WindowsInput;
@@ -24,15 +25,6 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
 
-        private record SwitchCommand {
-            public DcsMode DcsMode { get; init; }
-            public DmmMode DmmMode { get; init; }
-            public string Text { get; init; } = string.Empty;
-            public string Adc { get; init; } = string.Empty;
-            public string Visa { get; init; } = string.Empty;
-            public string Gpib { get; init; } = string.Empty;
-            public bool Query { get; init; } = false;
-        }
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
 
@@ -418,15 +410,6 @@ namespace InspectionTools.Product {
             (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
             (_instOsc.InstCommand, _instOsc.Query) = ResolveCommand(_dicCommands[_instOsc].Init, _instOsc.SignalType);
         }
-        private static (string Cmd, bool Query) ResolveCommand(SwitchCommand sw, int signalType) {
-            return signalType switch {
-                1 => (sw.Adc, sw.Query),
-                2 => (sw.Visa, sw.Query),
-                3 => (sw.Gpib, sw.Query),
-                _ => (string.Empty, false),
-            };
-        }
-
         // 機器接続
         private async Task ConnectInstAsync() {
             ThrowIfDisposed();
@@ -535,7 +518,7 @@ namespace InspectionTools.Product {
         }
         // FG切り替え
         private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
-            ThrowIfDisposed();
+            if (_disposed) return;
 
             try {
                 if (string.IsNullOrEmpty(fgInstClass.VisaAddress)) { return; }
@@ -562,7 +545,7 @@ namespace InspectionTools.Product {
         }
         // OSC切り替え
         private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
-            ThrowIfDisposed();
+            if (_disposed) return;
 
             try {
                 if (string.IsNullOrEmpty(oscInstClass.VisaAddress)) { return; }
