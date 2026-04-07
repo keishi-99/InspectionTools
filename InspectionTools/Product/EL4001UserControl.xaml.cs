@@ -296,7 +296,7 @@ namespace InspectionTools.Product {
             }
         }
         // DCSローテーション
-        private async void RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
+        private async Task RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -320,7 +320,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+        private async Task RotationOsc(OscInstClass oscInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -348,8 +348,8 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyColon() => await ReadDmm01AndSendAsync();
-        private async void ActionHotkeyNumMultiply() => await ReadDmm01AndSendAsync();
+        private async Task ActionHotkeyColon() => await ReadDmm01AndSendAsync();
+        private async Task ActionHotkeyNumMultiply() => await ReadDmm01AndSendAsync();
 
         // DMM01測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm01AndSendAsync() {
@@ -366,8 +366,8 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBracketR() => await ReadDmm02AndSendAsync();
-        private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeyBracketR() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
@@ -384,12 +384,12 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
         // OSC meas1測定値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -405,7 +405,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC meas2測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -421,18 +421,18 @@ namespace InspectionTools.Product {
             }
         }
         // DCSローテーション
-        private void ActionHotkeyAtsign() {
+        private async Task ActionHotkeyAtsign() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, true);
+            await RotationDcs(_instDcs, true);
         }
         // DCSローテーション逆方向
-        private void ActionHotkeyShiftAtsign() {
+        private async Task ActionHotkeyShiftAtsign() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, false);
+            await RotationDcs(_instDcs, false);
         }
-        private void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, true);
+            await RotationDcs(_instDcs, true);
         }
 
         // HotKeyの登録

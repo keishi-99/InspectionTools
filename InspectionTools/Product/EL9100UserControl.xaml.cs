@@ -297,7 +297,7 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -313,7 +313,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値をmA単位に変換してキーボード入力としてEnterまで送信する
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -329,7 +329,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値をV単位でキーボード入力としてEnterまで送信する
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -345,7 +345,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM2切替(DCI)
-        private async void ActionHotkeyAtsign() {
+        private async Task ActionHotkeyAtsign() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -356,7 +356,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM2切替(DCV)
-        private async void ActionHotkeyBracketL() {
+        private async Task ActionHotkeyBracketL() {
             if (MainWindow.IsProcessing) { return; }
 
             try {

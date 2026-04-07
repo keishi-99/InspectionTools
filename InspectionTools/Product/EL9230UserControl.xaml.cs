@@ -305,26 +305,26 @@ namespace InspectionTools.Product {
         }
 
         // DCS01ローテーション
-        private async void ActionHotkeyComma() {
+        private async Task ActionHotkeyComma() {
             if (MainWindow.IsProcessing) { return; }
             await SwitchDcs(_instDcs01, true);
         }
-        private async void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
             await SwitchDcs(_instDcs01, true);
         }
         // DCS02ローテーション
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
             await SwitchDcs(_instDcs02, true);
         }
-        private async void ActionHotkeyNumMultiply() {
+        private async Task ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
             await SwitchDcs(_instDcs02, true);
         }
         // DMM01測定値コピー
-        private async void ActionHotkeySlash() => await ReadDmm01AndSendAsync();
-        private async void ActionHotkeyNumSubtract() => await ReadDmm01AndSendAsync();
+        private async Task ActionHotkeySlash() => await ReadDmm01AndSendAsync();
+        private async Task ActionHotkeyNumSubtract() => await ReadDmm01AndSendAsync();
 
         // DMM01測定値をμA単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmm01AndSendAsync() {
@@ -341,8 +341,8 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBackslash() => await ReadDmm02AndSendAsync();
-        private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeyBackslash() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
@@ -359,7 +359,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM01切り替え
-        private async void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
 
             try {

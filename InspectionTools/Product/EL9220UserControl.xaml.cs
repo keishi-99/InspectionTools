@@ -258,7 +258,7 @@ namespace InspectionTools.Product {
             }
         }
         // FG切り替え
-        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+        private async Task RotationFg(FgInstClass fgInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -284,7 +284,7 @@ namespace InspectionTools.Product {
         }
 
         // DCSローテーション
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
             try {
                 await SwitchDcs(_instDcs, true);
@@ -293,7 +293,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        private async void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
             try {
                 await SwitchDcs(_instDcs, true);
@@ -303,8 +303,8 @@ namespace InspectionTools.Product {
             }
         }
         // DMM測定値コピー
-        private async void ActionHotkeySlash()       => await ReadDmmAndSendAsync();
-        private async void ActionHotkeyNumSubtract() => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeySlash()       => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyNumSubtract() => await ReadDmmAndSendAsync();
 
         // DMM測定値をμA単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmmAndSendAsync() {
@@ -321,13 +321,13 @@ namespace InspectionTools.Product {
             }
         }
         // FGローテーション
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
-        private async void ActionHotkeyNumMultiply() {
+        private async Task ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
 
         // HotKeyの登録

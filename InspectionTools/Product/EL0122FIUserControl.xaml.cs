@@ -363,7 +363,7 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyColon() {
+        private async Task ActionHotkeyColon() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -379,7 +379,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -395,7 +395,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC1測定値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -411,7 +411,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC2測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -427,7 +427,7 @@ namespace InspectionTools.Product {
             }
         }
         // 電源ON
-        private async void ActionHotkeyAtsign() {
+        private async Task ActionHotkeyAtsign() {
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.On);
             } catch (Exception ex) {
@@ -436,7 +436,7 @@ namespace InspectionTools.Product {
             }
         }
         // 電源OFF
-        private async void ActionHotkeyBracketL() {
+        private async Task ActionHotkeyBracketL() {
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.Off);
             } catch (Exception ex) {
@@ -445,8 +445,8 @@ namespace InspectionTools.Product {
             }
         }
         // 一連の処理
-        private async void ActionHotkeyComma() => await ProcessAllDataWithDelayAsync();
-        private async void ActionHotkeyNumAdd() => await ProcessAllDataWithDelayAsync();
+        private async Task ActionHotkeyComma() => await ProcessAllDataWithDelayAsync();
+        private async Task ActionHotkeyNumAdd() => await ProcessAllDataWithDelayAsync();
 
         // テキストボックスの待機時間を読み取ってProcessAllDataAsyncを実行する
         private async Task ProcessAllDataWithDelayAsync() {
