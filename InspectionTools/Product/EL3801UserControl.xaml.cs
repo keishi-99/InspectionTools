@@ -227,7 +227,7 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -243,7 +243,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -259,7 +259,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM03測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {

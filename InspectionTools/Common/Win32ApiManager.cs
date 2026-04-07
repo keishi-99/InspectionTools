@@ -212,13 +212,13 @@ namespace InspectionTools.Common {
         }
 
         // ホットキーを表すクラス
-        public class Hotkey(uint modifier, System.Windows.Input.Key key, Action action) {
+        public class Hotkey(uint modifier, System.Windows.Input.Key key, Func<Task> action) {
             private static int _nextId = 0;
 
             public int Id { get; } = System.Threading.Interlocked.Increment(ref _nextId);
             public uint Modifier { get; set; } = modifier;
             public int VirtualKey { get; set; } = KeyInterop.VirtualKeyFromKey(key); // Key -> VKコード
-            public Action Action { get; set; } = action ?? throw new ArgumentNullException(nameof(action));
+            public Func<Task> Action { get; set; } = action ?? throw new ArgumentNullException(nameof(action));
         }
 
         public const uint ModNone = 0x0;

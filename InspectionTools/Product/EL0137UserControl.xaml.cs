@@ -315,7 +315,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC切り替え
-        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+        private async Task RotationOsc(OscInstClass oscInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -343,8 +343,8 @@ namespace InspectionTools.Product {
         }
 
         // DMM01測定値コピー
-        private async void ActionHotkeyColon()     => await ReadDmmAndSendAsync();
-        private async void ActionHotkeyNumDivide() => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyColon()     => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyNumDivide() => await ReadDmmAndSendAsync();
 
         // DMM測定値をuA単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmmAndSendAsync() {
@@ -361,14 +361,14 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private void ActionHotkeyBracketR()    { if (MainWindow.IsProcessing) { return; } RotationOsc(_instOsc, true); }
-        private void ActionHotkeyNumMultiply() { if (MainWindow.IsProcessing) { return; } RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyBracketR()    { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyNumMultiply() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
         // OSC meas1測定値コピー
-        private async void ActionHotkeySlash()       => await ReadOscAndSendAsync(1);
-        private async void ActionHotkeyNumSubtract() => await ReadOscAndSendAsync(1);
+        private async Task ActionHotkeySlash()       => await ReadOscAndSendAsync(1);
+        private async Task ActionHotkeyNumSubtract() => await ReadOscAndSendAsync(1);
         // OSC meas2測定値コピー
-        private async void ActionHotkeyBackslash() => await ReadOscAndSendAsync(2);
-        private async void ActionHotkeyNumAdd()    => await ReadOscAndSendAsync(2);
+        private async Task ActionHotkeyBackslash() => await ReadOscAndSendAsync(2);
+        private async Task ActionHotkeyNumAdd()    => await ReadOscAndSendAsync(2);
 
         // OSC測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadOscAndSendAsync(int meas) {
@@ -422,9 +422,9 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
-        private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
+        private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }

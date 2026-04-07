@@ -334,7 +334,7 @@ namespace InspectionTools.Product {
         }
 
         // FG切り替え
-        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+        private async Task RotationFg(FgInstClass fgInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -361,7 +361,7 @@ namespace InspectionTools.Product {
             }
         }
         // FG 出力ON/OFF
-        private async void OutputFg(string cmd) {
+        private async Task OutputFg(string cmd) {
             if (_disposed) return;
 
             try {
@@ -383,7 +383,7 @@ namespace InspectionTools.Product {
             await DeviceController.ConnectAsync(fgInstClass);
         }
         // OSC切り替え
-        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+        private async Task RotationOsc(OscInstClass oscInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -592,7 +592,7 @@ namespace InspectionTools.Product {
         }
 
         // OSC切り替え
-        private void ActionSwitchOscRange(bool isNext) {
+        private async Task ActionSwitchOscRange(bool isNext) {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -602,10 +602,10 @@ namespace InspectionTools.Product {
             // 11.パルス出力幅でのみ有効
             if (MainWindow.IsProcessing) { return; }
 
-            RotationOsc(_instOsc, isNext);
+            await RotationOsc(_instOsc, isNext);
         }
         // OSC測定値コピー
-        private async void ActionCopyOscValue() {
+        private async Task ActionCopyOscValue() {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -630,7 +630,7 @@ namespace InspectionTools.Product {
             sim.Keyboard.TextEntry(value.ToString(format));
         }
         // DMM測定値コピー
-        private async void ActionCopyDmmValue() {
+        private async Task ActionCopyDmmValue() {
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -690,7 +690,7 @@ namespace InspectionTools.Product {
             CountIncrement(1);
         }
         // FG切り替え
-        private void ActionSwitchFg(bool isNext) {
+        private async Task ActionSwitchFg(bool isNext) {
             if (MainWindow.IsProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
@@ -703,10 +703,10 @@ namespace InspectionTools.Product {
                 not "警報" and
                 not "パルス出力幅"
                 ) { return; }
-            RotationFg(_instFg, isNext);
+            await RotationFg(_instFg, isNext);
         }
         // OSC+FG切り替え
-        private void ActionSwitchFgOsc(bool isNext) {
+        private async Task ActionSwitchFgOsc(bool isNext) {
             if (MainWindow.IsProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
@@ -716,50 +716,52 @@ namespace InspectionTools.Product {
             if (windowText is
                 not "パルス出力幅"
                 ) { return; }
-            RotationFg(_instFg, isNext);
-            RotationOsc(_instOsc, isNext);
+            await RotationFg(_instFg, isNext);
+            await RotationOsc(_instOsc, isNext);
         }
 
         // メニュー切り替え
-        private void ActionHotkeyBracketL() { RotateMenu(1); }
-        private void ActionHotkeyNum7() { RotateMenu(1); }
+        private Task ActionHotkeyBracketL() { RotateMenu(1); return Task.CompletedTask; }
+        private Task ActionHotkeyNum7() { RotateMenu(1); return Task.CompletedTask; }
         // Tabキー
-        private static void ActionHotkeyAtsign() {
+        private static Task ActionHotkeyAtsign() {
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+            return Task.CompletedTask;
         }
-        private static void ActionHotkeyNum8() {
+        private static Task ActionHotkeyNum8() {
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+            return Task.CompletedTask;
         }
         // OSC切り替え
-        private void ActionHotkeyBracketR() { ActionSwitchOscRange(true); }
-        private void ActionHotkeyNum1() { ActionSwitchOscRange(true); }
+        private async Task ActionHotkeyBracketR() { await ActionSwitchOscRange(true); }
+        private async Task ActionHotkeyNum1() { await ActionSwitchOscRange(true); }
         // OSC測定値コピー
-        private void ActionHotkeyColon() { ActionCopyOscValue(); }
-        private void ActionHotkeyNum6() { ActionCopyOscValue(); }
+        private async Task ActionHotkeyColon() { await ActionCopyOscValue(); }
+        private async Task ActionHotkeyNum6() { await ActionCopyOscValue(); }
         // DMM測定値コピー
-        private void ActionHotkeySemiColon() { ActionCopyDmmValue(); }
-        private void ActionHotkeyNum9() { ActionCopyDmmValue(); }
+        private async Task ActionHotkeySemiColon() { await ActionCopyDmmValue(); }
+        private async Task ActionHotkeyNum9() { await ActionCopyDmmValue(); }
         // Serial貼り付け
-        private void ActionHotkeyPeriod() { ActionPasteSerial(); }
-        private void ActionHotkeyNumSubtract() { ActionPasteSerial(); }
+        private Task ActionHotkeyPeriod() { ActionPasteSerial(); return Task.CompletedTask; }
+        private Task ActionHotkeyNumSubtract() { ActionPasteSerial(); return Task.CompletedTask; }
         // Count貼り付け
-        private void ActionHotkeyComma() { ActionPasteCount(); }
-        private void ActionHotkeyNumAdd() { ActionPasteCount(); }
+        private Task ActionHotkeyComma() { ActionPasteCount(); return Task.CompletedTask; }
+        private Task ActionHotkeyNumAdd() { ActionPasteCount(); return Task.CompletedTask; }
         // FG切り替え
-        private void ActionHotkeyBackslash() { ActionSwitchFg(true); }
-        private void ActionHotkeyNum5() { ActionSwitchFg(true); }
-        private void ActionHotkeyShiftBackslash() { ActionSwitchFg(false); }
-        private void ActionHotkeyShiftNum5() { ActionSwitchFg(false); }
+        private async Task ActionHotkeyBackslash() { await ActionSwitchFg(true); }
+        private async Task ActionHotkeyNum5() { await ActionSwitchFg(true); }
+        private async Task ActionHotkeyShiftBackslash() { await ActionSwitchFg(false); }
+        private async Task ActionHotkeyShiftNum5() { await ActionSwitchFg(false); }
         // Tabキー送信後にFGを次へローテーション
-        private void ActionHotkeyNum2() {
+        private async Task ActionHotkeyNum2() {
             var sim = new InputSimulator();
             sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            ActionSwitchFg(true);
+            await ActionSwitchFg(true);
         }
         // Tabキー送信後にFG+OSCをローテーション（パルス出力幅ウィンドウのみ有効）
-        private void ActionHotkeyNum3() {
+        private async Task ActionHotkeyNum3() {
             if (MainWindow.IsProcessing) { return; }
 
             var sim = new InputSimulator();
@@ -776,7 +778,7 @@ namespace InspectionTools.Product {
                 not "警報" and
                 not "パルス出力幅"
                 ) { return; }
-            ActionSwitchFgOsc(true);
+            await ActionSwitchFgOsc(true);
         }
 
         // HotKeyの登録
@@ -850,29 +852,29 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
-        private void OscRotationButton_Click(object sender, RoutedEventArgs e) {
+        private async void OscRotationButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
-        private void FgRotateBackButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgRotateBackButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, false);
+            await RotationFg(_instFg, false);
         }
-        private void FgRotateNextButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgRotateNextButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
-        private void FgOutputOnButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgOutputOnButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            OutputFg("SIG 1");
+            await OutputFg("SIG 1");
         }
-        private void FgOutputOffButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgOutputOffButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            OutputFg("SIG 0");
+            await OutputFg("SIG 0");
         }
-        private void FgTriggerButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgTriggerButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            OutputFg("TRG 1");
+            await OutputFg("TRG 1");
         }
 
         private void MenuRotateBackButton_Click(object sender, RoutedEventArgs e) { RotateMenu(-1); }

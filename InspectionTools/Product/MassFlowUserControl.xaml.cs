@@ -577,7 +577,7 @@ namespace InspectionTools.Product {
         }
 
         // DCS切り替え
-        private async void SwitchDcs(int i) {
+        private async Task SwitchDcs(int i) {
             if (_disposed) return;
 
             VisibleProgressImage(true);
@@ -650,7 +650,7 @@ namespace InspectionTools.Product {
         }
 
         // FG&OSCを1ステップ回転する（FG台数に応じてオーバーロードを選択）
-        private async void RotationFgOsc(bool isNext) {
+        private async Task RotationFgOsc(bool isNext) {
             if (_disposed) return;
 
             try {
@@ -830,7 +830,7 @@ namespace InspectionTools.Product {
             _ = PostMessage(childHandles2[0], BmClick, 0, 0);    // メッセージウィンドウ「はい」クリック
         }
         // アナログトリムオープン
-        private async void AnalogTrimOpen(IntPtr hWnd) {
+        private async Task AnalogTrimOpen(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
 
@@ -872,7 +872,7 @@ namespace InspectionTools.Product {
             VisibleProgressImage(false);
         }
         // アナログトリムスタート
-        private async void AnalogTrimStart(IntPtr hWnd) {
+        private async Task AnalogTrimStart(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
 
@@ -899,7 +899,7 @@ namespace InspectionTools.Product {
             VisibleProgressImage(false);
         }
         // アナログトリム4mA
-        private async void AnalogTrim4mA(IntPtr hWnd) {
+        private async Task AnalogTrim4mA(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
 
@@ -916,7 +916,7 @@ namespace InspectionTools.Product {
             VisibleProgressImage(false);
         }
         // アナログトリム20mA
-        private async void AnalogTrim20mA(IntPtr hWnd) {
+        private async Task AnalogTrim20mA(IntPtr hWnd) {
             if (MainWindow.IsProcessing) { return; }
             VisibleProgressImage(true);
 
@@ -946,11 +946,11 @@ namespace InspectionTools.Product {
         private static partial Regex MassFlowRegex();
 
         // アナログトリムスタート または OP-650-102をアクティブ
-        private void ActionHotkeyNumAdd() {
+        private async Task ActionHotkeyNumAdd() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
                 case "ANLOG TRIM": {
-                        AnalogTrimStart(hWnd);
+                        await AnalogTrimStart(hWnd);
                         break;
                     }
                 default: {
@@ -972,7 +972,7 @@ namespace InspectionTools.Product {
             }
         }
         // OP-650-102 をアクティブ
-        private static void ActionHotkeyMinus() {
+        private static Task ActionHotkeyMinus() {
             //すべてのプロセスを列挙する
             foreach (var p in Process.GetProcesses()) {
                 // メインウィンドウハンドルが存在し、かつタイトルが空でないことを確認
@@ -987,14 +987,16 @@ namespace InspectionTools.Product {
                     }
                 }
             }
+            return Task.CompletedTask;
         }
         // マルチ流量計渦 [V01.08] をアクティブ
-        private static void ActionHotkeyTilde() {
+        private static Task ActionHotkeyTilde() {
             var hWnd = FindWindow(null, "マルチ流量計渦 [V01.08]");
             ActivateAndBringToFront(hWnd);
+            return Task.CompletedTask;
         }
         // アナログトリムクローズ または マルチ流量計渦 [V01.08]をアクティブ
-        private void ActionHotkeyNumSubtract() {
+        private Task ActionHotkeyNumSubtract() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
                 case "ANLOG TRIM": {
@@ -1014,60 +1016,63 @@ namespace InspectionTools.Product {
                         break;
                     }
             }
+            return Task.CompletedTask;
         }
         // アナログトリム4mA または FG&OSCローテーション
-        private void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
                 case "ANLOG TRIM": {
-                        AnalogTrim4mA(hWnd);
+                        await AnalogTrim4mA(hWnd);
                         break;
                     }
                 default: {
                         if (MainWindow.IsProcessing) { return; }
-                        RotationFgOsc(false);
+                        await RotationFgOsc(false);
                         break;
                     }
             }
         }
         // アナログトリム20mA または FG&OSCローテーション
-        private void ActionHotkeyNumMultiply() {
+        private async Task ActionHotkeyNumMultiply() {
             var (hWnd, windowText) = GetActiveWindow;
             switch (windowText.ToString()) {
                 case "ANLOG TRIM": {
-                        AnalogTrim20mA(hWnd);
+                        await AnalogTrim20mA(hWnd);
                         break;
                     }
                 default: {
                         if (MainWindow.IsProcessing) { return; }
-                        RotationFgOsc(true);
+                        await RotationFgOsc(true);
                         break;
                     }
             }
         }
         // 受信ボタン実行
-        private static void ActionHotkeyAtsign() {
+        private static Task ActionHotkeyAtsign() {
             var (hWnd, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
                 ReceiveData(hWnd);
             }
+            return Task.CompletedTask;
         }
         // Serialインクリメント＆コピー
-        private void ActionHotkeyBracketL() {
+        private Task ActionHotkeyBracketL() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() != "名前を付けて保存") {
-                return;
+                return Task.CompletedTask;
             }
             if (string.IsNullOrEmpty(SerialTextBox.Text)) {
-                return;
+                return Task.CompletedTask;
             }
 
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry(SerialTextBox.Text);
             SerialIncrement(1);
+            return Task.CompletedTask;
         }
         // キャリブレーション値コピー
-        private async void ActionHotkeySemiColon() {
+        private async Task ActionHotkeySemiColon() {
             try {
                 VisibleProgressImage(true);
 
@@ -1098,16 +1103,16 @@ namespace InspectionTools.Product {
             }
         }
         // FG&OSCローテーション
-        private void ActionHotkeyColon() {
+        private async Task ActionHotkeyColon() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFgOsc(false);
+            await RotationFgOsc(false);
         }
-        private void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFgOsc(true);
+            await RotationFgOsc(true);
         }
         // DMM値コピー
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadDmm(_instDmm);
@@ -1115,7 +1120,7 @@ namespace InspectionTools.Product {
             sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
         }
         // OSC mes1値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 1);
@@ -1124,7 +1129,7 @@ namespace InspectionTools.Product {
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // OSC mes2値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 2);
@@ -1133,14 +1138,14 @@ namespace InspectionTools.Product {
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // DCS切り替え
-        private void ActionHotkeyNum0() {
+        private async Task ActionHotkeyNum0() {
             var (_, windowText) = GetActiveWindow;
 
             var sim = new InputSimulator();
 
             switch (windowText.ToString()) {
                 case "マルチ流量計渦 [V01.08]": {
-                        SwitchDcs(0);
+                        await SwitchDcs(0);
                         break;
                     }
                 case "FMRemote2014": {
@@ -1153,51 +1158,51 @@ namespace InspectionTools.Product {
                     }
             }
         }
-        private void ActionHotkeyNum1() {
+        private async Task ActionHotkeyNum1() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
                 if (MainWindow.IsProcessing) { return; }
-                SwitchDcs(1);
+                await SwitchDcs(1);
                 return;
             }
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry("1");
         }
-        private void ActionHotkeyNum2() {
+        private async Task ActionHotkeyNum2() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
                 if (MainWindow.IsProcessing) { return; }
-                SwitchDcs(2);
+                await SwitchDcs(2);
                 return;
             }
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry("2");
         }
-        private void ActionHotkeyNum3() {
+        private async Task ActionHotkeyNum3() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
                 if (MainWindow.IsProcessing) { return; }
-                SwitchDcs(3);
+                await SwitchDcs(3);
                 return;
             }
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry("3");
         }
-        private void ActionHotkeyNum4() {
+        private async Task ActionHotkeyNum4() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
                 if (MainWindow.IsProcessing) { return; }
-                SwitchDcs(4);
+                await SwitchDcs(4);
                 return;
             }
             var sim = new InputSimulator();
             sim.Keyboard.TextEntry("4");
         }
         // アクティブウィンドウに応じてアナログトリムを開くか7をキー入力する
-        private void ActionHotkeyNum7() {
+        private async Task ActionHotkeyNum7() {
             var (hWnd, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                AnalogTrimOpen(hWnd);
+                await AnalogTrimOpen(hWnd);
                 return;
             }
             var sim = new InputSimulator();
@@ -1295,19 +1300,19 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Checked(object sender, RoutedEventArgs e) { SetHotKey(); }
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
-        private void DcsOffButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(0); }
-        private void Dcs2VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(1); }
-        private void Dcs8VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(2); }
-        private void Dcs1VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(3); }
-        private void Dcs7VButton_Click(object sender, RoutedEventArgs e) { SwitchDcs(4); }
+        private async void DcsOffButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(0); }
+        private async void Dcs2VButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(1); }
+        private async void Dcs8VButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(2); }
+        private async void Dcs1VButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(3); }
+        private async void Dcs7VButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(4); }
 
-        private void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFgOsc(true);
+            await RotationFgOsc(true);
         }
-        private void FgOscRotationRButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgOscRotationRButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFgOsc(false);
+            await RotationFgOsc(false);
         }
 
         private void SerialLockCheckBox_Checked(object sender, RoutedEventArgs e) { SerialLockToggle(); }

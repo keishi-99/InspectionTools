@@ -222,7 +222,8 @@ namespace InspectionTools {
             if (msg == WmHotKey) {
                 int id = wParam.ToInt32();
                 var hotkey = HotkeysList.FirstOrDefault(h => h.Id == id);
-                hotkey?.Action.Invoke();
+                // Func<Task> なので戻り値を破棄（fire-and-forget）
+                _ = hotkey?.Action.Invoke();
                 handled = true;
             }
             return IntPtr.Zero;

@@ -267,7 +267,7 @@ namespace InspectionTools.Product {
         }
 
         // OSC mes2値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -282,7 +282,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC mes3値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -297,8 +297,8 @@ namespace InspectionTools.Product {
             }
         }
         // DMM測定値コピー
-        private async void ActionHotkeyPeriod()      => await ReadDmmAndSendAsync();
-        private async void ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyPeriod()      => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync();
 
         // DMM測定値を取得してモードに応じた単位に変換しキーボード入力としてEnterまで送信する
         private async Task ReadDmmAndSendAsync() {
@@ -322,7 +322,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM切り替え
-        private async void ActionHotkeyComma() {
+        private async Task ActionHotkeyComma() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -334,7 +334,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        private async void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
 
             try {

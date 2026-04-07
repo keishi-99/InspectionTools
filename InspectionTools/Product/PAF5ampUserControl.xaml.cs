@@ -273,7 +273,7 @@ namespace InspectionTools.Product {
             }
         }
         // FG切り替え
-        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+        private async Task RotationFg(FgInstClass fgInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -298,7 +298,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC切り替え
-        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+        private async Task RotationOsc(OscInstClass oscInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -324,7 +324,7 @@ namespace InspectionTools.Product {
         }
 
         // 電源ON
-        private async void ActionHotkeyAtsign() {
+        private async Task ActionHotkeyAtsign() {
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.On);
             } catch (Exception ex) {
@@ -333,7 +333,7 @@ namespace InspectionTools.Product {
             }
         }
         // 電源OFF
-        private async void ActionHotkeyBracketL() {
+        private async Task ActionHotkeyBracketL() {
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.Off);
             } catch (Exception ex) {
@@ -342,7 +342,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM測定値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -358,14 +358,14 @@ namespace InspectionTools.Product {
             }
         }
         // FGローテーション
-        private void ActionHotkeyColon() {
+        private async Task ActionHotkeyColon() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
         // OSCローテーション
-        private void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
 
         // HotKeyの登録

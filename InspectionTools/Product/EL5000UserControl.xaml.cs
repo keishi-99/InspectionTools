@@ -309,7 +309,7 @@ namespace InspectionTools.Product {
             }
         }
         // FGローテーション
-        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+        private async Task RotationFg(FgInstClass fgInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -331,7 +331,7 @@ namespace InspectionTools.Product {
             }
         }
         // DCSローテーション
-        private async void RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
+        private async Task RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -404,8 +404,8 @@ namespace InspectionTools.Product {
         }
 
         // CNT測定値コピー
-        private async void ActionHotkeyComma() => await ReadCntAndSendAsync();
-        private async void ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
+        private async Task ActionHotkeyComma() => await ReadCntAndSendAsync();
+        private async Task ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
 
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
@@ -422,25 +422,25 @@ namespace InspectionTools.Product {
             }
         }
         // FGローテーション
-        private void ActionHotkeyColon() {
+        private async Task ActionHotkeyColon() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
         // DCSローテーション
-        private void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, true);
+            await RotationDcs(_instDcs, true);
         }
-        private void ActionHotkeyShiftBracketR() {
+        private async Task ActionHotkeyShiftBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, false);
+            await RotationDcs(_instDcs, false);
         }
-        private void ActionHotkeyNumMultiply() {
+        private async Task ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
-            RotationDcs(_instDcs, true);
+            await RotationDcs(_instDcs, true);
         }
         // DMM01測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -456,8 +456,8 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() => await ReadDmm02AndSendAsync();
-        private async void ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeySlash() => await ReadDmm02AndSendAsync();
+        private async Task ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
@@ -481,7 +481,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02切り替え
-        private async void ActionHotkeyBackSlash() {
+        private async Task ActionHotkeyBackSlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {

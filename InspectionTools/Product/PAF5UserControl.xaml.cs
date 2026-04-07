@@ -298,7 +298,7 @@ namespace InspectionTools.Product {
             }
         }
         // FG切り替え
-        private async void RotationFg(FgInstClass fgInstClass, bool isNext) {
+        private async Task RotationFg(FgInstClass fgInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -325,7 +325,7 @@ namespace InspectionTools.Product {
             }
         }
         // OSC切り替え
-        private async void RotationOsc(OscInstClass oscInstClass, bool isNext) {
+        private async Task RotationOsc(OscInstClass oscInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -353,20 +353,20 @@ namespace InspectionTools.Product {
         }
 
         // FGローテーション
-        private void ActionHotkeyBracketR() {
+        private async Task ActionHotkeyBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
-        private void ActionHotkeyShiftBracketR() {
+        private async Task ActionHotkeyShiftBracketR() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, false);
+            await RotationFg(_instFg, false);
         }
-        private void ActionHotkeyNumMultiply() {
+        private async Task ActionHotkeyNumMultiply() {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
         // DMM01測定値コピー
-        private async void ActionHotkeyPeriod() {
+        private async Task ActionHotkeyPeriod() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -382,7 +382,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM02測定値コピー
-        private async void ActionHotkeySlash() {
+        private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -398,16 +398,16 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private void ActionHotkeyColon() {
+        private async Task ActionHotkeyColon() {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
-        private void ActionHotkeyNumDivide() {
+        private async Task ActionHotkeyNumDivide() {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
         // OSC meas1測定値コピー
-        private async void ActionHotkeyBackslash() {
+        private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             try {
@@ -468,14 +468,14 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         // FGを次の設定に切り替えるボタンハンドラ
-        private void FgRotateButton_Click(object sender, RoutedEventArgs e) {
+        private async void FgRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationFg(_instFg, true);
+            await RotationFg(_instFg, true);
         }
         // OSCを次の設定に切り替えるボタンハンドラ
-        private void OscRotateButton_Click(object sender, RoutedEventArgs e) {
+        private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
             if (MainWindow.IsProcessing) { return; }
-            RotationOsc(_instOsc, true);
+            await RotationOsc(_instOsc, true);
         }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }
 
