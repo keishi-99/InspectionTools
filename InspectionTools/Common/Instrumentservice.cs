@@ -7,13 +7,26 @@ namespace InspectionTools.Common {
     public static class InstrumentService {
 
         /// <summary>
+        /// DCS 測定値取得
+        /// </summary>
+        public static async Task<decimal> ReadDcsAsync(DcsInstClass dcsInstClass) {
+            dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
+                2 => "MEAS:CURR?",
+                _ => throw new InvalidOperationException($"未対応の SignalType: {dcsInstClass.SignalType}"),
+            };
+
+            var result = await DeviceController.ConnectAsync(dcsInstClass);
+            return ParseDecimal(result);
+        }
+
+        /// <summary>
         /// DMM 測定値取得
         /// </summary>
         public static async Task<decimal> ReadDmmAsync(DmmInstClass dmmInstClass) {
             dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
                 1 => string.Empty,
                 2 => "FETC?",
-                _ => throw new ApplicationException($"未対応の SignalType: {dmmInstClass.SignalType}"),
+                _ => throw new InvalidOperationException($"未対応の SignalType: {dmmInstClass.SignalType}"),
             };
 
             var result = await DeviceController.ConnectAsync(dmmInstClass);
@@ -26,7 +39,7 @@ namespace InspectionTools.Common {
         public static async Task<decimal> ReadCntAsync(CntInstClass cntInstClass) {
             (cntInstClass.InstCommand, cntInstClass.Query) = cntInstClass.SignalType switch {
                 3 => (":MEAS?XNOW", true),
-                _ => throw new ApplicationException($"未対応の SignalType: {cntInstClass.SignalType}"),
+                _ => throw new InvalidOperationException($"未対応の SignalType: {cntInstClass.SignalType}"),
             };
 
             var result = await DeviceController.ConnectAsync(cntInstClass);

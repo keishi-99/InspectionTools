@@ -38,8 +38,13 @@
             <Button
                 Width="100"
                 Margin="5"
-                Click="EL5000_Click"
-                Content="EL5000" />
+                Click="EL5000AC_Click"
+                Content="EL5000AC" />
+            <Button
+                Width="100"
+                Margin="5"
+                Click="EL5000DC_Click"
+                Content="EL5000DC" />
             <Button
                 Width="100"
                 Margin="5"

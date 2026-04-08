@@ -12,9 +12,9 @@ using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
-    /// EL5000UserControl.xaml の相互作用ロジック
+    /// EL5000DCUserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL5000UserControl : UserControl, IMainWindowAware, IDisposable {
+    public partial class EL5000DCUserControl : UserControl, IMainWindowAware, IDisposable {
 
         private MainWindow? _mainWindow;
         private bool _disposed = false;
@@ -25,16 +25,16 @@ namespace InspectionTools.Product {
         }
 
         private readonly CntInstClass _instCnt = new();
+        private readonly DcsInstClass _instDcs01 = new();
+        private readonly DcsInstClass _instDcs02 = new();
+        private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
-        private readonly DcsInstClass _instDcs = new();
-        private readonly DmmInstClass _instDmm01 = new();
-        private readonly DmmInstClass _instDmm02 = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         readonly Stopwatch _stopwatch = new();
         readonly DispatcherTimer _timer = new();
 
-        public EL5000UserControl() {
+        public EL5000DCUserControl() {
             InitializeComponent();
 
             _timer.Interval = new TimeSpan(0, 0, 0, 1);
@@ -71,10 +71,10 @@ namespace InspectionTools.Product {
 
                     // 計測器の解放
                     InstrumentHelper.SafeDispose(_instCnt);
-                    InstrumentHelper.SafeDispose(_instDcs);
+                    InstrumentHelper.SafeDispose(_instDcs01);
+                    InstrumentHelper.SafeDispose(_instDcs02);
                     InstrumentHelper.SafeDispose(_instFg);
-                    InstrumentHelper.SafeDispose(_instDmm01);
-                    InstrumentHelper.SafeDispose(_instDmm02);
+                    InstrumentHelper.SafeDispose(_instDmm);
 
                     // 辞書のクリア
                     _dicCommands.Clear();
@@ -101,7 +101,7 @@ namespace InspectionTools.Product {
         /// <summary>
         /// ファイナライザ
         /// </summary>
-        ~EL5000UserControl() {
+        ~EL5000DCUserControl() {
             Dispose(false);
         }
 
@@ -119,9 +119,9 @@ namespace InspectionTools.Product {
             // デジタルマルチメータ、ファンクションジェネレータ、オシロスコープのコンボボックスを更新する
             MainWindow.UpdateComboBox(CntComboBox, "ユニバーサルカウンタ", [3]);
             MainWindow.UpdateComboBox(FgComboBox, "ファンクションジェネレータ", [2]);
-            MainWindow.UpdateComboBox(DcsComboBox, "電流電圧発生器", [2]);
-            MainWindow.UpdateComboBox(Dmm01ComboBox, "デジタルマルチメータ", [1, 2]);
-            MainWindow.UpdateComboBox(Dmm02ComboBox, "デジタルマルチメータ", [1, 2]);
+            MainWindow.UpdateComboBox(Dcs01ComboBox, "パワーサプライ", [2]);
+            MainWindow.UpdateComboBox(Dcs02ComboBox, "電流電圧発生器", [2]);
+            MainWindow.UpdateComboBox(DmmComboBox, "デジタルマルチメータ", [1, 2]);
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
@@ -133,9 +133,9 @@ namespace InspectionTools.Product {
         private void SelectInst() {
             MainWindow.GetVisaAddress(_instCnt, CntComboBox);
             MainWindow.GetVisaAddress(_instFg, FgComboBox);
-            MainWindow.GetVisaAddress(_instDcs, DcsComboBox);
-            MainWindow.GetVisaAddress(_instDmm01, Dmm01ComboBox);
-            MainWindow.GetVisaAddress(_instDmm02, Dmm02ComboBox);
+            MainWindow.GetVisaAddress(_instDcs01, Dcs01ComboBox);
+            MainWindow.GetVisaAddress(_instDcs02, Dcs02ComboBox);
+            MainWindow.GetVisaAddress(_instDmm, DmmComboBox);
         }
         // 機器設定辞書登録
         private void RegDictionary() {
@@ -148,50 +148,6 @@ namespace InspectionTools.Product {
                     ]
                 );
 
-            _dicCommands[_instDmm01] =
-                (
-                    Init: new() { DmmMode = DmmMode.ACI, Adc = "*RST,F6,R6,*OPC?", Visa = "*RST;:INIT:CONT 1;:CONF:CURR:AC;*OPC?", Query = true },
-                    Settings: []
-                );
-
-            _dicCommands[_instDmm02] =
-                (
-                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
-                    Settings: [
-                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
-                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
-                        ]
-                );
-
-            _dicCommands[_instDcs] =
-                (
-                    Init: new() { DcsMode = DcsMode.Off, Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
-                    Settings: [
-                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
-                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
-                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
-                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                    ]
-                );
-
             _dicCommands[_instFg] =
                 (
                     Init: new() { Visa = "*RST;:FUNC SQU;:FREQ 7E3;:VOLT 3.0VPP;:VOLT:OFFS 1.5;*OPC?", Query = true },
@@ -200,14 +156,61 @@ namespace InspectionTools.Product {
                             new() { Visa = ":OUTP ON;*OPC?" },
                     ]
                 );
+
+            _dicCommands[_instDcs01] =
+                (
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 30;*OPC?", Query = true },
+                    Settings: [
+                        new() { DcsMode = DcsMode.On,   Visa = ":OUTPUT ON;*OPC?",  Query = true },
+                        new() { DcsMode = DcsMode.Off,  Visa = ":OUTPUT OFF;*OPC?", Query = true },
+                    ]
+                );
+
+            _dicCommands[_instDcs02] =
+                (
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "SIR3,SOI+0,SBY", Gpib = "RCF5R6S0EO0E" },
+                    Settings: [
+                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
+                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
+                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                    ]
+                );
+
+            _dicCommands[_instDmm] =
+                (
+                    Init: new() { DmmMode = DmmMode.DCV, Adc = "*RST,F1,R0,*OPC?", Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                    Settings: [
+                            new() { DmmMode = DmmMode.DCV,   Adc= "*RST,F1,R0,*OPC?",    Visa = "*RST;:INIT:CONT 1;:VOLT:DC:RANG:AUTO ON;*OPC?", Query = true },
+                            new() { DmmMode = DmmMode.DCI,   Adc= "*RST,F5,R6,*OPC?",    Visa = "*RST;:INIT:CONT 1;:CONF:CURR:DC;*OPC?", Query = true },
+                        ]
+                );
         }
         // 機器初期設定
         private void FormatSet() {
             (_instCnt.InstCommand, _instCnt.Query) = ResolveCommand(_dicCommands[_instCnt].Init, _instCnt.SignalType);
             (_instFg.InstCommand, _instFg.Query) = ResolveCommand(_dicCommands[_instFg].Init, _instFg.SignalType);
-            (_instDcs.InstCommand, _instDcs.Query) = ResolveCommand(_dicCommands[_instDcs].Init, _instDcs.SignalType);
-            (_instDmm01.InstCommand, _instDmm01.Query) = ResolveCommand(_dicCommands[_instDmm01].Init, _instDmm01.SignalType);
-            (_instDmm02.InstCommand, _instDmm02.Query) = ResolveCommand(_dicCommands[_instDmm02].Init, _instDmm02.SignalType);
+            (_instDcs01.InstCommand, _instDcs01.Query) = ResolveCommand(_dicCommands[_instDcs01].Init, _instDcs01.SignalType);
+            (_instDcs02.InstCommand, _instDcs02.Query) = ResolveCommand(_dicCommands[_instDcs02].Init, _instDcs02.SignalType);
+            (_instDmm.InstCommand, _instDmm.Query) = ResolveCommand(_dicCommands[_instDmm].Init, _instDmm.SignalType);
         }
         // 機器接続
         private async Task ConnectInstAsync() {
@@ -220,32 +223,31 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(true);
 
                 SelectInst();
-                ValidateDmmSelection(_instDmm01.Index, _instDmm02.Index);
 
                 RegDictionary();
                 FormatSet();
 
-                InstClass[] devices = [_instCnt, _instFg, _instDcs, _instDmm01, _instDmm02];
+                InstClass[] devices = [_instCnt, _instFg, _instDcs01, _instDcs02, _instDmm];
 
                 await DeviceConnectionHelper.ConnectInParallelAsync(devices);
 
-                if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+                if (!string.IsNullOrEmpty(_instDcs01.VisaAddress)) {
+                    _instDcs01.CurrentMode = _dicCommands[_instDcs01].Init.DcsMode;
+                }
+                if (!string.IsNullOrEmpty(_instDcs02.VisaAddress)) {
                     DcsNumberLabel.Text = "00";
                     DcsRangeLabel.Text = "OFF";
-                    _instDcs.CurrentMode = _dicCommands[_instDcs].Init.DcsMode;
+                    _instDcs02.CurrentMode = _dicCommands[_instDcs02].Init.DcsMode;
                 }
-                if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
-                    _instDmm01.CurrentMode = _dicCommands[_instDmm01].Init.DmmMode;
-                }
-                if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
-                    _instDmm02.CurrentMode = _dicCommands[_instDmm02].Init.DmmMode;
+                if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
+                    _instDmm.CurrentMode = _dicCommands[_instDmm].Init.DmmMode;
                 }
 
                 CntComboBox.IsEnabled = false;
                 FgComboBox.IsEnabled = false;
-                DcsComboBox.IsEnabled = false;
-                Dmm01ComboBox.IsEnabled = false;
-                Dmm02ComboBox.IsEnabled = false;
+                Dcs01ComboBox.IsEnabled = false;
+                Dcs02ComboBox.IsEnabled = false;
+                DmmComboBox.IsEnabled = false;
                 ConnectButton.IsEnabled = false;
                 ReleaseButton.IsEnabled = true;
 
@@ -266,16 +268,16 @@ namespace InspectionTools.Product {
 
             _instCnt.ResetProperties();
             _instFg.ResetProperties();
-            _instDcs.ResetProperties();
-            _instDmm01.ResetProperties();
-            _instDmm02.ResetProperties();
+            _instDcs01.ResetProperties();
+            _instDcs02.ResetProperties();
+            _instDmm.ResetProperties();
 
             _mainWindow?.SetButtonEnabled(ProductListButtonName, true);
             CntComboBox.IsEnabled = true;
             FgComboBox.IsEnabled = true;
-            DcsComboBox.IsEnabled = true;
-            Dmm01ComboBox.IsEnabled = true;
-            Dmm02ComboBox.IsEnabled = true;
+            Dcs01ComboBox.IsEnabled = true;
+            Dcs02ComboBox.IsEnabled = true;
+            DmmComboBox.IsEnabled = true;
             ConnectButton.IsEnabled = true;
             ReleaseButton.IsEnabled = false;
             HotKeyCheckBox.IsChecked = false;
@@ -330,8 +332,44 @@ namespace InspectionTools.Product {
                 VisibleProgressImage(false);
             }
         }
-        // DCSローテーション
-        private async Task RotationDcs(DcsInstClass dcsInstClass, bool isNext) {
+        // DCS01ON-OFF
+        private async Task SwitchDcs01Async(DcsInstClass dcsInstClass, DcsMode mode) {
+            ThrowIfDisposed();
+
+            try {
+                VisibleProgressImage(true);
+
+                var settings = _dicCommands[dcsInstClass].Settings;
+                var sw = settings.FirstOrDefault(s => s.DcsMode == mode) ?? throw new InvalidOperationException($"'{mode}' に対応する設定が見つかりません。");
+                (dcsInstClass.InstCommand, dcsInstClass.Query) = ResolveCommand(sw, dcsInstClass.SignalType);
+                dcsInstClass.CurrentMode = mode;
+
+                await DeviceController.ConnectAsync(dcsInstClass);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // DCS01電流値取得
+        private async Task<decimal> ReadDcs(DcsInstClass dcsInstClass) {
+            ThrowIfDisposed();
+
+            try {
+                VisibleProgressImage(true);
+
+                var output = await InstrumentService.ReadDcsAsync(dcsInstClass);
+
+                return output;
+
+            } finally {
+                VisibleProgressImage(false);
+            }
+        }
+        // DCS02ローテーション
+        private async Task RotationDcs02(DcsInstClass dcsInstClass, bool isNext) {
             if (_disposed) return;
 
             try {
@@ -406,46 +444,11 @@ namespace InspectionTools.Product {
         // CNT測定値コピー
         private async Task ActionHotkeyComma() => await ReadCntAndSendAsync();
         private async Task ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
-
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadCnt(_instCnt);
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString());
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-        // FGローテーション
-        private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
-            await RotationFg(_instFg, true);
-        }
-        // DCSローテーション
-        private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
-            await RotationDcs(_instDcs, true);
-        }
-        private async Task ActionHotkeyShiftBracketR() {
-            if (MainWindow.IsProcessing) { return; }
-            await RotationDcs(_instDcs, false);
-        }
-        private async Task ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
-            await RotationDcs(_instDcs, true);
-        }
-        // DMM01測定値コピー
-        private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm01);
-
                 var sim = new InputSimulator();
                 sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
                 await Task.Delay(100);
@@ -455,17 +458,64 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+        // FGローテーション
+        private async Task ActionHotkeyColon() {
+            if (MainWindow.IsProcessing) { return; }
+            await RotationFg(_instFg, true);
+        }
+
+        // DCS01電源切り替え
+        private async Task ActionHotkeyBracketL() {
+            if (MainWindow.IsProcessing) { return; }
+            await SwitchDcs01Async(_instDcs01, DcsMode.On);
+        }
+        private async Task ActionHotkeyAtsign() {
+            if (MainWindow.IsProcessing) { return; }
+            await SwitchDcs01Async(_instDcs01, DcsMode.Off);
+        }
+        // DCS01電流値値コピー
+        private async Task ActionHotkeyPeriod() {
+            if (MainWindow.IsProcessing) { return; }
+
+            try {
+                var output = await ReadDcs(_instDcs01);
+
+                var sim = new InputSimulator();
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                await Task.Delay(100);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // DCS02ローテーション
+        private async Task ActionHotkeyBracketR() {
+            if (MainWindow.IsProcessing) { return; }
+            await RotationDcs02(_instDcs02, true);
+        }
+        private async Task ActionHotkeyShiftBracketR() {
+            if (MainWindow.IsProcessing) { return; }
+            await RotationDcs02(_instDcs02, false);
+        }
+        private async Task ActionHotkeyNumMultiply() {
+            if (MainWindow.IsProcessing) { return; }
+            await RotationDcs02(_instDcs02, true);
+        }
+
         // DMM02測定値コピー
         private async Task ActionHotkeySlash() => await ReadDmm02AndSendAsync();
         private async Task ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
-
         // DMM02測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
-                var output = await ReadDmm(_instDmm02);
+                var output = await ReadDmm(_instDmm);
 
-                var outputValue = _instDmm02.CurrentMode switch {
+                var outputValue = _instDmm.CurrentMode switch {
                     DmmMode.DCI => output * 1000,
                     DmmMode.DCV => output,
                     _ => output,
@@ -486,7 +536,7 @@ namespace InspectionTools.Product {
 
             try {
 
-                await SwitchDmm(_instDmm02, true);
+                await SwitchDmm(_instDmm, true);
 
             } catch (Exception ex) {
                 Release();
@@ -511,19 +561,21 @@ namespace InspectionTools.Product {
                     new(ModNone, HotkeyColon, ActionHotkeyColon),
                 ]);
             }
-            if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
+            if (!string.IsNullOrEmpty(_instDcs01.VisaAddress)) {
+                MainWindow.HotkeysList.AddRange([
+                    new(ModNone, HotkeyBracketL, ActionHotkeyBracketL),
+                    new(ModNone, HotkeyAtsign, ActionHotkeyAtsign),
+                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
+                ]);
+            }
+            if (!string.IsNullOrEmpty(_instDcs02.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeyBracketR, ActionHotkeyBracketR),
                     new(ModShift, HotkeyBracketR, ActionHotkeyShiftBracketR),
                     new(ModNone, HotkeyNumMultiply, ActionHotkeyNumMultiply),
                 ]);
             }
-            if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
-                MainWindow.HotkeysList.AddRange([
-                    new(ModNone, HotkeyPeriod, ActionHotkeyPeriod),
-                ]);
-            }
-            if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
+            if (!string.IsNullOrEmpty(_instDmm.VisaAddress)) {
                 MainWindow.HotkeysList.AddRange([
                     new(ModNone, HotkeySlash, ActionHotkeySlash),
                     new(ModNone, HotkeyBackslash, ActionHotkeyBackSlash),

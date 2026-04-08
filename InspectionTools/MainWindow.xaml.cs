@@ -113,7 +113,8 @@ namespace InspectionTools {
                 "EL1812" => new Product.EL1812UserControl(),
                 "EL3801" => new Product.EL3801UserControl(),
                 "EL4001" => new Product.EL4001UserControl(),
-                "EL5000" => new Product.EL5000UserControl(),
+                "EL5000AC" => new Product.EL5000ACUserControl(),
+                "EL5000DC" => new Product.EL5000DCUserControl(),
                 "EL9100" => new Product.EL9100UserControl(),
                 "EL9220" => new Product.EL9220UserControl(),
                 "EL9230" => new Product.EL9230UserControl(),
@@ -292,7 +293,8 @@ namespace InspectionTools {
             if (_isSnapped) {
                 // スナップ中にユーザーが引っ張ったとき → 離脱
                 if (!IsNearSnapPosition()) _isSnapped = false;
-            } else {
+            }
+            else {
                 // 非スナップ中にスナップ位置へ近づいたとき → 吸着
                 if (IsNearSnapPosition()) {
                     _isSnapped = true;
