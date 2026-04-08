@@ -1,0 +1,121 @@
+﻿<UserControl
+    x:Class="InspectionTools.Product.EL5000DCUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Common="clr-namespace:InspectionTools.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:InspectionTools.Product"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="220"
+    Height="250"
+    Loaded="UserControl_Loaded"
+    Unloaded="UserControl_Unloaded"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="MainGrid"
+        Margin="10"
+        ColumnDefinitions="*,*"
+        RowDefinitions="*,*,*,0.25*,*,*,*">
+
+        <ComboBox
+            x:Name="Dcs01ComboBox"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DCS-1"
+            IsReadOnly="True" />
+        <ComboBox
+            x:Name="Dcs02ComboBox"
+            Grid.Column="1"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DCS-2"
+            IsReadOnly="True" />
+        <ComboBox
+            x:Name="DmmComboBox"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM"
+            IsReadOnly="True" />
+        <ComboBox
+            x:Name="FgComboBox"
+            Grid.Row="1"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="FG"
+            IsReadOnly="True" />
+        <ComboBox
+            x:Name="CntComboBox"
+            Grid.Row="2"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="CNT"
+            IsReadOnly="True" />
+
+        <Grid
+            x:Name="DcsGrid"
+            Grid.Row="2"
+            Grid.Column="1"
+            ColumnDefinitions="*,1.5*">
+            <TextBox
+                x:Name="DcsNumberLabel"
+                Margin="5,0"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                Focusable="False"
+                IsReadOnly="True"
+                TextWrapping="Wrap" />
+            <TextBox
+                x:Name="DcsRangeLabel"
+                Grid.Column="1"
+                Margin="5,0"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                Focusable="False"
+                IsReadOnly="True"
+                TextWrapping="Wrap" />
+        </Grid>
+        <TextBlock
+            x:Name="DcsTimer"
+            Grid.Row="4"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontFamily="Meiryo"
+            FontSize="15"
+            Language="ja-jp"
+            Text="00:00"
+            TextAlignment="Center" />
+
+        <Button
+            x:Name="ConnectButton"
+            Grid.Row="5"
+            Margin="20,0"
+            VerticalAlignment="Center"
+            Click="ConnectButton_Click"
+            Content="接続" />
+        <Button
+            x:Name="ReleaseButton"
+            Grid.Row="5"
+            Grid.Column="1"
+            Margin="20,0"
+            VerticalAlignment="Center"
+            Click="ReleaseButton_Click"
+            Content="解除"
+            IsEnabled="False" />
+
+        <CheckBox
+            x:Name="HotKeyCheckBox"
+            Grid.Row="6"
+            Margin="20,0"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Checked="HotKeyCheckBox_Checked"
+            Content="HotKey"
+            Unchecked="HotKeyCheckBox_Unchecked" />
+
+    </Grid>
+</UserControl>

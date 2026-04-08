@@ -12,9 +12,9 @@ using UserControl = System.Windows.Controls.UserControl;
 
 namespace InspectionTools.Product {
     /// <summary>
-    /// EL5000UserControl.xaml の相互作用ロジック
+    /// EL5000ACUserControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class EL5000UserControl : UserControl, IMainWindowAware, IDisposable {
+    public partial class EL5000ACUserControl : UserControl, IMainWindowAware, IDisposable {
 
         private MainWindow? _mainWindow;
         private bool _disposed = false;
@@ -34,7 +34,7 @@ namespace InspectionTools.Product {
         readonly Stopwatch _stopwatch = new();
         readonly DispatcherTimer _timer = new();
 
-        public EL5000UserControl() {
+        public EL5000ACUserControl() {
             InitializeComponent();
 
             _timer.Interval = new TimeSpan(0, 0, 0, 1);
@@ -101,7 +101,7 @@ namespace InspectionTools.Product {
         /// <summary>
         /// ファイナライザ
         /// </summary>
-        ~EL5000UserControl() {
+        ~EL5000ACUserControl() {
             Dispose(false);
         }
 

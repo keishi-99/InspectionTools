@@ -7,6 +7,19 @@ namespace InspectionTools.Common {
     public static class InstrumentService {
 
         /// <summary>
+        /// DCS 測定値取得
+        /// </summary>
+        public static async Task<decimal> ReadDcsAsync(DcsInstClass dcsInstClass) {
+            dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
+                2 => "MEAS:CURR?",
+                _ => throw new ApplicationException($"未対応の SignalType: {dcsInstClass.SignalType}"),
+            };
+
+            var result = await DeviceController.ConnectAsync(dcsInstClass);
+            return ParseDecimal(result);
+        }
+
+        /// <summary>
         /// DMM 測定値取得
         /// </summary>
         public static async Task<decimal> ReadDmmAsync(DmmInstClass dmmInstClass) {
