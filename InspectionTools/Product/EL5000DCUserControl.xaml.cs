@@ -506,11 +506,11 @@ namespace InspectionTools.Product {
             await RotationDcs02(_instDcs02, true);
         }
 
-        // DMM02測定値コピー
-        private async Task ActionHotkeySlash() => await ReadDmm02AndSendAsync();
-        private async Task ActionHotkeyNumAdd() => await ReadDmm02AndSendAsync();
-        // DMM02測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
-        private async Task ReadDmm02AndSendAsync() {
+        // DMM測定値コピー
+        private async Task ActionHotkeySlash() => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeyNumAdd() => await ReadDmmAndSendAsync();
+        // DMM測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
+        private async Task ReadDmmAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadDmm(_instDmm);
@@ -530,7 +530,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        // DMM02切り替え
+        // DMM切り替え
         private async Task ActionHotkeyBackSlash() {
             if (MainWindow.IsProcessing) { return; }
 
