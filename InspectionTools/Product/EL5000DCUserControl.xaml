@@ -20,25 +20,25 @@
         RowDefinitions="*,*,*,0.25*,*,*,*">
 
         <ComboBox
+            x:Name="DmmComboBox"
+            Margin="5,0"
+            VerticalAlignment="Center"
+            materialDesign:HintAssist.Hint="DMM"
+            IsReadOnly="True" />
+        <ComboBox
             x:Name="Dcs01ComboBox"
+            Grid.Column="1"
             Margin="5,0"
             VerticalAlignment="Center"
             materialDesign:HintAssist.Hint="DCS-1"
             IsReadOnly="True" />
         <ComboBox
             x:Name="Dcs02ComboBox"
-            Grid.Column="1"
-            Margin="5,0"
-            VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="DCS-2"
-            IsReadOnly="True" />
-        <ComboBox
-            x:Name="DmmComboBox"
             Grid.Row="1"
             Grid.Column="1"
             Margin="5,0"
             VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="DMM"
+            materialDesign:HintAssist.Hint="DCS-2"
             IsReadOnly="True" />
         <ComboBox
             x:Name="FgComboBox"
