@@ -10,6 +10,7 @@
     Width="220"
     Height="240"
     Loaded="UserControl_Loaded"
+    Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
 
     <Grid
