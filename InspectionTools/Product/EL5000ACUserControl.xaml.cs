@@ -170,8 +170,8 @@ namespace InspectionTools.Product {
                         new() { DcsMode = DcsMode.Off,  Text = "OFF",   Visa = "SIR2,SOI+0MA,SBY" },
                         new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
@@ -180,15 +180,15 @@ namespace InspectionTools.Product {
                         new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "4.0mA", Visa = "SIR2,SOI+4MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "12mA",  Visa = "SIR2,SOI+12MA,OPR" },
                         new() { DcsMode = DcsMode.On,   Text = "20mA",  Visa = "SIR2,SOI+20MA,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3,OPR" },
-                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "1V",    Visa = "SVR5,SOV+1V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "3V",    Visa = "SVR5,SOV+3V,OPR" },
+                        new() { DcsMode = DcsMode.On,   Text = "5V",    Visa = "SVR5,SOV+5V,OPR" },
                     ]
                 );
 
@@ -413,7 +413,7 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadCnt(_instCnt);
                 var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString());
+                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
                 await Task.Delay(100);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
