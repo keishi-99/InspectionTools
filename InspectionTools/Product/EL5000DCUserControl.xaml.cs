@@ -449,10 +449,11 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadCnt(_instCnt);
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+                new InputSimulator().Keyboard
+                    .TextEntry((output * 1000).ToString("0.000"))
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -481,10 +482,10 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDcs(_instDcs01);
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                new InputSimulator().Keyboard
+                    .TextEntry((output * 1000).ToString("0.000"))
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
 
             } catch (Exception ex) {
                 Release();
@@ -521,10 +522,10 @@ namespace InspectionTools.Product {
                     _ => output,
                 };
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(outputValue.ToString("0.0000"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                new InputSimulator().Keyboard
+                    .TextEntry(outputValue.ToString("0.0000"))
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

@@ -622,10 +622,10 @@ namespace InspectionTools.Product {
                     _ => output.ToString(""),
                 };
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(value);
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                new InputSimulator().Keyboard
+                    .TextEntry(value)
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -662,7 +662,7 @@ namespace InspectionTools.Product {
 
         // OSC meas測定値コピー
         private async Task ActionHotkeyBackslash() => await ReadOscAndSendAsync();
-        private async Task ActionHotkeyNumAdd()    => await ReadOscAndSendAsync();
+        private async Task ActionHotkeyNumAdd() => await ReadOscAndSendAsync();
 
         private async Task ReadOscAndSendAsync() {
             if (MainWindow.IsProcessing) { return; }
@@ -676,8 +676,6 @@ namespace InspectionTools.Product {
 
                 for (var i = 1; i <= meas; i++) {
                     var output = await ReadOsc(_instOsc, i);
-
-                    var sim = new InputSimulator();
                     var value = _instOsc.SettingNumber switch {
                         4 => output * 1000,
                         5 => output * 1000000,
@@ -689,9 +687,11 @@ namespace InspectionTools.Product {
                         },
                         _ => output,
                     };
-                    sim.Keyboard.TextEntry(value.ToString("0.000"));
-                    await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+                    new InputSimulator().Keyboard
+                        .TextEntry(value.ToString("0.000"))
+                        .Sleep(100)
+                        .KeyPress(VirtualKeyCode.RETURN);
                 }
 
             } catch (Exception ex) {

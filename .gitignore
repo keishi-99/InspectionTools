@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # Claude Code
 .claude/
+/.vscode/settings.json

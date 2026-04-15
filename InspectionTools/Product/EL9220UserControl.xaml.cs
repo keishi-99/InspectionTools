@@ -303,7 +303,7 @@ namespace InspectionTools.Product {
             }
         }
         // DMM測定値コピー
-        private async Task ActionHotkeySlash()       => await ReadDmmAndSendAsync();
+        private async Task ActionHotkeySlash() => await ReadDmmAndSendAsync();
         private async Task ActionHotkeyNumSubtract() => await ReadDmmAndSendAsync();
 
         // DMM測定値をμA単位に変換してキーボード入力としてEnterまで送信する
@@ -311,10 +311,11 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadDmm(_instDmm);
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000000).ToString());  // μA単位に変換
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+                new InputSimulator().Keyboard
+                    .TextEntry((output * 1000000).ToString())  // μA単位に変換
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
