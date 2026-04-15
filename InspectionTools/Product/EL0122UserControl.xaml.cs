@@ -192,9 +192,9 @@ namespace InspectionTools.Product {
         }
 
         // DMM測定値コピー
-        private async Task ActionHotkeySlash()       => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
-        private async Task ActionHotkeyNumDivide()   => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
-        private async Task ActionHotkeyBackslash()   => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
+        private async Task ActionHotkeySlash() => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
+        private async Task ActionHotkeyNumDivide() => await ReadDmmAndSendAsync(VirtualKeyCode.TAB);
+        private async Task ActionHotkeyBackslash() => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
         private async Task ActionHotkeyNumMultiply() => await ReadDmmAndSendAsync(VirtualKeyCode.RETURN);
 
         // DMM測定値を取得して指定キー（TabまたはEnter）で送信する
@@ -202,10 +202,11 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             try {
                 var output = await ReadDmm(_instDmm);
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry(output.ToString("0.00"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(key);
+
+                new InputSimulator().Keyboard
+                    .TextEntry(output.ToString("0.00"))
+                    .Sleep(100)
+                    .KeyPress(key);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

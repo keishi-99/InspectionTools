@@ -348,10 +348,10 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm);
 
-                var sim = new InputSimulator();
-                sim.Keyboard.TextEntry((output * 1000000).ToString("0"));
-                await Task.Delay(100);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                new InputSimulator().Keyboard
+                    .TextEntry((output * 1000000).ToString("0"))
+                    .Sleep(100)
+                    .KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

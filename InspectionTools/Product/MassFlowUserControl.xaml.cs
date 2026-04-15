@@ -1066,8 +1066,7 @@ namespace InspectionTools.Product {
                 return Task.CompletedTask;
             }
 
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry(SerialTextBox.Text);
+            new InputSimulator().Keyboard.TextEntry(SerialTextBox.Text);
             SerialIncrement(1);
             return Task.CompletedTask;
         }
@@ -1094,9 +1093,11 @@ namespace InspectionTools.Product {
 
                 static async Task PerformClipboardAndSendKeys(string text) {
                     await Task.Delay(500);
-                    var sim = new InputSimulator();
-                    sim.Keyboard.TextEntry(text);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+                    new InputSimulator().Keyboard
+                        .TextEntry(text)
+                        .Sleep(100)
+                        .KeyPress(VirtualKeyCode.RETURN);
                 }
             } finally {
                 VisibleProgressImage(false);
@@ -1116,26 +1117,27 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadDmm(_instDmm);
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
+            new InputSimulator().Keyboard.TextEntry((output * 1000).ToString("0.0000"));
         }
         // OSC mes1値コピー
         private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 1);
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry(output.ToString("0.0000"));
-            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            new InputSimulator().Keyboard
+                .TextEntry(output.ToString("0.0000"))
+                .Sleep(100)
+                .KeyPress(VirtualKeyCode.RETURN);
         }
         // OSC mes2値コピー
         private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 2);
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry(output.ToString("0.0000"));
-            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            new InputSimulator().Keyboard
+                .TextEntry(output.ToString("0.0000"))
+                .Sleep(100)
+                .KeyPress(VirtualKeyCode.RETURN);
         }
         // DCS切り替え
         private async Task ActionHotkeyNum0() {
@@ -1165,8 +1167,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(1);
                 return;
             }
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry("1");
+            new InputSimulator().Keyboard.TextEntry("1");
         }
         private async Task ActionHotkeyNum2() {
             var (_, windowText) = GetActiveWindow;
@@ -1175,8 +1176,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(2);
                 return;
             }
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry("2");
+            new InputSimulator().Keyboard.TextEntry("2");
         }
         private async Task ActionHotkeyNum3() {
             var (_, windowText) = GetActiveWindow;
@@ -1185,8 +1185,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(3);
                 return;
             }
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry("3");
+            new InputSimulator().Keyboard.TextEntry("3");
         }
         private async Task ActionHotkeyNum4() {
             var (_, windowText) = GetActiveWindow;
@@ -1195,8 +1194,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(4);
                 return;
             }
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry("4");
+            new InputSimulator().Keyboard.TextEntry("4");
         }
         // アクティブウィンドウに応じてアナログトリムを開くか7をキー入力する
         private async Task ActionHotkeyNum7() {
@@ -1205,8 +1203,7 @@ namespace InspectionTools.Product {
                 await AnalogTrimOpen(hWnd);
                 return;
             }
-            var sim = new InputSimulator();
-            sim.Keyboard.TextEntry("7");
+            new InputSimulator().Keyboard.TextEntry("7");
         }
 
 
