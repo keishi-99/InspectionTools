@@ -29,6 +29,7 @@ namespace InspectionTools.Product {
         private readonly DcsInstClass _instDcs02 = new();
         private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
+        private readonly InputSimulator _sim = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         readonly Stopwatch _stopwatch = new();
@@ -450,10 +451,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadCnt(_instCnt);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000).ToString("0.000"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.RETURN);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -482,10 +482,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDcs(_instDcs01);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000).ToString("0.000"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.RETURN);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
             } catch (Exception ex) {
                 Release();
@@ -522,10 +521,9 @@ namespace InspectionTools.Product {
                     _ => output,
                 };
 
-                new InputSimulator().Keyboard
-                    .TextEntry(outputValue.ToString("0.0000"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.RETURN);
+                _sim.Keyboard.TextEntry(outputValue.ToString("0.0000"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

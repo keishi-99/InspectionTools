@@ -26,6 +26,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
+        private readonly InputSimulator _sim = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -348,10 +349,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000000).ToString("0"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.RETURN);
+                _sim.Keyboard.TextEntry((output * 1000000).ToString("0"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

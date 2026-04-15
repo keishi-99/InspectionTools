@@ -31,6 +31,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg02_1 = new();
         private readonly FgInstClass _instFg02_2 = new();
         private readonly OscInstClass _instOsc = new();
+        private readonly InputSimulator _sim = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -1066,7 +1067,7 @@ namespace InspectionTools.Product {
                 return Task.CompletedTask;
             }
 
-            new InputSimulator().Keyboard.TextEntry(SerialTextBox.Text);
+            _sim.Keyboard.TextEntry(SerialTextBox.Text);
             SerialIncrement(1);
             return Task.CompletedTask;
         }
@@ -1091,13 +1092,12 @@ namespace InspectionTools.Product {
                 await PerformClipboardAndSendKeys(a2l);
                 await PerformClipboardAndSendKeys(a2h);
 
-                static async Task PerformClipboardAndSendKeys(string text) {
+                async Task PerformClipboardAndSendKeys(string text) {
                     await Task.Delay(500);
 
-                    new InputSimulator().Keyboard
-                        .TextEntry(text)
-                        .Sleep(100)
-                        .KeyPress(VirtualKeyCode.RETURN);
+                    _sim.Keyboard.TextEntry(text);
+                    await Task.Delay(100);
+                    _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                 }
             } finally {
                 VisibleProgressImage(false);
@@ -1117,33 +1117,29 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadDmm(_instDmm);
-            new InputSimulator().Keyboard.TextEntry((output * 1000).ToString("0.0000"));
+            _sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
         }
         // OSC mes1値コピー
         private async Task ActionHotkeySlash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 1);
-            new InputSimulator().Keyboard
-                .TextEntry(output.ToString("0.0000"))
-                .Sleep(100)
-                .KeyPress(VirtualKeyCode.RETURN);
+            _sim.Keyboard.TextEntry(output.ToString("0.0000"));
+            await Task.Delay(100);
+            _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // OSC mes2値コピー
         private async Task ActionHotkeyBackslash() {
             if (MainWindow.IsProcessing) { return; }
 
             var output = await ReadOsc(_instOsc, 2);
-            new InputSimulator().Keyboard
-                .TextEntry(output.ToString("0.0000"))
-                .Sleep(100)
-                .KeyPress(VirtualKeyCode.RETURN);
+            _sim.Keyboard.TextEntry(output.ToString("0.0000"));
+            await Task.Delay(100);
+            _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         }
         // DCS切り替え
         private async Task ActionHotkeyNum0() {
             var (_, windowText) = GetActiveWindow;
-
-            var sim = new InputSimulator();
 
             switch (windowText.ToString()) {
                 case "マルチ流量計渦 [V01.08]": {
@@ -1151,11 +1147,11 @@ namespace InspectionTools.Product {
                         break;
                     }
                 case "FMRemote2014": {
-                        sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+                        _sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
                         return;
                     }
                 default: {
-                        sim.Keyboard.TextEntry("0");
+                        _sim.Keyboard.TextEntry("0");
                         break;
                     }
             }
@@ -1167,7 +1163,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(1);
                 return;
             }
-            new InputSimulator().Keyboard.TextEntry("1");
+            _sim.Keyboard.TextEntry("1");
         }
         private async Task ActionHotkeyNum2() {
             var (_, windowText) = GetActiveWindow;
@@ -1176,7 +1172,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(2);
                 return;
             }
-            new InputSimulator().Keyboard.TextEntry("2");
+            _sim.Keyboard.TextEntry("2");
         }
         private async Task ActionHotkeyNum3() {
             var (_, windowText) = GetActiveWindow;
@@ -1185,7 +1181,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(3);
                 return;
             }
-            new InputSimulator().Keyboard.TextEntry("3");
+            _sim.Keyboard.TextEntry("3");
         }
         private async Task ActionHotkeyNum4() {
             var (_, windowText) = GetActiveWindow;
@@ -1194,7 +1190,7 @@ namespace InspectionTools.Product {
                 await SwitchDcs(4);
                 return;
             }
-            new InputSimulator().Keyboard.TextEntry("4");
+            _sim.Keyboard.TextEntry("4");
         }
         // アクティブウィンドウに応じてアナログトリムを開くか7をキー入力する
         private async Task ActionHotkeyNum7() {
@@ -1203,7 +1199,7 @@ namespace InspectionTools.Product {
                 await AnalogTrimOpen(hWnd);
                 return;
             }
-            new InputSimulator().Keyboard.TextEntry("7");
+            _sim.Keyboard.TextEntry("7");
         }
 
 
