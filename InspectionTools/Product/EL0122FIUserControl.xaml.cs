@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
+        private readonly InputSimulator _sim = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -308,7 +309,6 @@ namespace InspectionTools.Product {
         private async Task ProcessAllDataAsync(int delay) {
             if (MainWindow.IsProcessing) { return; }
             try {
-                var sim = new InputSimulator();
                 VisibleProgressImage(true);
 
                 if (!string.IsNullOrEmpty(_instDcs.VisaAddress)) {
@@ -320,33 +320,33 @@ namespace InspectionTools.Product {
                 if (!string.IsNullOrEmpty(_instDmm01.VisaAddress)) {
                     var output = await ReadDmm(_instDmm01);
 
-                    sim.Keyboard.TextEntry(output.ToString("0.00"));
+                    _sim.Keyboard.TextEntry(output.ToString("0.00"));
                     await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     await Task.Delay(300);
                 }
                 // DMM02の値を取得
                 if (!string.IsNullOrEmpty(_instDmm02.VisaAddress)) {
                     var output = await ReadDmm(_instDmm02);
 
-                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                     await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     await Task.Delay(300);
                 }
                 // オシロスコープの値を取得
                 if (!string.IsNullOrEmpty(_instOsc.VisaAddress)) {
                     var output = await ReadOsc(_instOsc, 1);
 
-                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                     await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     await Task.Delay(300);
 
                     output = await ReadOsc(_instOsc, 2);
-                    sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                    _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
                     await Task.Delay(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     await Task.Delay(300);
                 }
 
@@ -369,10 +369,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm01);
 
-                new InputSimulator().Keyboard
-                    .TextEntry(output.ToString("0.00"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.TAB);
+                _sim.Keyboard.TextEntry(output.ToString("0.00"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -385,10 +384,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm02);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000).ToString("0.00"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.TAB);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -401,10 +399,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadOsc(_instOsc, 1);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000).ToString("0.00"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.TAB);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -417,10 +414,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadOsc(_instOsc, 2);
 
-                new InputSimulator().Keyboard
-                    .TextEntry((output * 1000).ToString("0.00"))
-                    .Sleep(100)
-                    .KeyPress(VirtualKeyCode.RETURN);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);

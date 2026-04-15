@@ -25,6 +25,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
+        private readonly InputSimulator _sim = new();
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -622,13 +623,13 @@ namespace InspectionTools.Product {
                 _ => (output, "0.00"),
             };
 
-            new InputSimulator().Keyboard
+            _sim.Keyboard
                 .KeyPress(VirtualKeyCode.BACK)
                 .KeyPress(VirtualKeyCode.BACK)
                 .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .Sleep(100)
-                .TextEntry(value.ToString(format));
+                .KeyPress(VirtualKeyCode.BACK);
+            await Task.Delay(200);
+            _sim.Keyboard.TextEntry(value.ToString(format));
         }
         // DMM測定値コピー
         private async Task ActionCopyDmmValue() {
@@ -643,14 +644,14 @@ namespace InspectionTools.Product {
 
             var output = await ReadDmm(_instDmm);
 
-            new InputSimulator().Keyboard
+            _sim.Keyboard
                 .KeyPress(VirtualKeyCode.BACK)
                 .KeyPress(VirtualKeyCode.BACK)
                 .KeyPress(VirtualKeyCode.BACK)
                 .KeyPress(VirtualKeyCode.BACK)
-                .TextEntry(output.ToString("0.0"))
-                .Sleep(200)
-                .KeyPress(VirtualKeyCode.TAB);
+                .TextEntry(output.ToString("0.0"));
+            await Task.Delay(200);
+            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
         }
         // Serial貼り付け
         private void ActionPasteSerial() {
@@ -667,7 +668,7 @@ namespace InspectionTools.Product {
             _ = PostMessage(childHandles[15], WmLButtonDown, 0, 0);  // フォーカス
             _ = PostMessage(childHandles[15], WmLButtonUp, 0, 0);  // フォーカス
 
-            new InputSimulator().Keyboard.TextEntry(SerialTextBox.Text);
+            _sim.Keyboard.TextEntry(SerialTextBox.Text);
             SerialIncrement(1);
         }
         // Count貼り付け
@@ -685,7 +686,7 @@ namespace InspectionTools.Product {
             _ = PostMessage(childHandles[6], WmLButtonDown, 0, 0);  // フォーカス
             _ = PostMessage(childHandles[6], WmLButtonUp, 0, 0);  // フォーカス
 
-            new InputSimulator().Keyboard.TextEntry(CountTextBox.Text);
+            _sim.Keyboard.TextEntry(CountTextBox.Text);
             CountIncrement(1);
         }
         // FG切り替え
@@ -723,12 +724,12 @@ namespace InspectionTools.Product {
         private Task ActionHotkeyBracketL() { RotateMenu(1); return Task.CompletedTask; }
         private Task ActionHotkeyNum7() { RotateMenu(1); return Task.CompletedTask; }
         // Tabキー
-        private static Task ActionHotkeyAtsign() {
-            new InputSimulator().Keyboard.KeyPress(VirtualKeyCode.TAB);
+        private Task ActionHotkeyAtsign() {
+            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             return Task.CompletedTask;
         }
-        private static Task ActionHotkeyNum8() {
-            new InputSimulator().Keyboard.KeyPress(VirtualKeyCode.TAB);
+        private Task ActionHotkeyNum8() {
+            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             return Task.CompletedTask;
         }
         // OSC切り替え
@@ -753,14 +754,14 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyShiftNum5() { await ActionSwitchFg(false); }
         // Tabキー送信後にFGを次へローテーション
         private async Task ActionHotkeyNum2() {
-            new InputSimulator().Keyboard.KeyPress(VirtualKeyCode.TAB);
+            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
             await ActionSwitchFg(true);
         }
         // Tabキー送信後にFG+OSCをローテーション（パルス出力幅ウィンドウのみ有効）
         private async Task ActionHotkeyNum3() {
             if (MainWindow.IsProcessing) { return; }
 
-            new InputSimulator().Keyboard.KeyPress(VirtualKeyCode.TAB);
+            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
 
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
