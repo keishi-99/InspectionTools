@@ -632,6 +632,9 @@ namespace InspectionTools.Product {
                     .KeyPress(VirtualKeyCode.BACK);
                 await Task.Delay(200);
                 _sim.Keyboard.TextEntry(value.ToString(format));
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
             }
@@ -658,6 +661,9 @@ namespace InspectionTools.Product {
                     .TextEntry(output.ToString("0.0"));
                 await Task.Delay(200);
                 _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
             }

@@ -1123,6 +1123,9 @@ namespace InspectionTools.Product {
             try {
                 var output = await ReadDmm(_instDmm);
                 _sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
             }
@@ -1136,6 +1139,9 @@ namespace InspectionTools.Product {
                 _sim.Keyboard.TextEntry(output.ToString("0.0000"));
                 await Task.Delay(100);
                 _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
             }
@@ -1149,6 +1155,9 @@ namespace InspectionTools.Product {
                 _sim.Keyboard.TextEntry(output.ToString("0.0000"));
                 await Task.Delay(100);
                 _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
             }

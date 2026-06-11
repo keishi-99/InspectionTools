@@ -448,7 +448,8 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadCnt(_instCnt);
 
@@ -458,6 +459,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
 
