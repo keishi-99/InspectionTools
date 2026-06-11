@@ -602,7 +602,7 @@ namespace InspectionTools.Product {
             if (windowText != "パルス出力幅") { return; }
 
             // 11.パルス出力幅でのみ有効
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             await RotationOsc(_instOsc, isNext);
         }
@@ -706,7 +706,7 @@ namespace InspectionTools.Product {
         }
         // FG切り替え
         private async Task ActionSwitchFg(bool isNext) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -722,7 +722,7 @@ namespace InspectionTools.Product {
         }
         // OSC+FG切り替え
         private async Task ActionSwitchFgOsc(bool isNext) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             var foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) { return; }
 
@@ -774,7 +774,7 @@ namespace InspectionTools.Product {
         }
         // Tabキー送信後にFG+OSCをローテーション（パルス出力幅ウィンドウのみ有効）
         private async Task ActionHotkeyNum3() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
 
@@ -864,27 +864,27 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         private async void OscRotationButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
         private async void FgRotateBackButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, false);
         }
         private async void FgRotateNextButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         private async void FgOutputOnButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await OutputFg("SIG 1");
         }
         private async void FgOutputOffButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await OutputFg("SIG 0");
         }
         private async void FgTriggerButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await OutputFg("TRG 1");
         }
 

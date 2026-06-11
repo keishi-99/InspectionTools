@@ -117,6 +117,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
+            if (!isVisible && _isLocalProcessing) { return; }
             MainGrid.IsEnabled = !isVisible;
             _mainWindow?.ShowSpinner(isVisible);
         }
@@ -378,6 +379,7 @@ namespace InspectionTools.Product {
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             } finally {
                 _isLocalProcessing = false;
+                VisibleProgressImage(false);
             }
         }
         // DMM01測定値コピー

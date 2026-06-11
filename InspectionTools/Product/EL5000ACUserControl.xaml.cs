@@ -428,20 +428,20 @@ namespace InspectionTools.Product {
         }
         // FGローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         // DCSローテーション
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, true);
         }
         private async Task ActionHotkeyShiftBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, false);
         }
         private async Task ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, true);
         }
         // DMM01測定値コピー
@@ -491,7 +491,7 @@ namespace InspectionTools.Product {
         }
         // DMM02切り替え
         private async Task ActionHotkeyBackSlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
 

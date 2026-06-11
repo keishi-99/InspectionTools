@@ -354,7 +354,7 @@ namespace InspectionTools.Product {
         }
         // DMM2切替(DCI)
         private async Task ActionHotkeyAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
                 await SwitchDmm(_instDmm02, DmmMode.DCI);
@@ -365,7 +365,7 @@ namespace InspectionTools.Product {
         }
         // DMM2切替(DCV)
         private async Task ActionHotkeyBracketL() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
                 await SwitchDmm(_instDmm02, DmmMode.DCV);

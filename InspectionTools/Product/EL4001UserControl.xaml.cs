@@ -391,7 +391,7 @@ namespace InspectionTools.Product {
         }
         // OSCローテーション
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
         // OSC meas1測定値コピー
@@ -432,16 +432,16 @@ namespace InspectionTools.Product {
         }
         // DCSローテーション
         private async Task ActionHotkeyAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, true);
         }
         // DCSローテーション逆方向
         private async Task ActionHotkeyShiftAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, false);
         }
         private async Task ActionHotkeyNumDivide() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs(_instDcs, true);
         }
 

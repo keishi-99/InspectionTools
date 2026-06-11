@@ -374,12 +374,12 @@ namespace InspectionTools.Product {
 
         // FGを次の設定に切り替える
         private async Task ActionHotkeyAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationFg(_instFg, true);
         }
         // FGを前の設定に切り替える
         private async Task ActionHotkeyShiftAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationFg(_instFg, false);
         }
         private async Task HandleHotkeyAction(Func<Task<decimal>> readAction, Func<decimal, string> formatAction) {
@@ -408,12 +408,12 @@ namespace InspectionTools.Product {
             () => ReadDmm(_instDmm03), output => output.ToString("0.000"));
         // OSCを次の設定に切り替える
         private async Task ActionHotkeyBracketL() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationOsc(_instOsc, true);
         }
         // OSCを前の設定に切り替える
         private async Task ActionHotkeyShiftBracketL() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationOsc(_instOsc, false);
         }
         // OSC meas1測定値コピー
@@ -471,12 +471,12 @@ namespace InspectionTools.Product {
 
         // FGを次の設定に切り替えるボタンハンドラ
         private async void FgRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationFg(_instFg, true);
         }
         // OSCを次の設定に切り替えるボタンハンドラ
         private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
             await RotationOsc(_instOsc, true);
         }
 

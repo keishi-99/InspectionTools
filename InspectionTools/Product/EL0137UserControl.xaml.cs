@@ -366,8 +366,8 @@ namespace InspectionTools.Product {
             }
         }
         // OSCローテーション
-        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
-        private async Task ActionHotkeyNumMultiply() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyNumMultiply() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
         // OSC meas1測定値コピー
         private async Task ActionHotkeySlash() => await ReadOscAndSendAsync(1);
         private async Task ActionHotkeyNumSubtract() => await ReadOscAndSendAsync(1);
@@ -430,7 +430,7 @@ namespace InspectionTools.Product {
         private void HotKeyCheckBox_Unchecked(object sender, RoutedEventArgs e) { ClearHotKey(); }
 
         private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
 

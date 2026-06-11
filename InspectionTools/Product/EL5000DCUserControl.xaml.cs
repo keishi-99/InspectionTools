@@ -466,17 +466,17 @@ namespace InspectionTools.Product {
 
         // FGローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
 
         // DCS01電源切り替え
         private async Task ActionHotkeyBracketL() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs01Async(_instDcs01, DcsMode.On);
         }
         private async Task ActionHotkeyAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs01Async(_instDcs01, DcsMode.Off);
         }
         // DCS01電流値値コピー
@@ -501,15 +501,15 @@ namespace InspectionTools.Product {
 
         // DCS02ローテーション
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, true);
         }
         private async Task ActionHotkeyShiftBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, false);
         }
         private async Task ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, true);
         }
 
@@ -541,7 +541,7 @@ namespace InspectionTools.Product {
         }
         // DMM切り替え
         private async Task ActionHotkeyBackSlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
 
