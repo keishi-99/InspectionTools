@@ -228,60 +228,28 @@ namespace InspectionTools.Product {
             }
         }
 
+        private async Task ReadDmmAndSendAsync(DmmInstClass dmmInst) {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadDmm(dmmInst);
+                _sim.Keyboard.TextEntry(output.ToString("0.0"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
+            }
+        }
+
         // DMM01測定値コピー
-        private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
-            _isLocalProcessing = true;
-
-            try {
-                var output = await ReadDmm(_instDmm01);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.0"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isLocalProcessing = false;
-            }
-        }
+        private async Task ActionHotkeyPeriod() => await ReadDmmAndSendAsync(_instDmm01);
         // DMM02測定値コピー
-        private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
-            _isLocalProcessing = true;
-
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.0"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isLocalProcessing = false;
-            }
-        }
+        private async Task ActionHotkeySlash() => await ReadDmmAndSendAsync(_instDmm02);
         // DMM03測定値コピー
-        private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
-            _isLocalProcessing = true;
-
-            try {
-                var output = await ReadDmm(_instDmm03);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.0"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isLocalProcessing = false;
-            }
-        }
+        private async Task ActionHotkeyBackslash() => await ReadDmmAndSendAsync(_instDmm03);
 
         // HotKeyの登録
         private void SetHotKey() {

@@ -382,57 +382,30 @@ namespace InspectionTools.Product {
             if (MainWindow.IsProcessing) { return; }
             await RotationFg(_instFg, false);
         }
+        private async Task HandleHotkeyAction(Func<Task<decimal>> readAction, Func<decimal, string> formatAction) {
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
+            _isHotkeyActive = true;
+            try {
+                var output = await readAction();
+                _sim.Keyboard.TextEntry(formatAction(output));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isHotkeyActive = false;
+            }
+        }
         // DMM01測定値コピー
-        private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
-            _isHotkeyActive = true;
-            try {
-                var output = await ReadDmm(_instDmm01);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isHotkeyActive = false;
-            }
-        }
+        private async Task ActionHotkeyPeriod() => await HandleHotkeyAction(
+            () => ReadDmm(_instDmm01), output => (output * 1000).ToString("0.000"));
         // DMM02測定値コピー
-        private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
-            _isHotkeyActive = true;
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isHotkeyActive = false;
-            }
-        }
+        private async Task ActionHotkeySlash() => await HandleHotkeyAction(
+            () => ReadDmm(_instDmm02), output => (output * 1000).ToString("0.000"));
         // DMM03測定値コピー
-        private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
-            _isHotkeyActive = true;
-            try {
-                var output = await ReadDmm(_instDmm03);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isHotkeyActive = false;
-            }
-        }
+        private async Task ActionHotkeyBackslash() => await HandleHotkeyAction(
+            () => ReadDmm(_instDmm03), output => output.ToString("0.000"));
         // OSCを次の設定に切り替える
         private async Task ActionHotkeyBracketL() {
             if (MainWindow.IsProcessing) { return; }
@@ -444,22 +417,8 @@ namespace InspectionTools.Product {
             await RotationOsc(_instOsc, false);
         }
         // OSC meas1測定値コピー
-        private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
-            _isHotkeyActive = true;
-            try {
-                var output = await ReadOsc(_instOsc, 1);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            } finally {
-                _isHotkeyActive = false;
-            }
-        }
+        private async Task ActionHotkeyBracketR() => await HandleHotkeyAction(
+            () => ReadOsc(_instOsc, 1), output => (output * 1000).ToString("0.00"));
 
         // HotKeyの登録
         private void SetHotKey() {
