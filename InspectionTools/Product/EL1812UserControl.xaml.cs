@@ -26,6 +26,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -614,22 +615,26 @@ namespace InspectionTools.Product {
             if (windowText != "パルス出力幅") { return; }
 
             // 11.パルス出力幅でのみ有効
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadOsc(_instOsc, 1);
+                (var value, var format) = _instOsc.SettingNumber switch {
+                    0 => (output * 1000000, "0.0"),
+                    1 or 2 => (output * 1000, "0.00"),
+                    _ => (output, "0.00"),
+                };
 
-            var output = await ReadOsc(_instOsc, 1);
-            (var value, var format) = _instOsc.SettingNumber switch {
-                0 => (output * 1000000, "0.0"),
-                1 or 2 => (output * 1000, "0.00"),
-                _ => (output, "0.00"),
-            };
-
-            _sim.Keyboard
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK);
-            await Task.Delay(200);
-            _sim.Keyboard.TextEntry(value.ToString(format));
+                _sim.Keyboard
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK);
+                await Task.Delay(200);
+                _sim.Keyboard.TextEntry(value.ToString(format));
+            } finally {
+                _isLocalProcessing = false;
+            }
         }
         // DMM測定値コピー
         private async Task ActionCopyDmmValue() {
@@ -640,18 +645,22 @@ namespace InspectionTools.Product {
             if (windowText != "発信器電源電圧") { return; }
 
             // 5.発信器電源電圧でのみ有効
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadDmm(_instDmm);
 
-            var output = await ReadDmm(_instDmm);
-
-            _sim.Keyboard
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .KeyPress(VirtualKeyCode.BACK)
-                .TextEntry(output.ToString("0.0"));
-            await Task.Delay(200);
-            _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                _sim.Keyboard
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .KeyPress(VirtualKeyCode.BACK)
+                    .TextEntry(output.ToString("0.0"));
+                await Task.Delay(200);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+            } finally {
+                _isLocalProcessing = false;
+            }
         }
         // Serial貼り付け
         private void ActionPasteSerial() {
