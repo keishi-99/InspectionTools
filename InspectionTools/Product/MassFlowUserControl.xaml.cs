@@ -32,6 +32,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg02_2 = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicReverseCommands = [];
@@ -1073,6 +1074,8 @@ namespace InspectionTools.Product {
         }
         // キャリブレーション値コピー
         private async Task ActionHotkeySemiColon() {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 VisibleProgressImage(true);
 
@@ -1101,6 +1104,7 @@ namespace InspectionTools.Product {
                 }
             } finally {
                 VisibleProgressImage(false);
+                _isLocalProcessing = false;
             }
         }
         // FG&OSCローテーション
@@ -1114,28 +1118,40 @@ namespace InspectionTools.Product {
         }
         // DMM値コピー
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
-
-            var output = await ReadDmm(_instDmm);
-            _sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadDmm(_instDmm);
+                _sim.Keyboard.TextEntry((output * 1000).ToString("0.0000"));
+            } finally {
+                _isLocalProcessing = false;
+            }
         }
         // OSC mes1値コピー
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            var output = await ReadOsc(_instOsc, 1);
-            _sim.Keyboard.TextEntry(output.ToString("0.0000"));
-            await Task.Delay(100);
-            _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadOsc(_instOsc, 1);
+                _sim.Keyboard.TextEntry(output.ToString("0.0000"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } finally {
+                _isLocalProcessing = false;
+            }
         }
         // OSC mes2値コピー
         private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            var output = await ReadOsc(_instOsc, 2);
-            _sim.Keyboard.TextEntry(output.ToString("0.0000"));
-            await Task.Delay(100);
-            _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await ReadOsc(_instOsc, 2);
+                _sim.Keyboard.TextEntry(output.ToString("0.0000"));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            } finally {
+                _isLocalProcessing = false;
+            }
         }
         // DCS切り替え
         private async Task ActionHotkeyNum0() {

@@ -30,6 +30,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         readonly Stopwatch _stopwatch = new();
@@ -477,7 +478,8 @@ namespace InspectionTools.Product {
         }
         // DCS01電流値値コピー
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDcs(_instDcs01);
@@ -489,6 +491,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
 
@@ -511,7 +515,8 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNumAdd() => await ReadDmmAndSendAsync();
         // DMM測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmmAndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm);
 
@@ -527,6 +532,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM切り替え

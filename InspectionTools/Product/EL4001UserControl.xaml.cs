@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm02 = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -354,7 +355,8 @@ namespace InspectionTools.Product {
 
         // DMM01測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm01AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm01);
                 _sim.Keyboard.TextEntry(output.ToString("0.000"));
@@ -363,6 +365,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM02測定値コピー
@@ -371,7 +375,8 @@ namespace InspectionTools.Product {
 
         // DMM02測定値（DCV）をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm02);
                 _sim.Keyboard.TextEntry(output.ToString("0.0000"));
@@ -380,6 +385,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // OSCローテーション
@@ -389,7 +396,8 @@ namespace InspectionTools.Product {
         }
         // OSC meas1測定値コピー
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadOsc(_instOsc, 1);
@@ -400,11 +408,14 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // OSC meas2測定値コピー
         private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadOsc(_instOsc, 2);
@@ -415,6 +426,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DCSローテーション

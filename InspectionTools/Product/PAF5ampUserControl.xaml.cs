@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -344,7 +345,8 @@ namespace InspectionTools.Product {
         }
         // DMM測定値コピー
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDmm(_instDmm);
@@ -355,6 +357,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // FGローテーション

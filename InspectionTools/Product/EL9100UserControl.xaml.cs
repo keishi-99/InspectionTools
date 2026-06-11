@@ -28,6 +28,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private TesseractEngine? _tesseractEngine;
 
@@ -299,7 +300,8 @@ namespace InspectionTools.Product {
 
         // DMM01測定値コピー
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDmm(_instDmm01);
@@ -310,11 +312,14 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM02測定値をmA単位に変換してキーボード入力としてEnterまで送信する
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -325,11 +330,14 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM02測定値をV単位でキーボード入力としてEnterまで送信する
         private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDmm(_instDmm02);
@@ -340,6 +348,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM2切替(DCI)
