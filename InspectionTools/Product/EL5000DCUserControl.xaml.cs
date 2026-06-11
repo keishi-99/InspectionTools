@@ -160,7 +160,7 @@ namespace InspectionTools.Product {
 
             _dicCommands[_instDcs01] =
                 (
-                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 30;*OPC?", Query = true },
+                    Init: new() { DcsMode = DcsMode.Off, Visa = "*RST;:VOLT 24;*OPC?", Query = true },
                     Settings: [
                         new() { DcsMode = DcsMode.On,   Visa = ":OUTPUT ON;*OPC?",  Query = true },
                         new() { DcsMode = DcsMode.Off,  Visa = ":OUTPUT OFF;*OPC?", Query = true },
