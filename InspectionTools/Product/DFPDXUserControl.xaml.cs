@@ -28,6 +28,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isHotkeyActive = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -383,8 +384,8 @@ namespace InspectionTools.Product {
         }
         // DMM01測定値コピー
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
-
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
+            _isHotkeyActive = true;
             try {
                 var output = await ReadDmm(_instDmm01);
 
@@ -394,12 +395,14 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isHotkeyActive = false;
             }
         }
         // DMM02測定値コピー
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
-
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
+            _isHotkeyActive = true;
             try {
                 var output = await ReadDmm(_instDmm02);
 
@@ -409,12 +412,14 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isHotkeyActive = false;
             }
         }
         // DMM03測定値コピー
         private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
-
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
+            _isHotkeyActive = true;
             try {
                 var output = await ReadDmm(_instDmm03);
 
@@ -424,6 +429,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isHotkeyActive = false;
             }
         }
         // OSCを次の設定に切り替える
@@ -438,8 +445,8 @@ namespace InspectionTools.Product {
         }
         // OSC meas1測定値コピー
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
-
+            if (MainWindow.IsProcessing || _isHotkeyActive) { return; }
+            _isHotkeyActive = true;
             try {
                 var output = await ReadOsc(_instOsc, 1);
 
@@ -449,6 +456,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isHotkeyActive = false;
             }
         }
 
