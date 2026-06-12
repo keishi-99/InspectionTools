@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -326,6 +327,7 @@ namespace InspectionTools.Product {
 
         // 電源ON
         private async Task ActionHotkeyAtsign() {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.On);
             } catch (Exception ex) {
@@ -335,6 +337,7 @@ namespace InspectionTools.Product {
         }
         // 電源OFF
         private async Task ActionHotkeyBracketL() {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.Off);
             } catch (Exception ex) {
@@ -344,7 +347,8 @@ namespace InspectionTools.Product {
         }
         // DMM測定値コピー
         private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDmm(_instDmm);
@@ -355,16 +359,18 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // FGローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         // OSCローテーション
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
 

@@ -30,6 +30,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm = new();
         private readonly FgInstClass _instFg = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
         readonly Stopwatch _stopwatch = new();
@@ -447,7 +448,8 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNumDivide() => await ReadCntAndSendAsync();
         // CNT測定値をms単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadCntAndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadCnt(_instCnt);
 
@@ -457,27 +459,30 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
 
         // FGローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
 
         // DCS01電源切り替え
         private async Task ActionHotkeyBracketL() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs01Async(_instDcs01, DcsMode.On);
         }
         private async Task ActionHotkeyAtsign() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs01Async(_instDcs01, DcsMode.Off);
         }
         // DCS01電流値値コピー
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
 
             try {
                 var output = await ReadDcs(_instDcs01);
@@ -489,20 +494,22 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
 
         // DCS02ローテーション
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, true);
         }
         private async Task ActionHotkeyShiftBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, false);
         }
         private async Task ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationDcs02(_instDcs02, true);
         }
 
@@ -511,7 +518,8 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNumAdd() => await ReadDmmAndSendAsync();
         // DMM測定値をモードに応じた単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmmAndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm);
 
@@ -527,11 +535,13 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM切り替え
         private async Task ActionHotkeyBackSlash() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
 

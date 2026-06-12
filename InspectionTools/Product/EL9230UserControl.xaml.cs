@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly DmmInstClass _instDmm01 = new();
         private readonly DmmInstClass _instDmm02 = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -307,20 +308,20 @@ namespace InspectionTools.Product {
 
         // DCS01ローテーション
         private async Task ActionHotkeyComma() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs01, true);
         }
         private async Task ActionHotkeyNumDivide() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs01, true);
         }
         // DCS02ローテーション
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs02, true);
         }
         private async Task ActionHotkeyNumMultiply() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs02, true);
         }
         // DMM01測定値コピー
@@ -329,7 +330,8 @@ namespace InspectionTools.Product {
 
         // DMM01測定値をμA単位に変換してキーボード入力としてEnterまで送信する
         private async Task ReadDmm01AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm01);
 
@@ -339,6 +341,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM02測定値コピー
@@ -347,7 +351,8 @@ namespace InspectionTools.Product {
 
         // DMM02測定値をキーボード入力としてEnterまで送信する
         private async Task ReadDmm02AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm02);
 
@@ -357,11 +362,13 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
         // DMM01切り替え
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
                 await SwitchDmm(_instDmm01, true);

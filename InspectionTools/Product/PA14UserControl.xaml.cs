@@ -27,6 +27,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -350,104 +351,49 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyAtsign() => await ReadDmm01AndSendAsync();
         private async Task ActionHotkeyNumDivide() => await ReadDmm01AndSendAsync();
 
-        // DMM01測定値をV単位でキーボード入力としてEnterまで送信する
-        private async Task ReadDmm01AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
+        private async Task HandleReadAndSendAsync(Func<Task<decimal>> readFunc, Func<decimal, string> formatFunc) {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
-                var output = await ReadDmm(_instDmm01);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.000"));
+                var output = await readFunc();
+                _sim.Keyboard.TextEntry(formatFunc(output));
                 await Task.Delay(100);
                 _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
+        // DMM01測定値をV単位でキーボード入力としてEnterまで送信する
+        private async Task ReadDmm01AndSendAsync() => await HandleReadAndSendAsync(
+            () => ReadDmm(_instDmm01), output => output.ToString("0.000"));
         // DMM02測定値コピー
         private async Task ActionHotkeyBracketL() => await ReadDmm02AndSendAsync();
         private async Task ActionHotkeyNumMultiply() => await ReadDmm02AndSendAsync();
 
         // DMM02測定値をmA単位に変換してキーボード入力としてEnterまで送信する
-        private async Task ReadDmm02AndSendAsync() {
-            if (MainWindow.IsProcessing) { return; }
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ReadDmm02AndSendAsync() => await HandleReadAndSendAsync(
+            () => ReadDmm(_instDmm02), output => (output * 1000).ToString("0.000"));
         // FGローテーション
-        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing) { return; } await RotationFg(_instFg, true); }
-        private async Task ActionHotkeyNumAdd() { if (MainWindow.IsProcessing) { return; } await RotationFg(_instFg, false); }
+        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationFg(_instFg, true); }
+        private async Task ActionHotkeyNumAdd() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationFg(_instFg, false); }
         // OSCローテーション
-        private async Task ActionHotkeyColon() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
-        private async Task ActionHotkeyNumSubtract() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyColon() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyNumSubtract() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
         // OSC meas1測定値コピー
-        private async Task ActionHotkeyComma() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 1);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyComma() => await HandleReadAndSendAsync(
+            () => ReadOsc(_instOsc, 1), output => (output * 1000).ToString("0.000"));
         // OSC meas2測定値コピー
-        private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 2);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyPeriod() => await HandleReadAndSendAsync(
+            () => ReadOsc(_instOsc, 2), output => (output * 1000).ToString("0.000"));
         // OSC meas3測定値コピー
-        private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 3);
-
-                _sim.Keyboard.TextEntry((output * 1000000).ToString());
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeySlash() => await HandleReadAndSendAsync(
+            () => ReadOsc(_instOsc, 3), output => (output * 1000000).ToString());
         // OSC meas4測定値コピー
-        private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 4);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.000"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyBackslash() => await HandleReadAndSendAsync(
+            () => ReadOsc(_instOsc, 4), output => output.ToString("0.000"));
 
         // HotKeyの登録
         private void SetHotKey() {
@@ -500,12 +446,12 @@ namespace InspectionTools.Product {
 
         // FGを次の設定に切り替えるボタンハンドラ
         private async void FgRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         // OSCを次の設定に切り替えるボタンハンドラ
         private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }

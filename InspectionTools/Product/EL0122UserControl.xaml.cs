@@ -24,6 +24,7 @@ namespace InspectionTools.Product {
 
         private readonly DmmInstClass _instDmm = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -200,7 +201,8 @@ namespace InspectionTools.Product {
 
         // DMM測定値を取得して指定キー（TabまたはEnter）で送信する
         private async Task ReadDmmAndSendAsync(VirtualKeyCode key) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 var output = await ReadDmm(_instDmm);
 
@@ -210,6 +212,8 @@ namespace InspectionTools.Product {
             } catch (Exception ex) {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
             }
         }
 

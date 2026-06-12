@@ -28,6 +28,7 @@ namespace InspectionTools.Product {
         private readonly FgInstClass _instFg = new();
         private readonly OscInstClass _instOsc = new();
         private readonly InputSimulator _sim = new();
+        private bool _isLocalProcessing = false;
 
         private readonly Dictionary<InstClass, (SwitchCommand Init, List<SwitchCommand> Settings)> _dicCommands = [];
 
@@ -116,6 +117,7 @@ namespace InspectionTools.Product {
         }
         // 処理中の画像を表示/非表示にします。
         private void VisibleProgressImage(bool isVisible) {
+            if (!isVisible && _isLocalProcessing) { return; }
             MainGrid.IsEnabled = !isVisible;
             _mainWindow?.ShowSpinner(isVisible);
         }
@@ -307,7 +309,8 @@ namespace InspectionTools.Product {
 
         // DCS ON→各計測器データ取得→Tab/Enter送信→DCS OFFを一連で実行する
         private async Task ProcessAllDataAsync(int delay) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
             try {
                 VisibleProgressImage(true);
 
@@ -358,70 +361,39 @@ namespace InspectionTools.Product {
                 Release();
                 MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             } finally {
+                _isLocalProcessing = false;
                 VisibleProgressImage(false);
             }
         }
 
+        private async Task HandleHotkeyAction(Func<Task<decimal>> readFunc, Func<decimal, string> formatFunc, VirtualKeyCode key) {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
+            _isLocalProcessing = true;
+            try {
+                var output = await readFunc();
+                _sim.Keyboard.TextEntry(formatFunc(output));
+                await Task.Delay(100);
+                _sim.Keyboard.KeyPress(key);
+            } catch (Exception ex) {
+                Release();
+                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
+            } finally {
+                _isLocalProcessing = false;
+                VisibleProgressImage(false);
+            }
+        }
         // DMM01測定値コピー
-        private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm01);
-
-                _sim.Keyboard.TextEntry(output.ToString("0.00"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyColon() => await HandleHotkeyAction(
+            () => ReadDmm(_instDmm01), output => output.ToString("0.00"), VirtualKeyCode.TAB);
         // DMM02測定値コピー
-        private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadDmm(_instDmm02);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyBracketR() => await HandleHotkeyAction(
+            () => ReadDmm(_instDmm02), output => (output * 1000).ToString("0.00"), VirtualKeyCode.TAB);
         // OSC1測定値コピー
-        private async Task ActionHotkeySlash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 1);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeySlash() => await HandleHotkeyAction(
+            () => ReadOsc(_instOsc, 1), output => (output * 1000).ToString("0.00"), VirtualKeyCode.TAB);
         // OSC2測定値コピー
-        private async Task ActionHotkeyBackslash() {
-            if (MainWindow.IsProcessing) { return; }
-
-            try {
-                var output = await ReadOsc(_instOsc, 2);
-
-                _sim.Keyboard.TextEntry((output * 1000).ToString("0.00"));
-                await Task.Delay(100);
-                _sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-            } catch (Exception ex) {
-                Release();
-                MessageBox.Show(ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        private async Task ActionHotkeyBackslash() => await HandleHotkeyAction(
+            () => ReadOsc(_instOsc, 2), output => (output * 1000).ToString("0.00"), VirtualKeyCode.RETURN);
         // 電源ON
         private async Task ActionHotkeyAtsign() {
             try {
