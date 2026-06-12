@@ -38,68 +38,7 @@
 
 ---
 
-## ディレクトリ構成
-
-```
-InspectionTools/
-├── InspectionTools.sln
-└── InspectionTools/
-    ├── App.xaml / App.xaml.cs        # アプリエントリーポイント
-    ├── MainWindow.xaml / .cs         # メインウィンドウ
-    ├── Common/                        # 共通ユーティリティ
-    │   ├── DeviceConnectionHelper.cs  # 並列接続管理
-    │   ├── DeviceController.cs        # VISA/ADC 低レベル制御
-    │   ├── InstrumentService.cs       # 測定器高レベル操作
-    │   ├── InstrumentHelper.cs        # リソース管理
-    │   ├── InstClass.cs               # 測定器クラス定義
-    │   ├── USBDeviceManager.cs        # USB デバイス管理
-    │   ├── HelpManager.cs             # ヘルプシステム
-    │   ├── Win32ApiManager.cs         # Win32 API ラッパー
-    │   ├── ScreenCaptureWindow.xaml   # スクリーンキャプチャ
-    │   └── InstListWindow.xaml        # 測定器設定 UI
-    ├── Menu/
-    │   └── MainMenuUserControl.xaml   # 製品選択メニュー
-    └── Product/                       # 製品別 UI（18製品）
-        ├── DFPDXUserControl.xaml
-        ├── EL0122UserControl.xaml
-        └── ...（以下 16製品）
-```
-
----
-
-## 実行時フォルダ構成
-
-```
-実行ディレクトリ/
-├── InspectionTools.exe
-├── VisaAddress.xml      # 測定器接続設定（要編集）
-├── help.json            # ホットキー定義
-├── tessdata/            # Tesseract OCR モデル
-│   ├── eng.traineddata
-│   └── jpn.traineddata
-└── ausb.dll             # USB デバイス通信ライブラリ
-```
-
----
-
-## セットアップ
-
-### 1. リポジトリのクローン
-
-```bash
-git clone https://github.com/keshi-99/InspectionTools.git
-cd InspectionTools
-```
-
-### 2. ビルド
-
-Visual Studio 2022 以上でソリューションを開くか、以下を実行します。
-
-```bash
-dotnet build InspectionTools.sln
-```
-
-### 3. 測定器設定ファイルの編集
+## 測定器設定ファイルの編集
 
 `VisaAddress.xml` を環境に合わせて編集します（テンプレート `VisaAddress.template.xml` を参照）。
 
@@ -121,12 +60,6 @@ dotnet build InspectionTools.sln
 </dsInstList>
 ```
 
-### 4. 実行
-
-```bash
-InspectionTools.exe
-```
-
 ---
 
 ## ホットキー設定
@@ -143,23 +76,4 @@ InspectionTools.exe
 
 ---
 
-## 対応製品
-
-| 製品 | 使用測定器 |
-|---|---|
-| DFPDX | DMM / OSC / FG |
-| EL0122 / EL0122FI | DMM |
-| EL0137 | DMM / OSC |
-| EL1812 | DMM / DCS |
-| EL3801 | DMM / OSC / DCS |
-| EL4001 | DMM / DCS |
-| EL5000 | DMM / FG |
-| EL9100〜EL9240 | DMM / OSC / DCS |
-| MassFlow | DMM / FG |
-| PA14 / PA25 / PA2B / PAF5 | DMM / OSC / DCS / FG |
-
 ---
-
-## ライセンス
-
-本プロジェクトのライセンスについては、リポジトリオーナーにお問い合わせください。
