@@ -314,12 +314,12 @@ namespace InspectionTools.Product {
         }
         // DCS出力ON
         private async Task ActionHotkeyPeriod() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs, DcsMode.On);
         }
         // DCS出力OFF
         private async Task ActionHotkeyComma() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await SwitchDcs(_instDcs, DcsMode.Off);
         }
 

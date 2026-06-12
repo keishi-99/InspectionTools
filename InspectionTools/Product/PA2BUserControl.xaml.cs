@@ -335,7 +335,7 @@ namespace InspectionTools.Product {
         }
         // DMM切り替え
         private async Task ActionHotkeyComma() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
 
@@ -347,7 +347,7 @@ namespace InspectionTools.Product {
             }
         }
         private async Task ActionHotkeyNumDivide() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
 
             try {
 

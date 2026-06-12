@@ -1029,7 +1029,7 @@ namespace InspectionTools.Product {
                         break;
                     }
                 default: {
-                        if (MainWindow.IsProcessing) { return; }
+                        if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                         await RotationFgOsc(false);
                         break;
                     }
@@ -1044,7 +1044,7 @@ namespace InspectionTools.Product {
                         break;
                     }
                 default: {
-                        if (MainWindow.IsProcessing) { return; }
+                        if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                         await RotationFgOsc(true);
                         break;
                     }
@@ -1109,11 +1109,11 @@ namespace InspectionTools.Product {
         }
         // FG&OSCローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFgOsc(false);
         }
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFgOsc(true);
         }
         // DMM値コピー
@@ -1184,7 +1184,7 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNum1() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (MainWindow.IsProcessing) { return; }
+                if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                 await SwitchDcs(1);
                 return;
             }
@@ -1193,7 +1193,7 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNum2() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (MainWindow.IsProcessing) { return; }
+                if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                 await SwitchDcs(2);
                 return;
             }
@@ -1202,7 +1202,7 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNum3() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (MainWindow.IsProcessing) { return; }
+                if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                 await SwitchDcs(3);
                 return;
             }
@@ -1211,7 +1211,7 @@ namespace InspectionTools.Product {
         private async Task ActionHotkeyNum4() {
             var (_, windowText) = GetActiveWindow;
             if (windowText.ToString() == "マルチ流量計渦 [V01.08]") {
-                if (MainWindow.IsProcessing) { return; }
+                if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
                 await SwitchDcs(4);
                 return;
             }
@@ -1325,11 +1325,11 @@ namespace InspectionTools.Product {
         private async void Dcs7VButton_Click(object sender, RoutedEventArgs e) { await SwitchDcs(4); }
 
         private async void FgOscRotationButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFgOsc(true);
         }
         private async void FgOscRotationRButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFgOsc(false);
         }
 

@@ -327,6 +327,7 @@ namespace InspectionTools.Product {
 
         // 電源ON
         private async Task ActionHotkeyAtsign() {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.On);
             } catch (Exception ex) {
@@ -336,6 +337,7 @@ namespace InspectionTools.Product {
         }
         // 電源OFF
         private async Task ActionHotkeyBracketL() {
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             try {
                 await SwitchDcsAsync(_instDcs, DcsMode.Off);
             } catch (Exception ex) {
@@ -363,12 +365,12 @@ namespace InspectionTools.Product {
         }
         // FGローテーション
         private async Task ActionHotkeyColon() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         // OSCローテーション
         private async Task ActionHotkeyBracketR() {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
 
