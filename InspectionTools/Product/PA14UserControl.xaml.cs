@@ -377,11 +377,11 @@ namespace InspectionTools.Product {
         private async Task ReadDmm02AndSendAsync() => await HandleReadAndSendAsync(
             () => ReadDmm(_instDmm02), output => (output * 1000).ToString("0.000"));
         // FGローテーション
-        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing) { return; } await RotationFg(_instFg, true); }
-        private async Task ActionHotkeyNumAdd() { if (MainWindow.IsProcessing) { return; } await RotationFg(_instFg, false); }
+        private async Task ActionHotkeyBracketR() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationFg(_instFg, true); }
+        private async Task ActionHotkeyNumAdd() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationFg(_instFg, false); }
         // OSCローテーション
-        private async Task ActionHotkeyColon() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
-        private async Task ActionHotkeyNumSubtract() { if (MainWindow.IsProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyColon() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
+        private async Task ActionHotkeyNumSubtract() { if (MainWindow.IsProcessing || _isLocalProcessing) { return; } await RotationOsc(_instOsc, true); }
         // OSC meas1測定値コピー
         private async Task ActionHotkeyComma() => await HandleReadAndSendAsync(
             () => ReadOsc(_instOsc, 1), output => (output * 1000).ToString("0.000"));
@@ -446,12 +446,12 @@ namespace InspectionTools.Product {
 
         // FGを次の設定に切り替えるボタンハンドラ
         private async void FgRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationFg(_instFg, true);
         }
         // OSCを次の設定に切り替えるボタンハンドラ
         private async void OscRotateButton_Click(object sender, RoutedEventArgs e) {
-            if (MainWindow.IsProcessing) { return; }
+            if (MainWindow.IsProcessing || _isLocalProcessing) { return; }
             await RotationOsc(_instOsc, true);
         }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e) { Dispose(); }
