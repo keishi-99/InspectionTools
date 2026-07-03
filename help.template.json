@@ -1,0 +1,10 @@
+{
+    "MainMenu": [
+        { "keys": [], "description": "ここでは製品を選択して移動します。" }
+    ],
+    "製品名": [
+        { "keys": ["@"], "description": "FG進む" },
+        { "keys": ["S + @"], "description": "FG戻る" },
+        { "keys": ["."], "description": "DMM1の数値を入力 + Enter" }
+    ]
+}
