@@ -7,7 +7,7 @@
 ## 機能概要
 
 - **複数測定器の統合制御** — VISA（USB/GPIB）および ADC（USB）対応機器を一元管理
-- **ホットキー操作** — 製品ごとにカスタマイズ可能なキーバインドで計測値を自動入力
+- **ホットキー操作** — 製品ごとに割り当てられたキーバインドで計測値を自動入力
 - **OCR 機能** — 測定器画面をキャプチャし Tesseract OCR で数値を自動読み取り
 - **並列接続管理** — 複数デバイスへの非同期並列接続
 - **製品別 UI** — 18製品に対応した専用操作画面
@@ -62,18 +62,54 @@
 
 ---
 
-## ホットキー設定
+## ヘルプパネルの設定
 
-`help.json` で製品ごとのホットキーを定義します（テンプレート `help.template.json` を参照）。
+各製品のホットキーはコード内（`Product/*UserControl.xaml.cs`）にハードコードされています。`help.json` はそのホットキーの説明文をアプリ内のヘルプパネルに表示するためのものです（テンプレート `help.template.json` を参照）。
 
 ```json
 {
   "製品名": [
-    { "キー": "操作の説明" }
+    { "keys": ["キー"], "description": "操作の説明" }
   ]
 }
 ```
 
 ---
+
+## ビルド・実行方法
+
+### Visual Studio を使う場合
+
+1. `InspectionTools.sln` を Visual Studio 2022（.NET 10.0 SDK 対応版）で開く
+2. `InspectionTools` プロジェクトをスタートアッププロジェクトに設定してビルド・実行
+
+### dotnet CLI を使う場合
+
+```bash
+dotnet build InspectionTools.sln
+dotnet run --project InspectionTools/InspectionTools.csproj
+```
+
+### 実行前の準備
+
+初回実行時は以下のテンプレートファイルをコピーし、実行ファイルと同じディレクトリに配置してください。
+
+- `VisaAddress.template.xml` → `VisaAddress.xml`
+- `help.template.json` → `help.json`
+
+> VISA（USB/GPIB）機器を使用する場合は、事前に Keysight IO Libraries Suite 等の VISA ライブラリをインストールしておく必要があります（`COMReference` として `VisaComLib` を参照しているため、未インストールの環境ではビルドに失敗します）。
+
+---
+
+## スクリーンショット
+
+<!-- TODO: アプリのスクリーンショットをここに追加する -->
+<!-- 例: ![メイン画面](docs/screenshot-main.png) -->
+
+---
+
+## ライセンス
+
+このプロジェクトは [MIT License](LICENSE) の下で公開されています。
 
 ---
