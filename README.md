@@ -80,7 +80,7 @@
 
 ### Visual Studio を使う場合
 
-1. `InspectionTools.sln` を Visual Studio 2022（.NET 10.0 SDK 対応版）で開く
+1. `InspectionTools.sln` を Visual Studio 2026（.NET 10.0 は Visual Studio 2022 では正式サポート対象外のため）で開く
 2. `InspectionTools` プロジェクトをスタートアッププロジェクトに設定してビルド・実行
 
 ### dotnet CLI を使う場合
