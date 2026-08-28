@@ -34,19 +34,19 @@
             IsReadOnly="True" />
 
         <ComboBox
-            x:Name="FgComboBox"
+            x:Name="OscComboBox"
             Grid.Row="1"
             Margin="5,0"
             VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="FG"
+            materialDesign:HintAssist.Hint="OSC"
             IsReadOnly="True" />
         <ComboBox
-            x:Name="OscComboBox"
+            x:Name="FgComboBox"
             Grid.Row="1"
             Grid.Column="1"
             Margin="5,0"
             VerticalAlignment="Center"
-            materialDesign:HintAssist.Hint="OSC"
+            materialDesign:HintAssist.Hint="FG"
             IsReadOnly="True" />
 
         <Button
@@ -77,24 +77,24 @@
             Unchecked="HotKeyCheckBox_Unchecked" />
 
         <Button
+            x:Name="OscRotateButton"
+            Grid.Row="6"
+            Margin="20,0"
+            Click="OscRotateButton_Click"
+            Content="OSC"
+            IsEnabled="False" />
+        <Button
             x:Name="FgRotateButton"
             Grid.Row="6"
+            Grid.Column="1"
             Margin="20,0"
             VerticalAlignment="Center"
             Click="FgRotateButton_Click"
             Content="FG"
             IsEnabled="False" />
-        <Button
-            x:Name="OscRotateButton"
-            Grid.Row="6"
-            Grid.Column="1"
-            Margin="20,0"
-            Click="OscRotateButton_Click"
-            Content="OSC"
-            IsEnabled="False" />
 
         <TextBox
-            x:Name="FgRotateRangeTextBox"
+            x:Name="OscRotateRangeTextBox"
             Grid.Row="7"
             Margin="10,0"
             VerticalAlignment="Center"
@@ -103,7 +103,7 @@
             Focusable="False"
             IsReadOnly="true" />
         <TextBox
-            x:Name="OscRotateRangeTextBox"
+            x:Name="FgRotateRangeTextBox"
             Grid.Row="7"
             Grid.Column="1"
             Margin="10,0"
