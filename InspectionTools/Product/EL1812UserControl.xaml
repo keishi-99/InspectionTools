@@ -234,7 +234,7 @@
                             Margin="0,0,20,0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            MaxLength="8"
+                            MaxLength="9"
                             MaxLines="1" />
                         <UniformGrid
                             HorizontalAlignment="Right"
