@@ -558,22 +558,22 @@ namespace InspectionTools.Product {
                 if (serialText.Length == 0) {
                     return;
                 }
-                if (serialText.Length != 8) {
+                if (serialText.Length != 9) {
                     throw new Exception("シリアル文字数が一致しません。");
                 }
-                var middleDigits = serialText.Substring(4, 3);
+                var middleDigits = serialText.Substring(4, 4);
                 if (int.TryParse(middleDigits, out var currentValue)) {
-                    // 0〜999 の範囲で循環
-                    currentValue = (currentValue + i + 1000) % 1000;
+                    // 0〜9999 の範囲で循環
+                    currentValue = (currentValue + i + 10000) % 10000;
 
-                    // 3桁に0埋め
-                    var newValue = currentValue.ToString("000");
+                    // 4桁に0埋め
+                    var newValue = currentValue.ToString("0000");
 
                     // 元のシリアル番号を再構築
                     var sb = new System.Text.StringBuilder();
                     sb.Append(serialText.AsSpan(0, 4));  // 先頭4文字
-                    sb.Append(newValue);                  // 中間3桁
-                    sb.Append(serialText.AsSpan(7));     // 7文字目以降
+                    sb.Append(newValue);                  // 中間4桁
+                    sb.Append(serialText.AsSpan(8));     // 8文字目以降
 
                     SerialTextBox.Text = sb.ToString();
                 }
