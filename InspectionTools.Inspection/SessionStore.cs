@@ -62,6 +62,14 @@ public sealed class SessionStore(string directory, TimeProvider? timeProvider = 
         }
     }
 
+    /// <summary>保存された状態を削除する（転記が終わったあと、次の起動で「続きから再開しますか」と聞かれないようにするため）。ファイルがなければ何もしない。退避した壊れたファイルは消さない</summary>
+    public void Delete(string product) {
+        var path = GetPath(product);
+        if (File.Exists(path)) {
+            File.Delete(path);
+        }
+    }
+
     // 製品名から保存ファイルのパスを作る（ファイル名に使えない文字を含む製品名は受け付けない）
     private string GetPath(string product) {
         if (string.IsNullOrWhiteSpace(product) || product.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
