@@ -107,6 +107,43 @@ public sealed class SessionStoreTests : IDisposable {
         Assert.Equal(LoadStatus.Restored, _store.Load(Product, TestItems.Create()).Status);
     }
 
+    [Fact]
+    public void DeleteRemovesSavedFileSoThatNothingIsRestoredNextTime() {
+        _store.Save(Product, CreateSession());
+
+        _store.Delete(Product);
+
+        Assert.False(File.Exists(SavedPath));
+        Assert.Equal(LoadStatus.NoSavedData, _store.Load(Product, TestItems.Create()).Status);
+    }
+
+    [Fact]
+    public void DeleteDoesNothingWhenThereIsNoSavedFileOrFolder() {
+        // 保存先のフォルダ自体がまだない場合も、例外にしない
+        _store.Delete(Product);
+
+        Assert.False(Directory.Exists(_directory));
+    }
+
+    [Fact]
+    public void DeleteLeavesOtherProductsAndBrokenFilesUntouched() {
+        _store.Save(Product, CreateSession());
+        _store.Save("EL5000DC", CreateSession());
+        File.WriteAllText(BrokenPath, "壊れた内容");
+
+        _store.Delete(Product);
+
+        Assert.True(File.Exists(Path.Combine(_directory, "EL5000DC.json")));
+        Assert.True(File.Exists(BrokenPath));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("EL/5000")]
+    public void DeleteRejectsProductNameUnusableAsFileName(string product) {
+        Assert.Throws<ArgumentException>(() => _store.Delete(product));
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("  ")]
