@@ -71,6 +71,29 @@ public class FakeInstrumentConnectionTests {
         Assert.Equal(["4.00", "4.50", "1.234"], [first, second, third]);
     }
 
+    [Theory]
+    [InlineData("FETC?")]
+    [InlineData("MEAS:CURR?")]
+    [InlineData(":MEAS?XNOW")]
+    [InlineData("MEASU:MEAS1:VAL?")]
+    [InlineData("MEASU:MEAS12:VAL?")]
+    public void IsReadCommandAcceptsTheFourReadCommands(string command) {
+        Assert.True(FakeInstrumentConnection.IsReadCommand(command));
+    }
+
+    // 打ち間違いや余分な文字が付いたコマンドを読み取りとみなすと、想定外の問い合わせに気づけなくなるため
+    [Theory]
+    [InlineData("XFETC?")]
+    [InlineData("FETC?;:INIT")]
+    [InlineData("FETC")]
+    [InlineData("fetc?")]
+    [InlineData("MEASU:MEASx:VAL?")]
+    [InlineData("MEASU:MEAS:VAL?")]
+    [InlineData("*IDN?")]
+    public void IsReadCommandRejectsTyposAndExtraCharacters(string command) {
+        Assert.False(FakeInstrumentConnection.IsReadCommand(command));
+    }
+
     [Fact]
     public async Task UnknownQueryThrows() {
         var fake = new FakeInstrumentConnection();
