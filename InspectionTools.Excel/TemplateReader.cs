@@ -10,25 +10,15 @@ public static class TemplateReader {
 
     /// <summary>テンプレートの指定した行の範囲を読み取る。合格範囲のない行（空行）は含めない</summary>
     public static IReadOnlyList<TemplateRow> ReadRows(string path, TemplateLayout layout) {
-        if (!File.Exists(path)) {
-            throw new TemplateReadException($"テンプレートのファイルがありません: {path}");
-        }
-
-        try {
-            // Excel で開いたままのファイルも読めるように、他のプログラムが書き込み中でも共有して開く
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var workbook = new XLWorkbook(stream);
-            var dataSheet = FindSheet(workbook, layout.DataSheet);
-            var settingSheet = FindSheet(workbook, layout.SettingSheet);
-            return ReadRows(dataSheet, settingSheet, layout);
-        } catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException) {
-            throw new TemplateReadException($"テンプレートを読み取れません: {ex.Message}", ex);
-        }
+        using var workbook = TemplateFile.OpenForRead(path);
+        var dataSheet = FindSheet(workbook, layout.DataSheet);
+        var settingSheet = FindSheet(workbook, layout.SettingSheet);
+        return ReadRows(dataSheet, settingSheet, layout);
     }
 
-    // シート名が完全に一致するシートを探す（末尾の空白も区別する）
+    // 読み取りに必要なシートがなければ、どのシートがないかを知らせる
     private static IXLWorksheet FindSheet(XLWorkbook workbook, string name) {
-        return workbook.Worksheets.FirstOrDefault(sheet => sheet.Name == name)
+        return TemplateFile.FindSheet(workbook, name)
             ?? throw new TemplateReadException($"シートがありません: '{name}'");
     }
 
