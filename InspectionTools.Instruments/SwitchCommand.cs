@@ -1,5 +1,5 @@
 namespace InspectionTools.Common {
-    internal record SwitchCommand {
+    public record SwitchCommand {
         public DcsMode DcsMode { get; init; }
         public DmmMode DmmMode { get; init; }
         public string Text { get; init; } = string.Empty;

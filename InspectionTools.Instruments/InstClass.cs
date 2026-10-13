@@ -1,7 +1,7 @@
 ﻿namespace InspectionTools.Common {
 
     public class InstClass : IDisposable {
-        internal USBDeviceManager UsbDev { get; set; } = new();
+        public USBDeviceManager UsbDev { get; set; } = new();
         public string Category { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string VisaAddress { get; set; } = string.Empty;

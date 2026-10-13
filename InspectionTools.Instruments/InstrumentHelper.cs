@@ -1,5 +1,5 @@
 namespace InspectionTools.Common {
-    internal static class InstrumentHelper {
+    public static class InstrumentHelper {
         /// <summary>
         /// 計測器インスタンスを安全に解放します。
         /// </summary>
