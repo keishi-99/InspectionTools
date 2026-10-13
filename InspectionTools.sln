@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InspectionTools", "Inspecti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InspectionTools.Instruments", "InspectionTools.Instruments\InspectionTools.Instruments.csproj", "{E357BE70-4469-4A9E-89C4-53A1E82F4D83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InspectionTools.Instruments.Tests", "InspectionTools.Instruments.Tests\InspectionTools.Instruments.Tests.csproj", "{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{E357BE70-4469-4A9E-89C4-53A1E82F4D83}.Release|x64.Build.0 = Release|Any CPU
 		{E357BE70-4469-4A9E-89C4-53A1E82F4D83}.Release|x86.ActiveCfg = Release|Any CPU
 		{E357BE70-4469-4A9E-89C4-53A1E82F4D83}.Release|x86.Build.0 = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|x64.Build.0 = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Debug|x86.Build.0 = Debug|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|x64.ActiveCfg = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|x64.Build.0 = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|x86.ActiveCfg = Release|Any CPU
+		{C19898D3-4E6E-47D0-9BDE-AA11DF5E3980}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
