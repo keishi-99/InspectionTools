@@ -18,13 +18,13 @@ public static class DefinitionDraftBuilder {
 
     private sealed record ItemDraft(string Name, ItemKind Kind, int ExcelRow, decimal? LowerLimit, decimal? UpperLimit);
 
-    private sealed record DefinitionDraft(string Product, List<ItemDraft> Items);
+    private sealed record DefinitionDraft(string Product, int MaxUnitCount, List<ItemDraft> Items);
 
     /// <summary>
     /// 製品の定義（JSON）のひな形を作る。種類は、合格範囲が文字の行を確認項目、measurementRows に含まれる行を測定項目、
     /// それ以外を入力項目にする（測定器から取るか、製品の表示を見るかはテンプレートからは判断できないため）
     /// </summary>
-    public static string BuildJson(string product, IReadOnlyList<TemplateRow> rows, IReadOnlySet<int> measurementRows) {
+    public static string BuildJson(string product, IReadOnlyList<TemplateRow> rows, IReadOnlySet<int> measurementRows, int maxUnitCount) {
         foreach (var measurementRow in measurementRows) {
             var row = rows.FirstOrDefault(r => r.Row == measurementRow)
                 ?? throw new ArgumentException($"測定項目に指定された行がテンプレートにありません: {measurementRow}", nameof(measurementRows));
@@ -39,7 +39,7 @@ public static class DefinitionDraftBuilder {
             row.Row,
             row.LowerLimit,
             row.UpperLimit)).ToList();
-        return JsonSerializer.Serialize(new DefinitionDraft(product, items), JsonOptions);
+        return JsonSerializer.Serialize(new DefinitionDraft(product, maxUnitCount, items), JsonOptions);
     }
 
     /// <summary>「8-15,30-38」のような行の指定を、行の集合にする（「30」のように1行だけの指定もできる）</summary>

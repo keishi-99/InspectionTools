@@ -1,5 +1,6 @@
 {
   "product": "EL5000AC",
+  "maxUnitCount": 30,
   "items": [
     {
       "name": "電源投入 正常に立ち上がること",
