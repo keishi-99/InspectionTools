@@ -129,6 +129,86 @@ public sealed class InspectionSession {
         return false;
     }
 
+    /// <summary>途中保存用に、実施済みのセルだけを書き出す</summary>
+    public SessionSnapshot ToSnapshot(string product) {
+        var cells = new List<CellSnapshot>();
+        for (var unitIndex = 0; unitIndex < UnitCount; unitIndex++) {
+            for (var itemIndex = 0; itemIndex < Items.Count; itemIndex++) {
+                var result = _units[unitIndex][itemIndex];
+                if (result.State == ResultState.NotDone) {
+                    continue;
+                }
+                cells.Add(new CellSnapshot(unitIndex, itemIndex, result.Value, result.State, result.IsManual));
+            }
+        }
+        return new SessionSnapshot(product, Items.Count, UnitCount, CurrentItemIndex, CurrentUnitIndex, cells);
+    }
+
+    /// <summary>途中保存の内容から、検査中の状態を復元する。壊れている、または項目の定義と合わないときは SessionRestoreException</summary>
+    public static InspectionSession FromSnapshot(SessionSnapshot snapshot, string product, IReadOnlyList<InspectionItem> items) {
+        ValidateSnapshot(snapshot, product, items);
+
+        var session = new InspectionSession(items, snapshot.UnitCount);
+        foreach (var cell in snapshot.Cells) {
+            session.RestoreCell(cell);
+        }
+        session.MoveTo(snapshot.CurrentItemIndex, snapshot.CurrentUnitIndex);
+        return session;
+    }
+
+    // 保存内容が、いまの項目の定義と合っているか確認する（合わなければ SessionRestoreException を投げる）
+    private static void ValidateSnapshot(SessionSnapshot snapshot, string product, IReadOnlyList<InspectionItem> items) {
+        if (snapshot.Product != product) {
+            throw new SessionRestoreException($"製品が違います: {snapshot.Product}（保存時） / {product}（現在）");
+        }
+        if (snapshot.ItemCount != items.Count) {
+            throw new SessionRestoreException($"項目数が違います: {snapshot.ItemCount}（保存時） / {items.Count}（現在）");
+        }
+        if (snapshot.UnitCount < 1) {
+            throw new SessionRestoreException($"台数が不正です: {snapshot.UnitCount}（保存時）");
+        }
+        if (snapshot.CurrentItemIndex < 0 || snapshot.CurrentItemIndex >= items.Count) {
+            throw new SessionRestoreException($"項目の位置が範囲外です: {snapshot.CurrentItemIndex}（保存時） / {items.Count}（現在）");
+        }
+        if (snapshot.CurrentUnitIndex < 0 || snapshot.CurrentUnitIndex >= snapshot.UnitCount) {
+            throw new SessionRestoreException($"台の位置が範囲外です: {snapshot.CurrentUnitIndex}（保存時） / {snapshot.UnitCount}（現在）");
+        }
+        foreach (var cell in snapshot.Cells) {
+            if (cell.Item < 0 || cell.Item >= items.Count) {
+                throw new SessionRestoreException($"項目の位置が範囲外です: {cell.Item}（保存時） / {items.Count}（現在）");
+            }
+            if (cell.Unit < 0 || cell.Unit >= snapshot.UnitCount) {
+                throw new SessionRestoreException($"台の位置が範囲外です: {cell.Unit}（保存時） / {snapshot.UnitCount}（現在）");
+            }
+        }
+    }
+
+    // 保存された1セルを、通常の設定処理を通して復元する（値の項目は、定義が変わっていても合格範囲で判定し直すため）
+    private void RestoreCell(CellSnapshot cell) {
+        if (cell.State == ResultState.NotDone) {
+            return;
+        }
+
+        var item = Items[cell.Item];
+        switch (item.Kind) {
+            case ItemKind.Measurement:
+            case ItemKind.Input:
+                if (cell.Value is null) {
+                    throw new SessionRestoreException($"値がありません: {item.Name}（台 {cell.Unit + 1}）");
+                }
+                SetValue(cell.Item, cell.Unit, cell.Value.Value, cell.IsManual);
+                break;
+            case ItemKind.Confirmation when cell.State is ResultState.Ok or ResultState.Ng:
+                SetConfirmation(cell.Item, cell.Unit, cell.State == ResultState.Ok);
+                break;
+            case ItemKind.Task when cell.State == ResultState.Done:
+                CompleteTask(cell.Item, cell.Unit);
+                break;
+            default:
+                throw new SessionRestoreException($"項目の種類と状態が合いません: {item.Name}（{item.Kind}、{cell.State}）");
+        }
+    }
+
     // 全項目が未実施の1台分の結果を作る
     private ItemResult[] CreateEmptyUnit() => Enumerable.Range(0, Items.Count).Select(_ => new ItemResult()).ToArray();
 
