@@ -138,21 +138,38 @@ InspectionTools.sln
 行 = 項目の行 + (台番号 / 折り返し台数) * 行オフセット
 ```
 
-製品ごとの JSON の例:
+製品ごとの JSON の例（`transfer` が転記の設定。`unitsPerBlock` と `blockRowOffset` は、折り返す製品だけに書き、両方そろえる）:
 
 ```json
 {
-  "verifyCell": "B2",
-  "verifyValue": "EL3801",
-  "unitsPerBlock": 4,
-  "blockRowOffset": 20,
-  "firstUnitColumn": "C",
+  "product": "EL3801",
+  "maxUnitCount": 8,
+  "transfer": {
+    "dataSheet": "Data",
+    "settingSheet": "Setting",
+    "firstRow": 5,
+    "lastRow": 30,
+    "verifyCell": "B2",
+    "verifyValue": "EL3801",
+    "firstUnitColumn": "C",
+    "unitsPerBlock": 4,
+    "blockRowOffset": 20
+  },
   "items": [
-    { "name": "出力電圧", "row": 5 },
-    { "name": "出力電流", "row": 6 }
+    { "name": "出力電圧", "kind": "Measurement", "excelRow": 5, "lowerLimit": 11.5, "upperLimit": 12.5 }
   ]
 }
 ```
+
+### 検査終了ボタンの流れ
+
+1. 転記先のテンプレート（Excel ブック）を、ファイル選択のダイアログで選ぶ。選ばずに閉じたときは何もしない。
+2. 製品の確認（`verifyCell` の値）を行い、違えば転記せず中止する。
+3. 合格範囲の突き合わせを行い、食い違いがあれば内容（先頭10件まで）を示して、転記するか確認する。
+4. 未実施の測定項目・入力項目・確認項目があれば、転記先の該当セルが空欄になることを示して、転記するか確認する（作業項目は数えない）。
+5. 転記する。成功したら途中保存を削除し、完了を知らせて、新しい検査（1台）にする。
+6. 転記に失敗したとき（違う製品、ファイルが開かれている、読み取れない）は、理由を知らせる。結果は途中保存に残るので、原因を直してもう一度押せばやり直せる。
+7. 転記は成功したが途中保存の削除に失敗したときは、転記は済んでいることを知らせ、次回の起動で「続きから再開しますか？」と出たら「いいえ」を選ぶよう案内する。新しい検査にはする。
 
 ## 7. テスト方針
 

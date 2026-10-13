@@ -39,6 +39,7 @@
             </TextBox>
             <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
             <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
+            <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
         </StackPanel>
 
         <!--  検査項目 × 台の表。列は台数に合わせてコードで作る  -->
