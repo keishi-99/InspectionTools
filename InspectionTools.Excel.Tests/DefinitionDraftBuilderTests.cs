@@ -11,11 +11,13 @@ public class DefinitionDraftBuilderTests {
         new(Row: 16, Name: "温度入力 -50℃", LowerLimit: -50.2m, UpperLimit: -49.8m, IsConfirmation: false),
     ];
 
+    private static readonly TransferDefinition Transfer = new("ACdata", "ACsetting", 5, 50, "A3", "EL5000", "F", UnitsPerBlock: null, BlockRowOffset: 0);
+
     private static HashSet<int> MeasurementRows(params int[] rows) => [.. rows];
 
     [Fact]
     public void KindIsConfirmationMeasurementOrInput() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30, Transfer);
 
         var definition = ProductDefinitionLoader.Parse(json);
 
@@ -24,7 +26,7 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void DraftKeepsNameRowAndRange() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30, Transfer);
 
         var item = ProductDefinitionLoader.Parse(json).Items[2];
 
@@ -36,7 +38,7 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void JapaneseTextIsNotEscaped() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30, Transfer);
 
         Assert.Contains("消費電流", json);
         Assert.DoesNotContain("\\u", json);
@@ -44,12 +46,12 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void MeasurementRowNotInTemplateThrows() {
-        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(99), maxUnitCount: 30));
+        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(99), maxUnitCount: 30, Transfer));
     }
 
     [Fact]
     public void MeasurementRowOfConfirmationThrows() {
-        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(5), maxUnitCount: 30));
+        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(5), maxUnitCount: 30, Transfer));
     }
 
     [Fact]

@@ -18,13 +18,25 @@ public static class DefinitionDraftBuilder {
 
     private sealed record ItemDraft(string Name, ItemKind Kind, int ExcelRow, decimal? LowerLimit, decimal? UpperLimit);
 
-    private sealed record DefinitionDraft(string Product, int MaxUnitCount, List<ItemDraft> Items);
+    // 折り返さない製品では、unitsPerBlock と blockRowOffset を出力しない（読み込みの規則: 両方ある、または両方ない）
+    private sealed record TransferDraft(
+        string DataSheet,
+        string SettingSheet,
+        int FirstRow,
+        int LastRow,
+        string VerifyCell,
+        string VerifyValue,
+        string FirstUnitColumn,
+        int? UnitsPerBlock,
+        int? BlockRowOffset);
+
+    private sealed record DefinitionDraft(string Product, int MaxUnitCount, TransferDraft Transfer, List<ItemDraft> Items);
 
     /// <summary>
     /// 製品の定義（JSON）のひな形を作る。種類は、合格範囲が文字の行を確認項目、measurementRows に含まれる行を測定項目、
     /// それ以外を入力項目にする（測定器から取るか、製品の表示を見るかはテンプレートからは判断できないため）
     /// </summary>
-    public static string BuildJson(string product, IReadOnlyList<TemplateRow> rows, IReadOnlySet<int> measurementRows, int maxUnitCount) {
+    public static string BuildJson(string product, IReadOnlyList<TemplateRow> rows, IReadOnlySet<int> measurementRows, int maxUnitCount, TransferDefinition transfer) {
         foreach (var measurementRow in measurementRows) {
             var row = rows.FirstOrDefault(r => r.Row == measurementRow)
                 ?? throw new ArgumentException($"測定項目に指定された行がテンプレートにありません: {measurementRow}", nameof(measurementRows));
@@ -39,8 +51,20 @@ public static class DefinitionDraftBuilder {
             row.Row,
             row.LowerLimit,
             row.UpperLimit)).ToList();
-        return JsonSerializer.Serialize(new DefinitionDraft(product, maxUnitCount, items), JsonOptions);
+        return JsonSerializer.Serialize(new DefinitionDraft(product, maxUnitCount, CreateTransferDraft(transfer), items), JsonOptions);
     }
+
+    // 転記の設定をひな形の形にする
+    private static TransferDraft CreateTransferDraft(TransferDefinition transfer) => new(
+        transfer.DataSheet,
+        transfer.SettingSheet,
+        transfer.FirstRow,
+        transfer.LastRow,
+        transfer.VerifyCell,
+        transfer.VerifyValue,
+        transfer.FirstUnitColumn,
+        transfer.UnitsPerBlock,
+        transfer.UnitsPerBlock is null ? null : transfer.BlockRowOffset);
 
     /// <summary>「8-15,30-38」のような行の指定を、行の集合にする（「30」のように1行だけの指定もできる）</summary>
     public static HashSet<int> ParseRows(string text) {

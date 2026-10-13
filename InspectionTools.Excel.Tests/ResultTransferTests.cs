@@ -58,6 +58,19 @@ public sealed class ResultTransferTests : IDisposable {
     }
 
     [Fact]
+    public void FailingToDeleteTheSavedStateAfterTransferIsReportedSeparately() {
+        CreateTemplate();
+        var session = CreateSavedSession();
+        // 途中保存のファイルを別のプログラムが開いている状態にして、削除だけを失敗させる
+        using var otherProgram = new FileStream(SavedStatePath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        Assert.Throws<SavedStateDeleteException>(() => ResultTransfer.Transfer(TemplatePath, Settings, session, _store, Product));
+
+        using var workbook = new XLWorkbook(TemplatePath);
+        Assert.Equal(146.745, workbook.Worksheet("ACdata").Cell("F8").Value.GetNumber());
+    }
+
+    [Fact]
     public void TransferToDifferentProductKeepsTheSavedState() {
         CreateTemplate(productName: "EL9240");
         var session = CreateSavedSession();

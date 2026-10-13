@@ -8,6 +8,7 @@ public class ProductDefinitionLoaderTests {
         {
           "product": "EL5000AC",
           "maxUnitCount": 30,
+          "transfer": { "dataSheet": "ACdata", "settingSheet": "ACsetting", "firstRow": 5, "lastRow": 50, "verifyCell": "A3", "verifyValue": "EL5000", "firstUnitColumn": "F" },
           "items": [
             { "name": "電源投入", "kind": "Confirmation", "excelRow": 5 },
             { "name": "消費電流", "kind": "Measurement", "excelRow": 8, "lowerLimit": 0, "upperLimit": 230 },
@@ -18,7 +19,7 @@ public class ProductDefinitionLoaderTests {
         """;
 
     // JSON の1項目だけを差し替えた定義を作る（正しくない項目を1つだけ試すため）
-    private static string JsonWithItems(string items) => $$"""{ "product": "EL5000AC", "maxUnitCount": 30, "items": [ {{items}} ] }""";
+    private static string JsonWithItems(string items) => $$"""{ "product": "EL5000AC", "maxUnitCount": 30, "transfer": { "dataSheet": "ACdata", "settingSheet": "ACsetting", "firstRow": 5, "lastRow": 50, "verifyCell": "A3", "verifyValue": "EL5000", "firstUnitColumn": "F" }, "items": [ {{items}} ] }""";
 
     private static ProductDefinitionException AssertRejected(string json) =>
         Assert.Throws<ProductDefinitionException>(() => ProductDefinitionLoader.Parse(json));
@@ -81,6 +82,50 @@ public class ProductDefinitionLoaderTests {
         var exception = AssertRejected(json);
 
         Assert.Contains("maxUnitCount", exception.Message);
+    }
+
+    [Fact]
+    public void ParseReadsTransferSettings() {
+        var transfer = ProductDefinitionLoader.Parse(ValidJson).Transfer;
+
+        Assert.Equal(new TransferDefinition("ACdata", "ACsetting", 5, 50, "A3", "EL5000", "F", UnitsPerBlock: null, BlockRowOffset: 0), transfer);
+    }
+
+    [Fact]
+    public void ParseReadsWrappedLayout() {
+        var json = ValidJson.Replace("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"C\", \"unitsPerBlock\": 4, \"blockRowOffset\": 20");
+
+        var transfer = ProductDefinitionLoader.Parse(json).Transfer;
+
+        Assert.Equal(4, transfer.UnitsPerBlock);
+        Assert.Equal(20, transfer.BlockRowOffset);
+    }
+
+    [Fact]
+    public void MissingTransferIsRejected() {
+        var exception = AssertRejected("""{ "product": "EL5000AC", "maxUnitCount": 30, "items": [ { "name": "作業", "kind": "Task" } ] }""");
+
+        Assert.Contains("transfer", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("\"dataSheet\": \"ACdata\"", "\"dataSheet\": \"\"", "transfer.dataSheet")]
+    [InlineData("\"settingSheet\": \"ACsetting\"", "\"settingSheet\": \" \"", "transfer.settingSheet")]
+    [InlineData("\"verifyCell\": \"A3\"", "\"verifyCell\": null", "transfer.verifyCell")]
+    [InlineData("\"verifyValue\": \"EL5000\"", "\"verifyValue\": \"\"", "transfer.verifyValue")]
+    [InlineData("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"5\"", "transfer.firstUnitColumn")]
+    [InlineData("\"firstRow\": 5", "\"firstRow\": 0", "transfer.firstRow")]
+    [InlineData("\"lastRow\": 50", "\"lastRow\": 4", "transfer.lastRow")]
+    [InlineData("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"F\", \"unitsPerBlock\": 4", "unitsPerBlock")]
+    [InlineData("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"F\", \"unitsPerBlock\": 0, \"blockRowOffset\": 20", "unitsPerBlock")]
+    [InlineData("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"F\", \"unitsPerBlock\": 4, \"blockRowOffset\": 0", "blockRowOffset")]
+    public void InvalidTransferSettingsAreRejectedWithTheirName(string original, string replacement, string expectedName) {
+        var json = ValidJson.Replace(original, replacement);
+        Assert.NotEqual(ValidJson, json);
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains(expectedName, exception.Message);
     }
 
     [Fact]
