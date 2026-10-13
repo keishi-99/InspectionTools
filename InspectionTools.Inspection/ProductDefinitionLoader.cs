@@ -13,7 +13,7 @@ public static class ProductDefinitionLoader {
     // JSON の形（欠けている項目を検査で見つけられるように、すべて null を許す）
     private sealed record ItemFile(string? Name, ItemKind? Kind, int? ExcelRow, decimal? LowerLimit, decimal? UpperLimit);
 
-    private sealed record DefinitionFile(string? Product, List<ItemFile>? Items);
+    private sealed record DefinitionFile(string? Product, int? MaxUnitCount, List<ItemFile>? Items);
 
     /// <summary>ファイルから定義を読み込む</summary>
     public static ProductDefinition LoadFile(string path) => Parse(File.ReadAllText(path));
@@ -31,13 +31,16 @@ public static class ProductDefinitionLoader {
         if (string.IsNullOrWhiteSpace(file.Product)) {
             throw new ProductDefinitionException("製品名（product）がありません。");
         }
+        if (file.MaxUnitCount is null or < 1) {
+            throw new ProductDefinitionException("最大台数（maxUnitCount）は1以上の整数で指定してください。");
+        }
         if (file.Items is null || file.Items.Count == 0) {
             throw new ProductDefinitionException("検査項目（items）が1つもありません。");
         }
 
         var items = file.Items.Select((item, index) => CreateItem(item, index)).ToList();
         ValidateNoDuplicateRows(items);
-        return new ProductDefinition(file.Product, items);
+        return new ProductDefinition(file.Product, file.MaxUnitCount.Value, items);
     }
 
     // JSON の1項目を InspectionItem にする（項目の決まりに反するときは、何番目の項目かを添えて知らせる）

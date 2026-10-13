@@ -12,6 +12,7 @@ const string Usage = """
       --data-sheet <シート名>        項目名のシート（既定: ACdata）
       --setting-sheet <シート名>     合格範囲のシート（既定: ACsetting）
       --rows <行の指定>              読み取る行の範囲（既定: 5-50）
+      --max-units <台数>             最大台数（既定: 30）
     """;
 
 if (args.Length < 3) {
@@ -33,8 +34,10 @@ try {
         rowRange.Last());
     var measurementRows = DefinitionDraftBuilder.ParseRows(options.GetValueOrDefault("--measurement-rows", string.Empty));
 
+    var maxUnitCount = int.Parse(options.GetValueOrDefault("--max-units", "30"));
+
     var rows = TemplateReader.ReadRows(templatePath, layout);
-    var json = DefinitionDraftBuilder.BuildJson(product, rows, measurementRows);
+    var json = DefinitionDraftBuilder.BuildJson(product, rows, measurementRows, maxUnitCount);
 
     // 書き出す前に、アプリが読み込める定義になっていることを確認する
     var definition = ProductDefinitionLoader.Parse(json);

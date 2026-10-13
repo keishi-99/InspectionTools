@@ -15,7 +15,7 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void KindIsConfirmationMeasurementOrInput() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8));
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
 
         var definition = ProductDefinitionLoader.Parse(json);
 
@@ -24,7 +24,7 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void DraftKeepsNameRowAndRange() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8));
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
 
         var item = ProductDefinitionLoader.Parse(json).Items[2];
 
@@ -36,7 +36,7 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void JapaneseTextIsNotEscaped() {
-        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8));
+        var json = DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(8), maxUnitCount: 30);
 
         Assert.Contains("消費電流", json);
         Assert.DoesNotContain("\\u", json);
@@ -44,12 +44,12 @@ public class DefinitionDraftBuilderTests {
 
     [Fact]
     public void MeasurementRowNotInTemplateThrows() {
-        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(99)));
+        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(99), maxUnitCount: 30));
     }
 
     [Fact]
     public void MeasurementRowOfConfirmationThrows() {
-        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(5)));
+        Assert.Throws<ArgumentException>(() => DefinitionDraftBuilder.BuildJson("EL5000AC", Rows, MeasurementRows(5), maxUnitCount: 30));
     }
 
     [Fact]

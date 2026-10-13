@@ -7,6 +7,7 @@ public class ProductDefinitionLoaderTests {
     private const string ValidJson = """
         {
           "product": "EL5000AC",
+          "maxUnitCount": 30,
           "items": [
             { "name": "電源投入", "kind": "Confirmation", "excelRow": 5 },
             { "name": "消費電流", "kind": "Measurement", "excelRow": 8, "lowerLimit": 0, "upperLimit": 230 },
@@ -17,7 +18,7 @@ public class ProductDefinitionLoaderTests {
         """;
 
     // JSON の1項目だけを差し替えた定義を作る（正しくない項目を1つだけ試すため）
-    private static string JsonWithItems(string items) => $$"""{ "product": "EL5000AC", "items": [ {{items}} ] }""";
+    private static string JsonWithItems(string items) => $$"""{ "product": "EL5000AC", "maxUnitCount": 30, "items": [ {{items}} ] }""";
 
     private static ProductDefinitionException AssertRejected(string json) =>
         Assert.Throws<ProductDefinitionException>(() => ProductDefinitionLoader.Parse(json));
@@ -68,9 +69,24 @@ public class ProductDefinitionLoaderTests {
     }
 
     [Fact]
+    public void ParseReadsMaxUnitCount() {
+        Assert.Equal(30, ProductDefinitionLoader.Parse(ValidJson).MaxUnitCount);
+    }
+
+    [Theory]
+    [InlineData("""{ "product": "EL5000AC", "items": [ { "name": "作業", "kind": "Task" } ] }""")]
+    [InlineData("""{ "product": "EL5000AC", "maxUnitCount": 0, "items": [ { "name": "作業", "kind": "Task" } ] }""")]
+    [InlineData("""{ "product": "EL5000AC", "maxUnitCount": -1, "items": [ { "name": "作業", "kind": "Task" } ] }""")]
+    public void MissingOrInvalidMaxUnitCountIsRejected(string json) {
+        var exception = AssertRejected(json);
+
+        Assert.Contains("maxUnitCount", exception.Message);
+    }
+
+    [Fact]
     public void EmptyItemsAreRejected() {
-        AssertRejected("""{ "product": "EL5000AC", "items": [] }""");
-        AssertRejected("""{ "product": "EL5000AC" }""");
+        AssertRejected("""{ "product": "EL5000AC", "maxUnitCount": 30, "items": [] }""");
+        AssertRejected("""{ "product": "EL5000AC", "maxUnitCount": 30 }""");
     }
 
     [Fact]
