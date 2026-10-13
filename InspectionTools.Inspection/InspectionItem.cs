@@ -1,0 +1,50 @@
+namespace InspectionTools.Inspection;
+
+/// <summary>検査項目の定義（製品ごとに固定で、検査中に変わらない）</summary>
+public sealed class InspectionItem {
+
+    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null) {
+        if (string.IsNullOrWhiteSpace(name)) {
+            throw new ArgumentException("項目名が空です。", nameof(name));
+        }
+
+        // 作業項目は Excel の行に対応しない（記録しないため）。それ以外は転記先の行が必要
+        if (kind == ItemKind.Task && excelRow is not null) {
+            throw new ArgumentException($"作業項目には Excel の行を指定できません: {name}", nameof(excelRow));
+        }
+        if (kind != ItemKind.Task && excelRow is null) {
+            throw new ArgumentException($"Excel の行が必要です: {name}", nameof(excelRow));
+        }
+
+        // 値で自動判定する項目は、合格範囲（下限と上限）が必要
+        if (kind is ItemKind.Measurement or ItemKind.Input) {
+            if (lowerLimit is null || upperLimit is null) {
+                throw new ArgumentException($"合格範囲（下限と上限）が必要です: {name}");
+            }
+            if (lowerLimit > upperLimit) {
+                throw new ArgumentException($"下限が上限より大きくなっています: {name}");
+            }
+        }
+
+        Name = name;
+        Kind = kind;
+        ExcelRow = excelRow;
+        LowerLimit = lowerLimit;
+        UpperLimit = upperLimit;
+    }
+
+    /// <summary>画面に出す項目名</summary>
+    public string Name { get; }
+
+    /// <summary>項目の種類</summary>
+    public ItemKind Kind { get; }
+
+    /// <summary>転記先の Excel の行（作業項目は null）</summary>
+    public int? ExcelRow { get; }
+
+    /// <summary>合格範囲の下限（測定項目と入力項目のみ）</summary>
+    public decimal? LowerLimit { get; }
+
+    /// <summary>合格範囲の上限（測定項目と入力項目のみ）</summary>
+    public decimal? UpperLimit { get; }
+}
