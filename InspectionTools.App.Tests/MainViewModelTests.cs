@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Inspection;
 
@@ -9,11 +10,17 @@ public sealed class MainViewModelTests : IDisposable {
     private const string Product = "EL5000AC";
     private const int MaxUnitCount = 30;
 
+    private static readonly TransferDefinition Transfer = new("ACdata", "ACsetting", 5, 50, "A3", "EL5000", "F", UnitsPerBlock: null, BlockRowOffset: 0);
+
     // 確認の答えを順番に返し、通知された内容を記録するダミー
     private sealed class FakeDialogService : IDialogService {
         public Queue<bool> ConfirmAnswers { get; } = new();
         public List<string> ConfirmMessages { get; } = [];
         public List<string> Errors { get; } = [];
+        public List<string> Infos { get; } = [];
+
+        /// <summary>転記先として選ばれるファイル（null なら、選ばずに閉じたことになる）</summary>
+        public string? TemplatePathToSelect { get; set; }
 
         public bool Confirm(string message) {
             ConfirmMessages.Add(message);
@@ -21,6 +28,10 @@ public sealed class MainViewModelTests : IDisposable {
         }
 
         public void ShowError(string message) => Errors.Add(message);
+
+        public void ShowInfo(string message) => Infos.Add(message);
+
+        public string? SelectTemplateFilePath() => TemplatePathToSelect;
     }
 
     private readonly string _directory = Path.Combine(Path.GetTempPath(), "InspectionToolsTests", Guid.NewGuid().ToString("N"));
@@ -41,10 +52,12 @@ public sealed class MainViewModelTests : IDisposable {
         }
     }
 
+    private string TemplatePath => Path.Combine(_directory, "template.xlsx");
+
     private string SavedPath => Path.Combine(_directory, Product + ".json");
 
     // 0: 測定、1: 入力、2: 確認、3: 作業 の4項目
-    private static ProductDefinition CreateDefinition() => new(Product, MaxUnitCount, [
+    private static ProductDefinition CreateDefinition() => new(Product, MaxUnitCount, Transfer, [
         new InspectionItem("消費電流", ItemKind.Measurement, excelRow: 8, lowerLimit: 0m, upperLimit: 230m),
         new InspectionItem("温度入力", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
         new InspectionItem("電源投入", ItemKind.Confirmation, excelRow: 5),
@@ -362,5 +375,149 @@ public sealed class MainViewModelTests : IDisposable {
 
         Assert.Single(_dialog.Errors);
         Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+    }
+
+    // ===== 検査終了（転記） =====
+
+    // 定義の4項目（行8、16、5と作業）に対応する、仮のテンプレートを作る
+    private void CreateTemplate(string productName = "EL5000", double measurementUpper = 230) {
+        Directory.CreateDirectory(_directory);
+        using var workbook = new XLWorkbook();
+        workbook.AddWorksheet("ACdata").Cell("A3").Value = productName;
+        var setting = workbook.AddWorksheet("ACsetting");
+        setting.Cell("F5").Value = "良";
+        setting.Cell("F8").Value = 0;
+        setting.Cell("G8").Value = measurementUpper;
+        setting.Cell("F16").Value = -50.2;
+        setting.Cell("G16").Value = -49.8;
+        workbook.SaveAs(TemplatePath);
+    }
+
+    // 1台目の4項目をすべて実施した状態にする
+    private MainViewModel CreateFinishedViewModel() {
+        var viewModel = CreateViewModel();
+        viewModel.InputText = "146.745";
+        viewModel.CommitValueCommand.Execute(null);
+        viewModel.InputText = "-50";
+        viewModel.CommitValueCommand.Execute(null);
+        viewModel.ConfirmOkCommand.Execute(null);
+        viewModel.CompleteTaskCommand.Execute(null);
+        return viewModel;
+    }
+
+    private double? ReadNumber(string cell) {
+        using var workbook = new XLWorkbook(TemplatePath);
+        var value = workbook.Worksheet("ACdata").Cell(cell).Value;
+        return value.IsNumber ? value.GetNumber() : null;
+    }
+
+    [Fact]
+    public void FinishingTransfersTheResultsAndStartsANewInspection() {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Equal(146.745, ReadNumber("F8"));
+        Assert.Equal(-50, ReadNumber("F16"));
+        Assert.Empty(_dialog.Errors);
+        Assert.Contains("1台分", Assert.Single(_dialog.Infos));
+        Assert.False(File.Exists(SavedPath));
+        Assert.Equal(ResultState.NotDone, viewModel.Rows[0].Cells[0].State);
+        Assert.Equal(1, viewModel.UnitCount);
+    }
+
+    [Fact]
+    public void ClosingTheFileDialogWithoutChoosingDoesNothing() {
+        _dialog.TemplatePathToSelect = null;
+        var viewModel = CreateFinishedViewModel();
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Empty(_dialog.Errors);
+        Assert.Empty(_dialog.Infos);
+        Assert.True(File.Exists(SavedPath));
+        Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+    }
+
+    [Fact]
+    public void TemplateOfAnotherProductIsRejectedAndTheResultsAreKept() {
+        CreateTemplate(productName: "EL9240");
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Single(_dialog.Errors);
+        Assert.Empty(_dialog.Infos);
+        Assert.True(File.Exists(SavedPath));
+        Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+        Assert.Null(ReadNumber("F8"));
+    }
+
+    [Fact]
+    public void TemplateOpenedByAnotherProgramIsReportedAndTheResultsAreKept() {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+        using var otherProgram = new FileStream(TemplatePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Single(_dialog.Errors);
+        Assert.True(File.Exists(SavedPath));
+        Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+    }
+
+    [Theory]
+    [InlineData(true, 146.745)]
+    [InlineData(false, null)]
+    public void DifferentRangeInTheTemplateAsksAndFollowsTheAnswer(bool answer, double? expectedValue) {
+        // 定義は上限230、テンプレートは上限200
+        CreateTemplate(measurementUpper: 200);
+        _dialog.TemplatePathToSelect = TemplatePath;
+        _dialog.ConfirmAnswers.Enqueue(answer);
+        var viewModel = CreateFinishedViewModel();
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Contains("消費電流", Assert.Single(_dialog.ConfirmMessages));
+        Assert.Equal(expectedValue, ReadNumber("F8"));
+    }
+
+    [Theory]
+    [InlineData(true, 146.745)]
+    [InlineData(false, null)]
+    public void UndoneItemsAskBeforeTransferAndFollowTheAnswer(bool answer, double? expectedValue) {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        _dialog.ConfirmAnswers.Enqueue(answer);
+        var viewModel = CreateViewModel();
+        // 測定項目だけ実施し、入力項目と確認項目は未実施のまま（作業項目は数えない）
+        viewModel.InputText = "146.745";
+        viewModel.CommitValueCommand.Execute(null);
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Contains("2 か所", Assert.Single(_dialog.ConfirmMessages));
+        Assert.Equal(expectedValue, ReadNumber("F8"));
+        Assert.Equal(answer, !File.Exists(SavedPath));
+    }
+
+    [Fact]
+    public void FailingToDeleteTheSavedStateAfterTransferStillStartsANewInspection() {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+        // 途中保存のファイルを別のプログラムが開いている状態にして、削除だけを失敗させる
+        using var otherProgram = new FileStream(SavedPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Equal(146.745, ReadNumber("F8"));
+        Assert.Contains("転記は完了", Assert.Single(_dialog.Errors));
+        Assert.Empty(_dialog.Infos);
+        Assert.Equal(ResultState.NotDone, viewModel.Rows[0].Cells[0].State);
     }
 }

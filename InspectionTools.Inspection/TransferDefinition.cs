@@ -1,0 +1,25 @@
+namespace InspectionTools.Inspection;
+
+/// <summary>
+/// 検査結果をExcelのテンプレートへ転記するための、製品ごとの設定（JSON の transfer）。
+/// Excel の部品（ClosedXML など）に依存しないよう、文字列と数値だけで持つ
+/// </summary>
+/// <param name="DataSheet">結果を書き込むシート名（製品の確認用のセルもこのシートにある）</param>
+/// <param name="SettingSheet">合格範囲が入っているシート名</param>
+/// <param name="FirstRow">読み取る最初の行</param>
+/// <param name="LastRow">読み取る最後の行</param>
+/// <param name="VerifyCell">正しい製品のテンプレートか確認するセル（例: A3）</param>
+/// <param name="VerifyValue">確認用のセルに入っているはずの値</param>
+/// <param name="FirstUnitColumn">1台目を書き込む列（例: F）</param>
+/// <param name="UnitsPerBlock">折り返すまでの台数（折り返さない製品は null）</param>
+/// <param name="BlockRowOffset">折り返したときに下へ進める行数（折り返さない製品は 0）</param>
+public sealed record TransferDefinition(
+    string DataSheet,
+    string SettingSheet,
+    int FirstRow,
+    int LastRow,
+    string VerifyCell,
+    string VerifyValue,
+    string FirstUnitColumn,
+    int? UnitsPerBlock,
+    int BlockRowOffset);

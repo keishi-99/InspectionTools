@@ -13,6 +13,11 @@ const string Usage = """
       --setting-sheet <シート名>     合格範囲のシート（既定: ACsetting）
       --rows <行の指定>              読み取る行の範囲（既定: 5-50）
       --max-units <台数>             最大台数（既定: 30）
+      --verify-cell <セル>           製品の確認に使うセル（既定: A3）
+      --verify-value <値>            確認用のセルに入っているはずの値（必須。例: EL5000）
+      --first-unit-column <列>       1台目を書き込む列（既定: F）
+      --units-per-block <台数>       折り返すまでの台数（折り返す製品だけ。--block-row-offset と一緒に指定）
+      --block-row-offset <行数>      折り返したときに下へ進める行数
     """;
 
 if (args.Length < 3) {
@@ -36,8 +41,19 @@ try {
 
     var maxUnitCount = int.Parse(options.GetValueOrDefault("--max-units", "30"));
 
+    var transfer = new TransferDefinition(
+        layout.DataSheet,
+        layout.SettingSheet,
+        layout.FirstRow,
+        layout.LastRow,
+        options.GetValueOrDefault("--verify-cell", "A3"),
+        options.TryGetValue("--verify-value", out var verifyValue) ? verifyValue : throw new ArgumentException("--verify-value を指定してください。"),
+        options.GetValueOrDefault("--first-unit-column", "F"),
+        options.TryGetValue("--units-per-block", out var unitsPerBlock) ? int.Parse(unitsPerBlock) : null,
+        options.TryGetValue("--block-row-offset", out var blockRowOffset) ? int.Parse(blockRowOffset) : 0);
+
     var rows = TemplateReader.ReadRows(templatePath, layout);
-    var json = DefinitionDraftBuilder.BuildJson(product, rows, measurementRows, maxUnitCount);
+    var json = DefinitionDraftBuilder.BuildJson(product, rows, measurementRows, maxUnitCount, transfer);
 
     // 書き出す前に、アプリが読み込める定義になっていることを確認する
     var definition = ProductDefinitionLoader.Parse(json);

@@ -2,6 +2,7 @@ using System.IO;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InspectionTools.Excel;
 using InspectionTools.Inspection;
 
 namespace InspectionTools.App.ViewModels;
@@ -166,6 +167,71 @@ public sealed partial class MainViewModel : ObservableObject {
             return;
         }
         TryChangeUnitCount(unitCount);
+    }
+
+    /// <summary>検査を終了し、転記先のテンプレートを選んでもらって、結果を転記する</summary>
+    [RelayCommand]
+    private void FinishInspection() {
+        var templatePath = _dialog.SelectTemplateFilePath();
+        if (templatePath is null) {
+            return;
+        }
+
+        var settings = TransferSettings.From(_definition.Transfer);
+        var unitCount = UnitCount;
+        var isSavedStateKept = false;
+        try {
+            // 違う製品のテンプレートで合格範囲を突き合わせても意味がないので、先に製品を確認する
+            TemplateVerifier.Verify(templatePath, settings.Check);
+            var templateRows = TemplateReader.ReadRows(templatePath, TemplateLayout.From(_definition.Transfer));
+            var mismatches = RangeComparer.Compare(_session.Items, templateRows);
+            if (mismatches.Count > 0 && !_dialog.Confirm(CreateMismatchMessage(mismatches))) {
+                return;
+            }
+
+            // 未実施のセルは、転記先の値を消して空欄にする（上書きの確認は不要という要件）ため、消えることを先に知らせる
+            var undoneCount = CountUndoneCells();
+            if (undoneCount > 0 && !_dialog.Confirm($"未実施の項目が {undoneCount} か所あります。転記先の該当セルは空欄になります。転記しますか？")) {
+                return;
+            }
+
+            ResultTransfer.Transfer(templatePath, settings, _session, _store, Product);
+        } catch (Exception ex) when (ex is TemplateReadException or TemplateVerificationException or TemplateWriteException) {
+            // 途中保存は残っているので、原因を直してもう一度押せばやり直せる
+            _dialog.ShowError($"転記できませんでした。\n{ex.Message}\n\n検査結果は途中保存に残してあります。原因を直してから、もう一度「検査終了」を押してください。");
+            return;
+        } catch (SavedStateDeleteException ex) {
+            isSavedStateKept = true;
+            _dialog.ShowError($"{ex.Message}\n\n次回の起動で「続きから再開しますか？」と出たときは、「いいえ」を選んでください（転記は済んでいます）。");
+        }
+
+        if (!isSavedStateKept) {
+            _dialog.ShowInfo($"{unitCount}台分の結果を転記しました。\n{templatePath}");
+        }
+        // 転記が済んだ結果を残したままにすると、続けて操作したときに途中保存が作り直されるため、新しい検査にする
+        ReplaceSession(new InspectionSession(_definition.Items, unitCount: 1));
+    }
+
+    // 合格範囲の食い違いを、確認ダイアログに出す文面にする（多いときは先頭の数件だけ）
+    private static string CreateMismatchMessage(IReadOnlyList<RangeMismatch> mismatches) {
+        const int MaxLines = 10;
+        var lines = mismatches.Take(MaxLines).Select(mismatch => $"・{mismatch.Row}行 {mismatch.ItemName}: {mismatch.Reason}");
+        var omitted = mismatches.Count > MaxLines ? $"\n（ほか {mismatches.Count - MaxLines} 件）" : "";
+        return $"アプリの定義と、テンプレートの合格範囲が一致しません。\n{string.Join("\n", lines)}{omitted}\n\nこのまま転記しますか？（Excel の判定は、テンプレート側の合格範囲で行われます）";
+    }
+
+    // 転記する項目（作業項目以外）のうち、まだ実施していないセルの数を数える
+    private int CountUndoneCells() {
+        var count = 0;
+        for (var unitIndex = 0; unitIndex < _session.UnitCount; unitIndex++) {
+            for (var itemIndex = 0; itemIndex < _session.Items.Count; itemIndex++) {
+                var isRecorded = _session.Items[itemIndex].Kind != ItemKind.Task;
+                if (isRecorded && _session.GetResult(itemIndex, unitIndex).State == ResultState.NotDone) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     // 台数を変更する。結果のある台が削除されるときは確認し、やめた場合や台数が変わらない場合は表示を元に戻す

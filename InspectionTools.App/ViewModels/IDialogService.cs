@@ -8,4 +8,10 @@ public interface IDialogService {
 
     /// <summary>エラーを知らせる</summary>
     void ShowError(string message);
+
+    /// <summary>処理が終わったことなどを知らせる</summary>
+    void ShowInfo(string message);
+
+    /// <summary>転記先のテンプレート（Excel ブック）を選んでもらう。選ばずに閉じたときは null</summary>
+    string? SelectTemplateFilePath();
 }
