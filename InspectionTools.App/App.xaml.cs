@@ -10,8 +10,19 @@ namespace InspectionTools.App;
 
 public partial class App : Application {
 
+    // 他のユーザーのセッションとも取り合わないように、Global を付ける
+    private SingleInstanceGuard? _singleInstance;
+
     protected override void OnStartup(StartupEventArgs e) {
         base.OnStartup(e);
+
+        // 2つ目の起動は、知らせて終了する
+        _singleInstance = new SingleInstanceGuard(@"Global\InspectionTools.App");
+        if (!_singleInstance.IsFirstInstance) {
+            MessageBox.Show("すでに起動しています。\n起動中のアプリを使ってください。", "多重起動", MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown();
+            return;
+        }
 
         var dialog = new WpfDialogService();
 
@@ -43,5 +54,10 @@ public partial class App : Application {
                 Path.Combine(AppContext.BaseDirectory, "VisaAddress.xml"));
         }
         return new MainViewModel(definition, store, dialog, instrumentSelection);
+    }
+
+    protected override void OnExit(ExitEventArgs e) {
+        _singleInstance?.Dispose();
+        base.OnExit(e);
     }
 }
