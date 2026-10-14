@@ -2,6 +2,7 @@ using System.IO;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InspectionTools.App.Input;
 using InspectionTools.Excel;
 using InspectionTools.Inspection;
 using InspectionTools.Products;
@@ -193,6 +194,42 @@ public sealed partial class MainViewModel : ObservableObject {
             _acquiredText = value.ToString();
             InputText = _acquiredText;
         });
+    }
+
+    /// <summary>
+    /// キーで行う操作を実行する。その項目では行えない操作（例: 確認項目以外での合格、確認項目での確定）や、通信中の操作は、何もしない
+    /// </summary>
+    public async Task ExecuteKeyActionAsync(KeyAction action) {
+        if (IsInstrumentBusy) {
+            return;
+        }
+
+        switch (action) {
+            case KeyAction.AcquireValue:
+                await AcquireValueCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Confirm when IsValueInput:
+                await CommitValueCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Confirm when IsTask:
+                await CompleteTaskCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Pass when IsConfirmation:
+                await ConfirmOkCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Fail when IsConfirmation:
+                await ConfirmNgCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Reapply:
+                await ReapplyInstrumentCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Next:
+                await MoveNextCommand.ExecuteAsync(null);
+                break;
+            case KeyAction.Previous:
+                await MovePreviousCommand.ExecuteAsync(null);
+                break;
+        }
     }
 
     // 接続していれば、現在の項目の測定器の状態を適用する（force が true なら、記録を無視して必ず送る）

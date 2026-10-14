@@ -9,7 +9,8 @@
     Background="{DynamicResource MaterialDesignPaper}"
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     FontSize="14"
-    Closing="Window_Closing">
+    Closing="Window_Closing"
+    PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
@@ -32,6 +33,7 @@
                 TextAlignment="Center"
                 VerticalAlignment="Center"
                 FontSize="18"
+                InputMethod.IsInputMethodEnabled="False"
                 Text="{Binding UnitCountText, UpdateSourceTrigger=PropertyChanged}"
                 LostFocus="UnitCountTextBox_LostFocus">
                 <TextBox.InputBindings>
@@ -82,12 +84,9 @@
                         <TextBox
                             x:Name="InputTextBox"
                             Width="160"
+                            InputMethod.IsInputMethodEnabled="False"
                             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                            materialDesign:HintAssist.Hint="値">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Return" Command="{Binding CommitValueCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
+                            materialDesign:HintAssist.Hint="値" />
                         <Button
                             Margin="8,0,0,0"
                             Padding="16,0"
@@ -119,6 +118,8 @@
                         IsEnabled="{Binding CanReapplyInstrument}"
                         Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
+                <!--  キーの案内（設定ファイルで割り当てを変えると、ここも変わる）  -->
+                <TextBlock x:Name="KeyHintTextBlock" Margin="0,8,0,0" Opacity="0.6" TextWrapping="Wrap" />
             </StackPanel>
         </Border>
 

@@ -1,3 +1,4 @@
+using InspectionTools.App.Input;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Common;
 using InspectionTools.Inspection;
@@ -28,6 +29,7 @@ public sealed class InstrumentOperationTests : IDisposable {
     private const int DcsTaskItem = 1;
     private const int ManualItem = 2;
     private const int CurrentItem = 3;
+    private const int ConfirmationItem = 4;
 
     // 画面を開くときに、決めておいた操作（測定器の選択と接続）を行うダミー
     private sealed class StubDialogService : IDialogService {
@@ -94,6 +96,7 @@ public sealed class InstrumentOperationTests : IDisposable {
                 new InspectionItem("アナログ校正 DCS 4mA", ItemKind.Task, actionId: "dcs-4mA"),
                 new InspectionItem("手入力の項目", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
                 new InspectionItem("消費電流", ItemKind.Measurement, excelRow: 8, lowerLimit: 0m, upperLimit: 230m, actionId: "dmm01-aci"),
+                new InspectionItem("目視の確認", ItemKind.Confirmation, excelRow: 5),
             ]);
         _viewModel = new MainViewModel(_definition, _store, _dialog, _selection, _time);
     }
@@ -393,6 +396,118 @@ public sealed class InstrumentOperationTests : IDisposable {
 
         Assert.False(_viewModel.IsInstrumentBusy);
         Assert.Equal([("DCS-01", Dcs4mA)], _transport.Sent);
+    }
+
+    // ===== キーで行う操作 =====
+
+    [Fact]
+    public async Task ConfirmKeyCommitsTheValueOfAValueItem() {
+        await _viewModel.MoveToAsync(ManualItem, 0);
+        _viewModel.InputText = "-50";
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Confirm);
+
+        Assert.Equal(ResultState.Ok, _viewModel.Rows[ManualItem].Cells[0].State);
+        Assert.Equal(CurrentItem, _viewModel.CurrentItemIndex);
+    }
+
+    [Fact]
+    public async Task ConfirmKeyCompletesATaskItem() {
+        await _viewModel.MoveToAsync(DcsTaskItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Confirm);
+
+        Assert.Equal(ResultState.Done, _viewModel.Rows[DcsTaskItem].Cells[0].State);
+    }
+
+    [Fact]
+    public async Task ConfirmKeyDoesNothingOnAConfirmationItemSoThatPassOrFailIsAlwaysExplicit() {
+        await _viewModel.MoveToAsync(ConfirmationItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Confirm);
+
+        Assert.Equal(ResultState.NotDone, _viewModel.Rows[ConfirmationItem].Cells[0].State);
+        Assert.Equal(ConfirmationItem, _viewModel.CurrentItemIndex);
+    }
+
+    [Theory]
+    [InlineData(KeyAction.Pass, ResultState.Ok)]
+    [InlineData(KeyAction.Fail, ResultState.Ng)]
+    public async Task PassAndFailKeysDecideAConfirmationItem(KeyAction action, ResultState expected) {
+        await _viewModel.MoveToAsync(ConfirmationItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(action);
+
+        Assert.Equal(expected, _viewModel.Rows[ConfirmationItem].Cells[0].State);
+    }
+
+    [Theory]
+    [InlineData(KeyAction.Pass)]
+    [InlineData(KeyAction.Fail)]
+    public async Task PassAndFailKeysDoNothingOnOtherItems(KeyAction action) {
+        await _viewModel.MoveToAsync(ManualItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(action);
+
+        Assert.Equal(ResultState.NotDone, _viewModel.Rows[ManualItem].Cells[0].State);
+        Assert.Equal(ManualItem, _viewModel.CurrentItemIndex);
+    }
+
+    [Fact]
+    public async Task AcquireKeyShowsTheValueLikeTheButton() {
+        await ConnectAllAsync();
+        await _viewModel.MoveToAsync(CurrentItem, 0);
+        _transport.Inner.QueueReading("FETC?", "0.146745");
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.AcquireValue);
+
+        Assert.Equal("146.745", _viewModel.InputText);
+    }
+
+    [Fact]
+    public async Task AcquireKeyDoesNothingWhenNotConnected() {
+        await _viewModel.MoveToAsync(CurrentItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.AcquireValue);
+
+        Assert.Equal("", _viewModel.InputText);
+        Assert.Empty(_dialog.Errors);
+    }
+
+    [Fact]
+    public async Task ReapplyKeySendsTheStateAgain() {
+        await ConnectAllAsync();
+        await _viewModel.MoveToAsync(DcsTaskItem, 0);
+        _transport.Sent.Clear();
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Reapply);
+
+        Assert.Equal([("FG-01", FgOff), ("DCS-01", Dcs4mA)], _transport.Sent);
+    }
+
+    [Fact]
+    public async Task NextAndPreviousKeysMoveBetweenItems() {
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Next);
+        Assert.Equal(DcsTaskItem, _viewModel.CurrentItemIndex);
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Previous);
+        Assert.Equal(VoltageItem, _viewModel.CurrentItemIndex);
+    }
+
+    [Fact]
+    public async Task KeyActionsAreIgnoredWhileTalkingToInstruments() {
+        await ConnectAllAsync();
+        _transport.Gate = new TaskCompletionSource();
+        var moving = _viewModel.MoveToAsync(DcsTaskItem, 0);
+
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Confirm);
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Next);
+        await _viewModel.ExecuteKeyActionAsync(KeyAction.Reapply);
+
+        Assert.Equal(DcsTaskItem, _viewModel.CurrentItemIndex);
+        Assert.Equal(ResultState.NotDone, _viewModel.Rows[DcsTaskItem].Cells[0].State);
+        _transport.Gate.SetResult();
+        await moving;
     }
 
     // ===== DCS の経過時間 =====
