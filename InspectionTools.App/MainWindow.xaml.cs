@@ -2,8 +2,10 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using InspectionTools.App.Input;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Inspection;
 
@@ -16,6 +18,7 @@ public partial class MainWindow : Window {
     private static readonly Brush DoneBrush = CreateBrush(0xBB, 0xDE, 0xFB);
 
     private readonly MainViewModel _viewModel;
+    private readonly KeyBindings _keyBindings;
 
     // DCS の経過時間の表示を更新するタイマー
     private readonly DispatcherTimer _dcsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
@@ -24,9 +27,11 @@ public partial class MainWindow : Window {
     private bool _isSyncingSelection;
 
 
-    public MainWindow(MainViewModel viewModel) {
+    public MainWindow(MainViewModel viewModel, KeyBindings keyBindings) {
         InitializeComponent();
         _viewModel = viewModel;
+        _keyBindings = keyBindings;
+        KeyHintTextBlock.Text = keyBindings.HintText;
         DataContext = viewModel;
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
@@ -139,6 +144,27 @@ public partial class MainWindow : Window {
         if (unitIndex >= 0 && itemIndex >= 0) {
             await _viewModel.MoveToAsync(itemIndex, unitIndex);
         }
+    }
+
+    // キー割り当てに合うキーを受けたら、対応する操作を行う（入力欄やボタンより先に、画面全体で受ける）
+    private async void Window_PreviewKeyDown(object sender, KeyEventArgs e) {
+        // 台数の入力欄では、キー割り当てを使わない（Enter で台数を確定し、数字を入力するため）
+        if (UnitCountTextBox.IsKeyboardFocusWithin) {
+            return;
+        }
+
+        // Alt を伴うキーは、Key.System で届くので、本来のキーを取り出す
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (!_keyBindings.TryFind(new KeyChord(key, Keyboard.Modifiers), out var action)) {
+            return;
+        }
+
+        // 割り当てのあるキーは、入力欄やボタンに渡さない（Space でフォーカス中のボタンが押されるのを防ぐ）。押しっぱなしの繰り返しは、操作にしない
+        e.Handled = true;
+        if (e.IsRepeat) {
+            return;
+        }
+        await _viewModel.ExecuteKeyActionAsync(action);
     }
 
     // アプリを閉じるとき、測定器に接続していれば解除する
