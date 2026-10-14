@@ -26,7 +26,7 @@ public partial class App : Application {
             dialog.ShowError("キー割り当ての設定に、確認が必要な点があります。\n" + string.Join("\n", keyBindings.Warnings.Select(warning => $"・{warning}")));
         }
 
-        var window = new MainWindow(shell, keyBindings.Bindings);
+        var window = new MainWindow(shell, keyBindings.Bindings, dialog);
         dialog.Owner = window;
         window.Show();
     }

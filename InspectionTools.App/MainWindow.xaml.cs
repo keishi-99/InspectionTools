@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using InspectionTools.App.Input;
@@ -20,6 +21,10 @@ public partial class MainWindow : Window {
     private readonly ShellViewModel _shell;
     private MainViewModel? _viewModel;
     private readonly KeyBindings _keyBindings;
+    private readonly IDialogService _dialog;
+
+    // 全体のホットキー（前面に出すキー）。登録するとシステム全体でそのキーが奪われるので、ボタンで有効にしたときだけ登録する
+    private readonly GlobalHotkey _globalHotkey = new();
 
     // DCS の経過時間の表示を更新するタイマー
     private readonly DispatcherTimer _dcsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
@@ -28,10 +33,13 @@ public partial class MainWindow : Window {
     private bool _isSyncingSelection;
 
 
-    public MainWindow(ShellViewModel shell, KeyBindings keyBindings) {
+    public MainWindow(ShellViewModel shell, KeyBindings keyBindings, IDialogService dialog) {
         InitializeComponent();
         _shell = shell;
         _keyBindings = keyBindings;
+        _dialog = dialog;
+        _globalHotkey.Pressed += BringToFront;
+        UpdateHotkeyButton();
         KeyHintTextBlock.Text = keyBindings.HintText;
         DataContext = shell;
         shell.PropertyChanged += Shell_PropertyChanged;
@@ -60,6 +68,38 @@ public partial class MainWindow : Window {
 
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
         BuildGrid();
+        FocusInput();
+    }
+
+    // 全体のホットキーの有効・無効を切り替える。有効にできなかったとき（他のソフトが同じキーを使っているなど）は、理由を知らせて無効のままにする
+    private void HotkeyButton_Click(object sender, RoutedEventArgs e) {
+        if (_globalHotkey.IsRegistered) {
+            _globalHotkey.Unregister();
+        } else if (_keyBindings.GlobalHotkey is { } chord
+            && !_globalHotkey.TryRegister(new WindowInteropHelper(this).Handle, chord, out var error)) {
+            _dialog.ShowError($"全体のホットキーを有効にできません。\n{error}");
+        }
+        UpdateHotkeyButton();
+    }
+
+    private void UpdateHotkeyButton() {
+        if (_keyBindings.GlobalHotkey is not { } chord) {
+            HotkeyButton.Content = "前面ホットキー: 未設定";
+            HotkeyButton.IsEnabled = false;
+            return;
+        }
+        HotkeyButton.Content = $"前面ホットキー [{chord}]: {(_globalHotkey.IsRegistered ? "有効" : "無効")}";
+    }
+
+    /// <summary>全体のホットキーが押されたとき、このウィンドウを前面に出してフォーカスする</summary>
+    private void BringToFront() {
+        if (WindowState == WindowState.Minimized) {
+            WindowState = WindowState.Normal;
+        }
+        // 他のソフトが前面にあっても出せるように、一度だけ最前面にしてすぐ戻す
+        Activate();
+        Topmost = true;
+        Topmost = false;
         FocusInput();
     }
 
@@ -202,6 +242,7 @@ public partial class MainWindow : Window {
 
     // アプリを閉じるとき、測定器に接続していれば解除する
     private void Window_Closing(object? sender, CancelEventArgs e) {
+        _globalHotkey.Dispose();
         _shell.Shutdown();
     }
 
