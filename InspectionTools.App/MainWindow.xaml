@@ -14,7 +14,42 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
-    <Grid Margin="12">
+    <Grid>
+        <!--  メニュー: 製品を選ぶ  -->
+        <Grid Margin="24" Visibility="{Binding IsMenuVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="検査する製品を選んでください" FontSize="20" FontWeight="Bold" />
+            <TextBlock
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                Text="{Binding WarningText}"
+                Visibility="{Binding HasWarning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                TextWrapping="Wrap" />
+            <ItemsControl Grid.Row="2" Margin="0,16,0,0" ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button
+                            Margin="0,0,0,8"
+                            Padding="24,12"
+                            HorizontalAlignment="Left"
+                            HorizontalContentAlignment="Left"
+                            MinWidth="240"
+                            Height="Auto"
+                            FontSize="18"
+                            Content="{Binding Name}"
+                            Command="{Binding DataContext.SelectProductCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!--  検査画面（選んだ製品の ViewModel を DataContext にする。コードで切り替える）  -->
+        <Grid x:Name="InspectionRoot" Margin="12" Visibility="Collapsed">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -43,6 +78,7 @@
             <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
             <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
             <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
+            <Button Margin="24,0,0,0" Padding="16,0" Content="メニューへ戻る" Click="BackToMenuButton_Click" />
             <Button
                 Margin="24,0,0,0"
                 Padding="16,0"
@@ -137,6 +173,7 @@
                     Value="0" />
                 <TextBlock Margin="0,8,0,0" Text="測定器と通信中…" HorizontalAlignment="Center" />
             </StackPanel>
+        </Grid>
         </Grid>
     </Grid>
 </Window>
