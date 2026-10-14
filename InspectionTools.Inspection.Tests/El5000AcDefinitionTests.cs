@@ -18,7 +18,7 @@ public class El5000AcDefinitionTests {
     [Fact]
     public void DefinitionHasTheExpectedProductAndItemCount() {
         Assert.Equal("EL5000AC", Definition.Product);
-        Assert.Equal(46 + 8, Definition.Items.Count);
+        Assert.Equal(46 + 10, Definition.Items.Count);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class El5000AcDefinitionTests {
         Assert.Equal(17, Count(ItemKind.Measurement));
         Assert.Equal(22, Count(ItemKind.Input));
         Assert.Equal(7, Count(ItemKind.Confirmation));
-        Assert.Equal(8, Count(ItemKind.Task));
+        Assert.Equal(10, Count(ItemKind.Task));
     }
 
     [Fact]
@@ -39,13 +39,25 @@ public class El5000AcDefinitionTests {
     }
 
     [Fact]
-    public void TaskItemsAreBetweenRow17And18() {
+    public void TaskItemsAreBetweenRow15And16() {
         var firstTask = Definition.Items.ToList().FindIndex(item => item.Kind == ItemKind.Task);
         var lastTask = Definition.Items.ToList().FindLastIndex(item => item.Kind == ItemKind.Task);
 
-        Assert.Equal(17, Definition.Items[firstTask - 1].ExcelRow);
-        Assert.Equal(18, Definition.Items[lastTask + 1].ExcelRow);
-        Assert.Equal(8, lastTask - firstTask + 1);
+        Assert.Equal(15, Definition.Items[firstTask - 1].ExcelRow);
+        Assert.Equal(16, Definition.Items[lastTask + 1].ExcelRow);
+        Assert.Equal(10, lastTask - firstTask + 1);
+    }
+
+    [Fact]
+    public void TaskItemsStartWithTwoPt100CalibrationsThenEightAnalogCalibrations() {
+        var firstTask = Definition.Items.ToList().FindIndex(item => item.Kind == ItemKind.Task);
+        var names = Definition.Items.Skip(firstTask).Take(10).Select(item => item.Name).ToList();
+
+        Assert.All(names.Take(2), name => Assert.StartsWith("温度入力（Pt100Ω）の校正作業", name));
+        Assert.All(names.Skip(2), name => Assert.StartsWith("アナログ校正", name));
+        Assert.Equal(
+            ["4mA", "20mA", "5V", "1V", "4mA", "20mA", "5V", "1V"],
+            names.Skip(2).Select(name => name.Split(' ')[^1]));
     }
 
     [Fact]

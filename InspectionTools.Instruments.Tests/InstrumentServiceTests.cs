@@ -50,4 +50,39 @@ public class InstrumentServiceTests {
         Assert.Equal(["MEASU:MEAS2:VAL?"], fake.Sent);
         Assert.Equal(1.234m, value);
     }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("")]
+    public async Task UnparsableReadingBecomesZeroByDefaultToKeepTheOldAppBehavior(string reading) {
+        var fake = new FakeInstrumentConnection();
+        fake.QueueReading("FETC?", reading);
+        var dmm = new DmmInstClass { SignalType = 2, Index = 0, Query = true };
+
+        var value = await InstrumentService.ReadDmmAsync(dmm, fake);
+
+        Assert.Equal(0m, value);
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("")]
+    public async Task UnparsableReadingThrowsWhenStrict(string reading) {
+        var fake = new FakeInstrumentConnection();
+        fake.QueueReading("FETC?", reading);
+        var dmm = new DmmInstClass { SignalType = 2, Index = 0, Query = true };
+
+        await Assert.ThrowsAsync<FormatException>(() => InstrumentService.ReadDmmAsync(dmm, fake, strict: true));
+    }
+
+    [Fact]
+    public async Task StrictReadingStillParsesExponentNotation() {
+        var fake = new FakeInstrumentConnection();
+        fake.QueueReading(":MEAS?XNOW", "+1.234E-03");
+        var cnt = new CntInstClass { SignalType = 3, Index = 0 };
+
+        var value = await InstrumentService.ReadCntAsync(cnt, fake, strict: true);
+
+        Assert.Equal(0.001234m, value);
+    }
 }

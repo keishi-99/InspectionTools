@@ -3,9 +3,12 @@ namespace InspectionTools.Inspection;
 /// <summary>検査項目の定義（製品ごとに固定で、検査中に変わらない）</summary>
 public sealed class InspectionItem {
 
-    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null) {
+    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null, string? actionId = null) {
         if (string.IsNullOrWhiteSpace(name)) {
             throw new ArgumentException("項目名が空です。", nameof(name));
+        }
+        if (actionId is not null && string.IsNullOrWhiteSpace(actionId)) {
+            throw new ArgumentException($"動作ID（actionId）が空です: {name}", nameof(actionId));
         }
 
         // 作業項目は Excel の行に対応しない（記録しないため）。それ以外は転記先の行が必要
@@ -31,6 +34,7 @@ public sealed class InspectionItem {
         ExcelRow = excelRow;
         LowerLimit = lowerLimit;
         UpperLimit = upperLimit;
+        ActionId = actionId;
     }
 
     /// <summary>画面に出す項目名</summary>
@@ -47,4 +51,7 @@ public sealed class InspectionItem {
 
     /// <summary>合格範囲の上限（測定項目と入力項目のみ）</summary>
     public decimal? UpperLimit { get; }
+
+    /// <summary>この項目で測定器に行わせる動作の ID（製品ごとの手順表を引くための鍵。測定器を使わない項目は null）</summary>
+    public string? ActionId { get; }
 }

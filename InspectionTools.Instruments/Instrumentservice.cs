@@ -15,16 +15,16 @@ namespace InspectionTools.Common {
         public static Task<decimal> ReadDcsAsync(DcsInstClass dcsInstClass) => ReadDcsAsync(dcsInstClass, _defaultConnection);
 
         /// <summary>
-        /// DCS 測定値取得（接続を指定する版。テストでダミーの接続に差し替えるために使う）
+        /// DCS 測定値取得（接続を指定する版。テストでダミーの接続に差し替えるために使う）。strict が true のとき、返事を数値に変換できなければ FormatException にする
         /// </summary>
-        public static async Task<decimal> ReadDcsAsync(DcsInstClass dcsInstClass, IInstrumentConnection connection) {
+        public static async Task<decimal> ReadDcsAsync(DcsInstClass dcsInstClass, IInstrumentConnection connection, bool strict = false) {
             dcsInstClass.InstCommand = dcsInstClass.SignalType switch {
                 2 => "MEAS:CURR?",
                 _ => throw new InvalidOperationException($"未対応の SignalType: {dcsInstClass.SignalType}"),
             };
 
             var result = await connection.ConnectAsync(dcsInstClass);
-            return ParseDecimal(result);
+            return ParseDecimal(result, strict);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace InspectionTools.Common {
         /// <summary>
         /// DMM 測定値取得（接続を指定する版）
         /// </summary>
-        public static async Task<decimal> ReadDmmAsync(DmmInstClass dmmInstClass, IInstrumentConnection connection) {
+        public static async Task<decimal> ReadDmmAsync(DmmInstClass dmmInstClass, IInstrumentConnection connection, bool strict = false) {
             dmmInstClass.InstCommand = dmmInstClass.SignalType switch {
                 1 => string.Empty,
                 2 => "FETC?",
@@ -43,7 +43,7 @@ namespace InspectionTools.Common {
             };
 
             var result = await connection.ConnectAsync(dmmInstClass);
-            return ParseDecimal(result);
+            return ParseDecimal(result, strict);
         }
 
         /// <summary>
@@ -54,14 +54,14 @@ namespace InspectionTools.Common {
         /// <summary>
         /// CNT 測定値取得（接続を指定する版）
         /// </summary>
-        public static async Task<decimal> ReadCntAsync(CntInstClass cntInstClass, IInstrumentConnection connection) {
+        public static async Task<decimal> ReadCntAsync(CntInstClass cntInstClass, IInstrumentConnection connection, bool strict = false) {
             (cntInstClass.InstCommand, cntInstClass.Query) = cntInstClass.SignalType switch {
                 3 => (":MEAS?XNOW", true),
                 _ => throw new InvalidOperationException($"未対応の SignalType: {cntInstClass.SignalType}"),
             };
 
             var result = await connection.ConnectAsync(cntInstClass);
-            return ParseDecimal(result);
+            return ParseDecimal(result, strict);
         }
 
         /// <summary>
@@ -72,10 +72,10 @@ namespace InspectionTools.Common {
         /// <summary>
         /// OSC 測定値取得（接続を指定する版）
         /// </summary>
-        public static async Task<decimal> ReadOscAsync(OscInstClass oscInstClass, int measIndex, IInstrumentConnection connection) {
+        public static async Task<decimal> ReadOscAsync(OscInstClass oscInstClass, int measIndex, IInstrumentConnection connection, bool strict = false) {
             oscInstClass.InstCommand = $"MEASU:MEAS{measIndex}:VAL?";
             var result = await connection.ConnectAsync(oscInstClass);
-            return ParseDecimal(result);
+            return ParseDecimal(result, strict);
         }
 
         /// <summary>
@@ -93,14 +93,17 @@ namespace InspectionTools.Common {
         }
 
         /// <summary>
-        /// 測定値文字列を decimal に変換する共通処理
+        /// 測定値文字列を decimal に変換する共通処理。変換できないとき、strict が false なら 0 を返し（旧アプリの動作）、true なら FormatException にする
         /// </summary>
-        private static decimal ParseDecimal(string value) {
-            decimal.TryParse(
+        private static decimal ParseDecimal(string value, bool strict) {
+            var isParsed = decimal.TryParse(
                 value,
                 NumberStyles.AllowExponent | NumberStyles.Float,
                 CultureInfo.InvariantCulture,
                 out var output);
+            if (!isParsed && strict) {
+                throw new FormatException($"測定値を数値に変換できません: '{value}'");
+            }
             return output;
         }
     }

@@ -31,56 +31,112 @@
       "kind": "Measurement",
       "excelRow": 8,
       "lowerLimit": 0,
-      "upperLimit": 230
+      "upperLimit": 230,
+      "actionId": "dmm01-aci"
     },
     {
       "name": "圧力伝送器用電源の確認",
       "kind": "Measurement",
       "excelRow": 9,
       "lowerLimit": 22.8,
-      "upperLimit": 25.2
+      "upperLimit": 25.2,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "発信器電源の確認 SW16-0",
       "kind": "Measurement",
       "excelRow": 10,
       "lowerLimit": 30.4,
-      "upperLimit": 33.6
+      "upperLimit": 33.6,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "発信器電源の確認 SW16-1",
       "kind": "Measurement",
       "excelRow": 11,
       "lowerLimit": 22.8,
-      "upperLimit": 25.2
+      "upperLimit": 25.2,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "発信器電源の確認 SW16-2",
       "kind": "Measurement",
       "excelRow": 12,
       "lowerLimit": 11.9,
-      "upperLimit": 14.1
+      "upperLimit": 14.1,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "発信器電源の確認 SW16-3",
       "kind": "Measurement",
       "excelRow": 13,
       "lowerLimit": 8.1,
-      "upperLimit": 8.9
+      "upperLimit": 8.9,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "密度計用電源の確認 SW17-1",
       "kind": "Measurement",
       "excelRow": 14,
       "lowerLimit": 26.6,
-      "upperLimit": 29.4
+      "upperLimit": 29.4,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "密度計用電源の確認 SW17-3",
       "kind": "Measurement",
       "excelRow": 15,
       "lowerLimit": 17.1,
-      "upperLimit": 18.9
+      "upperLimit": 18.9,
+      "actionId": "dmm02-dcv"
+    },
+    {
+      "name": "温度入力（Pt100Ω）の校正作業 80.306Ω",
+      "kind": "Task"
+    },
+    {
+      "name": "温度入力（Pt100Ω）の校正作業 229.716Ω",
+      "kind": "Task"
+    },
+    {
+      "name": "アナログ校正 入力1 DCS 4mA",
+      "kind": "Task",
+      "actionId": "dcs-4mA"
+    },
+    {
+      "name": "アナログ校正 入力1 DCS 20mA",
+      "kind": "Task",
+      "actionId": "dcs-20mA"
+    },
+    {
+      "name": "アナログ校正 入力1 DCS 5V",
+      "kind": "Task",
+      "actionId": "dcs-5V"
+    },
+    {
+      "name": "アナログ校正 入力1 DCS 1V",
+      "kind": "Task",
+      "actionId": "dcs-1V"
+    },
+    {
+      "name": "アナログ校正 入力2 DCS 4mA",
+      "kind": "Task",
+      "actionId": "dcs-4mA"
+    },
+    {
+      "name": "アナログ校正 入力2 DCS 20mA",
+      "kind": "Task",
+      "actionId": "dcs-20mA"
+    },
+    {
+      "name": "アナログ校正 入力2 DCS 5V",
+      "kind": "Task",
+      "actionId": "dcs-5V"
+    },
+    {
+      "name": "アナログ校正 入力2 DCS 1V",
+      "kind": "Task",
+      "actionId": "dcs-1V"
     },
     {
       "name": "温度入力（Pt100Ω）の調整 80.306Ω",
@@ -97,183 +153,172 @@
       "upperLimit": 350.2
     },
     {
-      "name": "アナログ入力1の調整作業 DCS 4mA",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力1の調整作業 DCS 20mA",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力1の調整作業 DCS 5V",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力1の調整作業 DCS 1V",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力2の調整作業 DCS 4mA",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力2の調整作業 DCS 20mA",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力2の調整作業 DCS 5V",
-      "kind": "Task"
-    },
-    {
-      "name": "アナログ入力2の調整作業 DCS 1V",
-      "kind": "Task"
-    },
-    {
       "name": "アナログ入力1の調整 4mA",
       "kind": "Input",
       "excelRow": 18,
       "lowerLimit": 3.984,
-      "upperLimit": 4.016
+      "upperLimit": 4.016,
+      "actionId": "dcs-4mA"
     },
     {
       "name": "アナログ入力1の調整 12mA",
       "kind": "Input",
       "excelRow": 19,
       "lowerLimit": 11.984,
-      "upperLimit": 12.016
+      "upperLimit": 12.016,
+      "actionId": "dcs-12mA"
     },
     {
       "name": "アナログ入力1の調整 20mA",
       "kind": "Input",
       "excelRow": 20,
       "lowerLimit": 19.984,
-      "upperLimit": 20.016
+      "upperLimit": 20.016,
+      "actionId": "dcs-20mA"
     },
     {
       "name": "アナログ入力1の調整 1V",
       "kind": "Input",
       "excelRow": 21,
       "lowerLimit": 0.996,
-      "upperLimit": 1.004
+      "upperLimit": 1.004,
+      "actionId": "dcs-1V"
     },
     {
       "name": "アナログ入力1の調整 3V",
       "kind": "Input",
       "excelRow": 22,
       "lowerLimit": 2.996,
-      "upperLimit": 3.004
+      "upperLimit": 3.004,
+      "actionId": "dcs-3V"
     },
     {
       "name": "アナログ入力1の調整 5V",
       "kind": "Input",
       "excelRow": 23,
       "lowerLimit": 4.996,
-      "upperLimit": 5.004
+      "upperLimit": 5.004,
+      "actionId": "dcs-5V"
     },
     {
       "name": "アナログ入力2の調整 4mA",
       "kind": "Input",
       "excelRow": 24,
       "lowerLimit": 3.984,
-      "upperLimit": 4.016
+      "upperLimit": 4.016,
+      "actionId": "dcs-4mA"
     },
     {
       "name": "アナログ入力2の調整 12mA",
       "kind": "Input",
       "excelRow": 25,
       "lowerLimit": 11.984,
-      "upperLimit": 12.016
+      "upperLimit": 12.016,
+      "actionId": "dcs-12mA"
     },
     {
       "name": "アナログ入力2の調整 20mA",
       "kind": "Input",
       "excelRow": 26,
       "lowerLimit": 19.984,
-      "upperLimit": 20.016
+      "upperLimit": 20.016,
+      "actionId": "dcs-20mA"
     },
     {
       "name": "アナログ入力2の調整 1V",
       "kind": "Input",
       "excelRow": 27,
       "lowerLimit": 0.996,
-      "upperLimit": 1.004
+      "upperLimit": 1.004,
+      "actionId": "dcs-1V"
     },
     {
       "name": "アナログ入力2の調整 3V",
       "kind": "Input",
       "excelRow": 28,
       "lowerLimit": 2.996,
-      "upperLimit": 3.004
+      "upperLimit": 3.004,
+      "actionId": "dcs-3V"
     },
     {
       "name": "アナログ入力2の調整 5V",
       "kind": "Input",
       "excelRow": 29,
       "lowerLimit": 4.996,
-      "upperLimit": 5.004
+      "upperLimit": 5.004,
+      "actionId": "dcs-5V"
     },
     {
       "name": "アナログ出力の確認 4mA",
       "kind": "Measurement",
       "excelRow": 30,
       "lowerLimit": 3.984,
-      "upperLimit": 4.016
+      "upperLimit": 4.016,
+      "actionId": "dmm02-dci"
     },
     {
       "name": "アナログ出力の確認 12mA",
       "kind": "Measurement",
       "excelRow": 31,
       "lowerLimit": 11.984,
-      "upperLimit": 12.016
+      "upperLimit": 12.016,
+      "actionId": "dmm02-dci"
     },
     {
       "name": "アナログ出力の確認 20mA",
       "kind": "Measurement",
       "excelRow": 32,
       "lowerLimit": 19.984,
-      "upperLimit": 20.016
+      "upperLimit": 20.016,
+      "actionId": "dmm02-dci"
     },
     {
       "name": "アナログ出力の確認 1V",
       "kind": "Measurement",
       "excelRow": 33,
       "lowerLimit": 0.996,
-      "upperLimit": 1.004
+      "upperLimit": 1.004,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "アナログ出力の確認 3V",
       "kind": "Measurement",
       "excelRow": 34,
       "lowerLimit": 2.996,
-      "upperLimit": 3.004
+      "upperLimit": 3.004,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "アナログ出力の確認 5V",
       "kind": "Measurement",
       "excelRow": 35,
       "lowerLimit": 4.996,
-      "upperLimit": 5.004
+      "upperLimit": 5.004,
+      "actionId": "dmm02-dcv"
     },
     {
       "name": "パルス出力1～3のパルス幅の確認 パルス出力1:",
       "kind": "Measurement",
       "excelRow": 36,
       "lowerLimit": 0.8,
-      "upperLimit": 1.2
+      "upperLimit": 1.2,
+      "actionId": "cnt-pulse-width"
     },
     {
       "name": "パルス出力1～3のパルス幅の確認 パルス出力2:",
       "kind": "Measurement",
       "excelRow": 37,
       "lowerLimit": 0.8,
-      "upperLimit": 1.2
+      "upperLimit": 1.2,
+      "actionId": "cnt-pulse-width"
     },
     {
       "name": "パルス出力1～3のパルス幅の確認 パルス出力3:",
       "kind": "Measurement",
       "excelRow": 38,
       "lowerLimit": 0.8,
-      "upperLimit": 1.2
+      "upperLimit": 1.2,
+      "actionId": "cnt-pulse-width"
     },
     {
       "name": "パルス入力1の確認 P.A 積算表示:",
@@ -334,7 +379,8 @@
       "kind": "Input",
       "excelRow": 47,
       "lowerLimit": 6999,
-      "upperLimit": 7001
+      "upperLimit": 7001,
+      "actionId": "fg-on"
     },
     {
       "name": "ステータス入力の確認 正常にONOFFできていること",

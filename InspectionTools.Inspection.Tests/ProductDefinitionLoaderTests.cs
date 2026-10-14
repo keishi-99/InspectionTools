@@ -45,6 +45,23 @@ public class ProductDefinitionLoaderTests {
     }
 
     [Fact]
+    public void ParseReadsActionIdAndLeavesItNullWhenAbsent() {
+        var definition = ProductDefinitionLoader.Parse(JsonWithItems(
+            """{ "name": "調整", "kind": "Task", "actionId": "dcs-4mA" }, { "name": "確認", "kind": "Confirmation", "excelRow": 5 }"""));
+
+        Assert.Equal("dcs-4mA", definition.Items[0].ActionId);
+        Assert.Null(definition.Items[1].ActionId);
+    }
+
+    [Fact]
+    public void BlankActionIdIsRejectedWithItemPosition() {
+        var exception = AssertRejected(JsonWithItems("""{ "name": "調整", "kind": "Task", "actionId": " " }"""));
+
+        Assert.Contains("1番目の項目", exception.Message);
+        Assert.Contains("actionId", exception.Message);
+    }
+
+    [Fact]
     public void ParsedItemsCanBeUsedForSession() {
         var definition = ProductDefinitionLoader.Parse(ValidJson);
 
