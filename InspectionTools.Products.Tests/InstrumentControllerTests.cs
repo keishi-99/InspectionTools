@@ -94,6 +94,73 @@ public class InstrumentControllerTests {
     }
 
     [Fact]
+    public async Task ForcedApplySendsEveryTargetEvenWhenTheRecordedStateMatches() {
+        // 記録は DCS=OFF、FG=OFF だが、本体で操作されているかもしれない場合の再適用
+        var controller = await CreateInitializedControllerAsync();
+
+        await controller.ApplyAsync(ItemAction.None, force: true);
+
+        Assert.Equal([("FG", FgOff), ("DCS", DcsOff)], _log.Sent);
+    }
+
+    [Fact]
+    public async Task ForcedApplySendsTheDeclaredStatesAgainAndStillSkipsUndeclaredMeasuringInstruments() {
+        var controller = await CreateInitializedControllerAsync();
+        await controller.ApplyAsync(Action("dcs-4mA"));
+        _log.Sent.Clear();
+
+        await controller.ApplyAsync(Action("dcs-4mA"), force: true);
+
+        Assert.Equal([("FG", FgOff), ("DCS", "SIR2,SOI+4MA,OPR")], _log.Sent);
+    }
+
+    [Fact]
+    public async Task ForcedApplyDoesNotSendToRolesWithoutInstrument() {
+        var controller = CreateController(InstrumentRole.Dmm01);
+        await controller.InitializeAsync();
+        _log.Sent.Clear();
+
+        await controller.ApplyAsync(Action("dcs-4mA"), force: true);
+
+        Assert.Empty(_log.Sent);
+    }
+
+    [Fact]
+    public async Task StateSentIsRaisedForEachSentStateInOrderAndNotForSkippedOnes() {
+        var controller = await CreateInitializedControllerAsync();
+        var sent = new List<InstrumentSetting>();
+        controller.StateSent += sent.Add;
+
+        await controller.ApplyAsync(new ItemAction([new(InstrumentRole.Fg, "ON"), new(InstrumentRole.Dcs, "5V")]));
+        await controller.ApplyAsync(new ItemAction([new(InstrumentRole.Fg, "ON"), new(InstrumentRole.Dcs, "5V")]));
+
+        Assert.Equal([new InstrumentSetting(InstrumentRole.Fg, "ON"), new InstrumentSetting(InstrumentRole.Dcs, "5V")], sent);
+    }
+
+    [Fact]
+    public async Task StateSentIsRaisedAgainForForcedApply() {
+        var controller = await CreateInitializedControllerAsync();
+        var sent = new List<InstrumentSetting>();
+        controller.StateSent += sent.Add;
+
+        await controller.ApplyAsync(ItemAction.None, force: true);
+
+        Assert.Equal([new InstrumentSetting(InstrumentRole.Fg, "OFF"), new InstrumentSetting(InstrumentRole.Dcs, "OFF")], sent);
+    }
+
+    [Fact]
+    public async Task StateSentIsNotRaisedForAFailedSend() {
+        var controller = await CreateInitializedControllerAsync();
+        var sent = new List<InstrumentSetting>();
+        controller.StateSent += sent.Add;
+        _log.ShouldFail = instrument => instrument.Name == "DCS";
+
+        await Assert.ThrowsAsync<InstrumentCommunicationException>(() => controller.ApplyAsync(Action("dcs-4mA")));
+
+        Assert.Empty(sent);
+    }
+
+    [Fact]
     public async Task DcsStepsAreSentInTheOrderOfTheActions() {
         var controller = await CreateInitializedControllerAsync();
 
