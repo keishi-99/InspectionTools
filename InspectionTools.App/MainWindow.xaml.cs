@@ -19,6 +19,7 @@ public partial class MainWindow : Window {
     // 表の選択を ViewModel の位置に合わせている最中は、選択変更のイベントを無視する（互いに呼び合うのを防ぐ）
     private bool _isSyncingSelection;
 
+
     public MainWindow(MainViewModel viewModel) {
         InitializeComponent();
         _viewModel = viewModel;
@@ -121,6 +122,11 @@ public partial class MainWindow : Window {
         if (unitIndex >= 0 && itemIndex >= 0) {
             _viewModel.MoveTo(itemIndex, unitIndex);
         }
+    }
+
+    // アプリを閉じるとき、測定器に接続していれば解除する
+    private void Window_Closing(object? sender, CancelEventArgs e) {
+        _viewModel.Shutdown();
     }
 
     // 台数の入力欄から離れたときも、入力された台数を反映する

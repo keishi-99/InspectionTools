@@ -1,0 +1,86 @@
+<Window
+    x:Class="InspectionTools.App.InstrumentSelectionWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="測定器の選択と接続"
+    Width="720"
+    MinWidth="560"
+    SizeToContent="Height"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner"
+    Background="{DynamicResource MaterialDesignPaper}"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    FontSize="14"
+    Closing="Window_Closing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <!--  文字が空のときは、案内の欄ごと隠す  -->
+        <Style x:Key="NoticeTextStyle" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Style.Triggers>
+                <Trigger Property="Text" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  測定器の一覧に関する案内（読み込めない、読み飛ばした）  -->
+        <TextBlock Style="{StaticResource NoticeTextStyle}" Text="{Binding CatalogMessage}" Foreground="Firebrick" />
+
+        <!--  役割ごとの選択  -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Roles}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                        <ComboBox
+                            Grid.Column="1"
+                            ItemsSource="{Binding CandidateNames}"
+                            SelectedItem="{Binding SelectedName, Mode=TwoWay}"
+                            IsEnabled="{Binding DataContext.CanEditSelection, RelativeSource={RelativeSource AncestorType=Window}}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Margin="12,0,0,0"
+                            Text="{Binding ResultText}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!--  操作の結果の案内  -->
+        <StackPanel Grid.Row="2" Margin="0,8,0,0">
+            <TextBlock Style="{StaticResource NoticeTextStyle}" Text="{Binding Message}" />
+        </StackPanel>
+
+        <ProgressBar
+            Grid.Row="3"
+            Margin="0,0,0,8"
+            IsIndeterminate="True"
+            Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Padding="16,0" Content="接続" Command="{Binding ConnectCommand}" IsEnabled="{Binding CanConnect}" />
+            <Button Margin="8,0,0,0" Padding="16,0" Content="解除" Command="{Binding DisconnectCommand}" IsEnabled="{Binding CanDisconnect}" />
+            <Button Margin="24,0,0,0" Padding="16,0" Content="閉じる" IsCancel="True" Click="CloseButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

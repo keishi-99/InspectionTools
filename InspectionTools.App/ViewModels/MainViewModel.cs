@@ -15,10 +15,20 @@ public sealed partial class MainViewModel : ObservableObject {
     private readonly IDialogService _dialog;
     private InspectionSession _session;
 
-    public MainViewModel(ProductDefinition definition, SessionStore store, IDialogService dialog) {
+    /// <param name="instrumentSelection">測定器の選択と接続（測定器を使わない起動では null。その場合、測定器の操作は出さない）</param>
+    public MainViewModel(ProductDefinition definition, SessionStore store, IDialogService dialog, InstrumentSelectionViewModel? instrumentSelection = null) {
         _definition = definition;
         _store = store;
         _dialog = dialog;
+        InstrumentSelection = instrumentSelection;
+        if (instrumentSelection is not null) {
+            // 接続の状態が変わったら、検査画面の上部の表示も更新する
+            instrumentSelection.PropertyChanged += (_, e) => {
+                if (e.PropertyName == nameof(InstrumentSelectionViewModel.StatusText)) {
+                    OnPropertyChanged(nameof(InstrumentStatusText));
+                }
+            };
+        }
         _session = new InspectionSession(definition.Items, unitCount: 1);
         Rows = CreateRows();
     }
@@ -73,6 +83,33 @@ public sealed partial class MainViewModel : ObservableObject {
     public string CurrentRangeText => CurrentItem.LowerLimit is { } lower && CurrentItem.UpperLimit is { } upper
         ? $"合格範囲: {lower} ～ {upper}"
         : "";
+
+    /// <summary>測定器の選択と接続（測定器を使わない起動では null）</summary>
+    public InstrumentSelectionViewModel? InstrumentSelection { get; }
+
+    /// <summary>測定器の操作を出すか</summary>
+    public bool HasInstrumentSelection => InstrumentSelection is not null;
+
+    /// <summary>測定器の接続の状態の表示</summary>
+    public string InstrumentStatusText => InstrumentSelection?.StatusText ?? "";
+
+    /// <summary>測定器に接続しているか</summary>
+    public bool IsInstrumentConnected => InstrumentSelection?.IsConnected ?? false;
+
+    /// <summary>測定器の選択と接続の画面を開く</summary>
+    [RelayCommand]
+    private void OpenInstrumentSelection() {
+        if (InstrumentSelection is null) {
+            return;
+        }
+        InstrumentSelection.Refresh();
+        _dialog.ShowInstrumentSelection(InstrumentSelection);
+    }
+
+    /// <summary>アプリを閉じる前に呼ぶ。測定器に接続していれば、解除する（測定器には何も送らない）</summary>
+    public void Shutdown() {
+        InstrumentSelection?.Disconnect();
+    }
 
     /// <summary>起動時に呼ぶ。前回の途中保存があれば、続きから再開するか確認する</summary>
     public void Start() {

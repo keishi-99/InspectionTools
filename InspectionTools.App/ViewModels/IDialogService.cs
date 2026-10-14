@@ -12,6 +12,9 @@ public interface IDialogService {
     /// <summary>処理が終わったことなどを知らせる</summary>
     void ShowInfo(string message);
 
+    /// <summary>測定器の選択と接続の画面を開く（閉じるまで戻らない）</summary>
+    void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel);
+
     /// <summary>転記先のテンプレート（Excel ブック）を選んでもらう。選ばずに閉じたときは null</summary>
     string? SelectTemplateFilePath();
 }

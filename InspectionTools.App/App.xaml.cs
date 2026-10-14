@@ -1,7 +1,9 @@
 using System.IO;
 using System.Windows;
 using InspectionTools.App.ViewModels;
+using InspectionTools.Common;
 using InspectionTools.Inspection;
+using InspectionTools.Products;
 
 namespace InspectionTools.App;
 
@@ -20,7 +22,14 @@ public partial class App : Application {
             var store = new SessionStore(Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "InspectionTools", "sessions"));
 
-            var viewModel = new MainViewModel(definition, store, dialog);
+            // 測定器の一覧（VisaAddress.xml）は、実行ファイルのフォルダに置く（開くたびに読み直す）
+            var procedure = El5000AcProcedure.Create();
+            var instrumentSelection = new InstrumentSelectionViewModel(
+                procedure,
+                new InstrumentConnection(procedure, new DeviceControllerConnection()),
+                Path.Combine(AppContext.BaseDirectory, "VisaAddress.xml"));
+
+            var viewModel = new MainViewModel(definition, store, dialog, instrumentSelection);
             viewModel.Start();
 
             var window = new MainWindow(viewModel);

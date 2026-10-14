@@ -19,6 +19,11 @@ public sealed class WpfDialogService : IDialogService {
     public void ShowInfo(string message) =>
         Show(message, "完了", MessageBoxButton.OK, MessageBoxImage.Information);
 
+    public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) {
+        var window = new InstrumentSelectionWindow(viewModel) { Owner = Owner };
+        window.ShowDialog();
+    }
+
     public string? SelectTemplateFilePath() {
         var dialog = new OpenFileDialog {
             Title = "転記先のテンプレートを選択",

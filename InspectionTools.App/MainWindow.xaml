@@ -8,7 +8,8 @@
     Height="720"
     Background="{DynamicResource MaterialDesignPaper}"
     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-    FontSize="14">
+    FontSize="14"
+    Closing="Window_Closing">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
@@ -40,6 +41,13 @@
             <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
             <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
             <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
+            <Button
+                Margin="24,0,0,0"
+                Padding="16,0"
+                Content="測定器"
+                Command="{Binding OpenInstrumentSelectionCommand}"
+                Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
         </StackPanel>
 
         <!--  検査項目 × 台の表。列は台数に合わせてコードで作る  -->
