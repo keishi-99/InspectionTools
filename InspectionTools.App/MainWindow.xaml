@@ -87,6 +87,7 @@
                 Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
             <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
             <TextBlock Text="{Binding DcsElapsedText}" Margin="16,0,0,0" VerticalAlignment="Center" FontSize="18" />
+            <Button x:Name="HotkeyButton" Margin="24,0,0,0" Padding="16,0" Click="HotkeyButton_Click" />
         </StackPanel>
 
         <!--  検査項目 × 台の表。列は台数に合わせてコードで作る  -->
