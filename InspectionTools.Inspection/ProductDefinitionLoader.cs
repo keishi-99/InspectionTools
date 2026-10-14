@@ -11,7 +11,7 @@ public static class ProductDefinitionLoader {
     };
 
     // JSON の形（欠けている項目を検査で見つけられるように、すべて null を許す）
-    private sealed record ItemFile(string? Name, ItemKind? Kind, int? ExcelRow, decimal? LowerLimit, decimal? UpperLimit);
+    private sealed record ItemFile(string? Name, ItemKind? Kind, int? ExcelRow, decimal? LowerLimit, decimal? UpperLimit, string? ActionId);
 
     private sealed record TransferFile(
         string? DataSheet,
@@ -114,7 +114,7 @@ public static class ProductDefinitionLoader {
         }
 
         try {
-            return new InspectionItem(item.Name ?? string.Empty, item.Kind.Value, item.ExcelRow, item.LowerLimit, item.UpperLimit);
+            return new InspectionItem(item.Name ?? string.Empty, item.Kind.Value, item.ExcelRow, item.LowerLimit, item.UpperLimit, item.ActionId);
         } catch (ArgumentException ex) {
             throw new ProductDefinitionException($"{position}: {ex.Message}", ex);
         }
