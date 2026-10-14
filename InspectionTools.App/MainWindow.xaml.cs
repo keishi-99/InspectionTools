@@ -17,7 +17,8 @@ public partial class MainWindow : Window {
     private static readonly Brush NgBrush = CreateBrush(0xFF, 0xCD, 0xD2);
     private static readonly Brush DoneBrush = CreateBrush(0xBB, 0xDE, 0xFB);
 
-    private readonly MainViewModel _viewModel;
+    private readonly ShellViewModel _shell;
+    private MainViewModel? _viewModel;
     private readonly KeyBindings _keyBindings;
 
     // DCS の経過時間の表示を更新するタイマー
@@ -27,21 +28,42 @@ public partial class MainWindow : Window {
     private bool _isSyncingSelection;
 
 
-    public MainWindow(MainViewModel viewModel, KeyBindings keyBindings) {
+    public MainWindow(ShellViewModel shell, KeyBindings keyBindings) {
         InitializeComponent();
-        _viewModel = viewModel;
+        _shell = shell;
         _keyBindings = keyBindings;
         KeyHintTextBlock.Text = keyBindings.HintText;
-        DataContext = viewModel;
-        viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-        BuildGrid();
-        Loaded += (_, _) => FocusInput();
+        DataContext = shell;
+        shell.PropertyChanged += Shell_PropertyChanged;
 
         // DCS の経過時間を、1秒ごとに更新する
-        _dcsTimer.Tick += (_, _) => _viewModel.UpdateDcsElapsed();
+        _dcsTimer.Tick += (_, _) => _viewModel?.UpdateDcsElapsed();
         _dcsTimer.Start();
     }
+
+    // メニューと検査画面を切り替える（検査画面の ViewModel は、製品を選ぶたびに入れ替わる）
+    private void Shell_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
+        if (e.PropertyName != nameof(ShellViewModel.Current)) {
+            return;
+        }
+
+        if (_viewModel is not null) {
+            _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+        _viewModel = _shell.Current;
+        InspectionRoot.DataContext = _viewModel;
+        InspectionRoot.Visibility = _viewModel is null ? Visibility.Collapsed : Visibility.Visible;
+        if (_viewModel is null) {
+            ResultGrid.ItemsSource = null;
+            return;
+        }
+
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        BuildGrid();
+        FocusInput();
+    }
+
+    private void BackToMenuButton_Click(object sender, RoutedEventArgs e) => _shell.BackToMenuCommand.Execute(null);
 
     private static Brush CreateBrush(byte r, byte g, byte b) {
         var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
@@ -68,6 +90,9 @@ public partial class MainWindow : Window {
 
     // 台数に合わせて列を作り直し、行のデータを結びつける
     private void BuildGrid() {
+        if (_viewModel is null) {
+            return;
+        }
         _isSyncingSelection = true;
         try {
             ResultGrid.Columns.Clear();
@@ -109,6 +134,9 @@ public partial class MainWindow : Window {
 
     // ViewModel の現在位置のマスを、表の選択状態にする
     private void SelectCurrentCell() {
+        if (_viewModel is null) {
+            return;
+        }
         if (ResultGrid.Columns.Count <= _viewModel.CurrentUnitIndex + 1 || _viewModel.Rows.Count <= _viewModel.CurrentItemIndex) {
             return;
         }
@@ -128,7 +156,7 @@ public partial class MainWindow : Window {
 
     // 利用者が表のマスを選んだら、ViewModel の現在位置を合わせる
     private async void ResultGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e) {
-        if (_isSyncingSelection || ResultGrid.SelectedCells.Count != 1) {
+        if (_viewModel is null || _isSyncingSelection || ResultGrid.SelectedCells.Count != 1) {
             return;
         }
         // 通信中は位置を変えられない（ViewModel が受け付けない）ので、キー操作で動いた選択を元の位置に戻す
@@ -148,6 +176,11 @@ public partial class MainWindow : Window {
 
     // キー割り当てに合うキーを受けたら、対応する操作を行う（入力欄やボタンより先に、画面全体で受ける）
     private async void Window_PreviewKeyDown(object sender, KeyEventArgs e) {
+        // メニューを表示しているときは、キー操作を使わない
+        if (_viewModel is null) {
+            return;
+        }
+
         // 台数の入力欄では、キー割り当てを使わない（Enter で台数を確定し、数字を入力するため）
         if (UnitCountTextBox.IsKeyboardFocusWithin) {
             return;
@@ -169,14 +202,14 @@ public partial class MainWindow : Window {
 
     // アプリを閉じるとき、測定器に接続していれば解除する
     private void Window_Closing(object? sender, CancelEventArgs e) {
-        _viewModel.Shutdown();
+        _shell.Shutdown();
     }
 
     // 台数の入力欄から離れたときも、入力された台数を反映する
-    private void UnitCountTextBox_LostFocus(object sender, RoutedEventArgs e) => _viewModel.ApplyUnitCountTextCommand.Execute(null);
+    private void UnitCountTextBox_LostFocus(object sender, RoutedEventArgs e) => _viewModel?.ApplyUnitCountTextCommand.Execute(null);
 
     private void FocusInput() {
-        if (!_viewModel.IsValueInput) {
+        if (_viewModel is null || !_viewModel.IsValueInput) {
             return;
         }
         // 表示の切り替えが終わってからフォーカスを移す
