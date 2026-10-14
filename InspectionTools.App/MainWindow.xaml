@@ -57,37 +57,55 @@
         </Grid.RowDefinitions>
 
         <!--  上部: 製品名と台数  -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="{Binding Product}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
-            <TextBlock Text="台数" Margin="32,0,8,0" VerticalAlignment="Center" />
-            <Button Width="36" Content="－" Command="{Binding DecreaseUnitCountCommand}" />
-            <TextBox
-                x:Name="UnitCountTextBox"
-                Width="48"
-                Margin="4,0"
-                TextAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="18"
-                InputMethod.IsInputMethodEnabled="False"
-                Text="{Binding UnitCountText, UpdateSourceTrigger=PropertyChanged}"
-                LostFocus="UnitCountTextBox_LostFocus">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding ApplyUnitCountTextCommand}" />
-                </TextBox.InputBindings>
-            </TextBox>
-            <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
-            <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
-            <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
-            <Button Margin="24,0,0,0" Padding="16,0" Content="メニューへ戻る" Click="BackToMenuButton_Click" />
-            <Button
-                Margin="24,0,0,0"
-                Padding="16,0"
-                Content="測定器"
-                Command="{Binding OpenInstrumentSelectionCommand}"
-                Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding DcsElapsedText}" Margin="16,0,0,0" VerticalAlignment="Center" FontSize="18" />
-            <Button x:Name="HotkeyButton" Margin="24,0,0,0" Padding="16,0" Click="HotkeyButton_Click" />
+        <StackPanel Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Product}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+                <TextBlock Text="台数" Margin="32,0,8,0" VerticalAlignment="Center" />
+                <Button Width="36" Content="－" Command="{Binding DecreaseUnitCountCommand}" />
+                <TextBox
+                    x:Name="UnitCountTextBox"
+                    Width="48"
+                    Margin="4,0"
+                    TextAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="18"
+                    InputMethod.IsInputMethodEnabled="False"
+                    Text="{Binding UnitCountText, UpdateSourceTrigger=PropertyChanged}"
+                    LostFocus="UnitCountTextBox_LostFocus">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding ApplyUnitCountTextCommand}" />
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
+                <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
+                <Button Margin="24,0,0,0" Padding="16,0" Content="メニューへ戻る" Click="BackToMenuButton_Click" />
+                <Button
+                    Margin="24,0,0,0"
+                    Padding="16,0"
+                    Content="測定器"
+                    Command="{Binding OpenInstrumentSelectionCommand}"
+                    Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <!--  キーの有効・無効のスイッチ。全体のホットキーは他のソフトのキーを奪うので、必要なときだけ有効にする  -->
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <TextBlock x:Name="GlobalHotkeyLabel" VerticalAlignment="Center" />
+                <ToggleButton
+                    x:Name="GlobalHotkeySwitch"
+                    Margin="8,0"
+                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                    Click="GlobalHotkeySwitch_Click" />
+                <TextBlock x:Name="GlobalHotkeyState" Width="48" VerticalAlignment="Center" FontWeight="Bold" />
+                <TextBlock Margin="32,0,0,0" Text="画面のキー" VerticalAlignment="Center" />
+                <ToggleButton
+                    x:Name="LocalKeysSwitch"
+                    Margin="8,0"
+                    IsChecked="True"
+                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                    Click="LocalKeysSwitch_Click" />
+                <TextBlock x:Name="LocalKeysState" VerticalAlignment="Center" FontWeight="Bold" />
+            </StackPanel>
         </StackPanel>
 
         <!--  検査項目 × 台の表。列は台数に合わせてコードで作る  -->
@@ -154,6 +172,7 @@
                         Command="{Binding ReapplyInstrumentCommand}"
                         IsEnabled="{Binding CanReapplyInstrument}"
                         Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding DcsElapsedText}" Margin="24,0,0,0" VerticalAlignment="Center" FontSize="18" />
                 </StackPanel>
                 <!--  キーの案内（設定ファイルで割り当てを変えると、ここも変わる）  -->
                 <TextBlock x:Name="KeyHintTextBlock" Margin="0,8,0,0" Opacity="0.6" TextWrapping="Wrap" />
