@@ -26,6 +26,9 @@ public partial class MainWindow : Window {
     // 全体のホットキー（前面に出すキー）。登録するとシステム全体でそのキーが奪われるので、ボタンで有効にしたときだけ登録する
     private readonly GlobalHotkey _globalHotkey = new();
 
+    // 画面のキー（keybindings.json の割り当て）を使うか。無効のときは、通常のキー入力に戻り、操作はマウスだけになる
+    private bool _isLocalKeysEnabled = true;
+
     // DCS の経過時間の表示を更新するタイマー
     private readonly DispatcherTimer _dcsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
 
@@ -39,8 +42,7 @@ public partial class MainWindow : Window {
         _keyBindings = keyBindings;
         _dialog = dialog;
         _globalHotkey.Pressed += BringToFront;
-        UpdateHotkeyButton();
-        KeyHintTextBlock.Text = keyBindings.HintText;
+        UpdateKeySwitches();
         DataContext = shell;
         shell.PropertyChanged += Shell_PropertyChanged;
 
@@ -72,23 +74,39 @@ public partial class MainWindow : Window {
     }
 
     // 全体のホットキーの有効・無効を切り替える。有効にできなかったとき（他のソフトが同じキーを使っているなど）は、理由を知らせて無効のままにする
-    private void HotkeyButton_Click(object sender, RoutedEventArgs e) {
+    private void GlobalHotkeySwitch_Click(object sender, RoutedEventArgs e) {
         if (_globalHotkey.IsRegistered) {
             _globalHotkey.Unregister();
         } else if (_keyBindings.GlobalHotkey is { } chord
             && !_globalHotkey.TryRegister(new WindowInteropHelper(this).Handle, chord, out var error)) {
             _dialog.ShowError($"全体のホットキーを有効にできません。\n{error}");
         }
-        UpdateHotkeyButton();
+        UpdateKeySwitches();
+        FocusInput();
     }
 
-    private void UpdateHotkeyButton() {
+    // 画面のキーの有効・無効を切り替える
+    private void LocalKeysSwitch_Click(object sender, RoutedEventArgs e) {
+        _isLocalKeysEnabled = !_isLocalKeysEnabled;
+        UpdateKeySwitches();
+        FocusInput();
+    }
+
+    // 2つのスイッチの見た目と、キーの案内を、いまの状態に合わせる
+    private void UpdateKeySwitches() {
+        LocalKeysSwitch.IsChecked = _isLocalKeysEnabled;
+        LocalKeysState.Text = _isLocalKeysEnabled ? "有効" : "無効";
+        KeyHintTextBlock.Text = _isLocalKeysEnabled ? _keyBindings.HintText : "画面のキー: 無効（マウスで操作してください）";
+
+        GlobalHotkeySwitch.IsChecked = _globalHotkey.IsRegistered;
         if (_keyBindings.GlobalHotkey is not { } chord) {
-            HotkeyButton.Content = "前面ホットキー: 未設定";
-            HotkeyButton.IsEnabled = false;
+            GlobalHotkeyLabel.Text = "前面ホットキー";
+            GlobalHotkeyState.Text = "未設定";
+            GlobalHotkeySwitch.IsEnabled = false;
             return;
         }
-        HotkeyButton.Content = $"前面ホットキー [{chord}]: {(_globalHotkey.IsRegistered ? "有効" : "無効")}";
+        GlobalHotkeyLabel.Text = $"前面ホットキー [{chord}]";
+        GlobalHotkeyState.Text = _globalHotkey.IsRegistered ? "有効" : "無効";
     }
 
     /// <summary>全体のホットキーが押されたとき、このウィンドウを前面に出してフォーカスする</summary>
@@ -216,8 +234,8 @@ public partial class MainWindow : Window {
 
     // キー割り当てに合うキーを受けたら、対応する操作を行う（入力欄やボタンより先に、画面全体で受ける）
     private async void Window_PreviewKeyDown(object sender, KeyEventArgs e) {
-        // メニューを表示しているときは、キー操作を使わない
-        if (_viewModel is null) {
+        // メニューを表示しているとき、画面のキーを無効にしているときは、キー操作を使わない
+        if (_viewModel is null || !_isLocalKeysEnabled) {
             return;
         }
 
