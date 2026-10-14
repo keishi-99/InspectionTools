@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Threading;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Inspection;
 
@@ -16,6 +17,9 @@ public partial class MainWindow : Window {
 
     private readonly MainViewModel _viewModel;
 
+    // DCS の経過時間の表示を更新するタイマー
+    private readonly DispatcherTimer _dcsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+
     // 表の選択を ViewModel の位置に合わせている最中は、選択変更のイベントを無視する（互いに呼び合うのを防ぐ）
     private bool _isSyncingSelection;
 
@@ -28,6 +32,10 @@ public partial class MainWindow : Window {
 
         BuildGrid();
         Loaded += (_, _) => FocusInput();
+
+        // DCS の経過時間を、1秒ごとに更新する
+        _dcsTimer.Tick += (_, _) => _viewModel.UpdateDcsElapsed();
+        _dcsTimer.Start();
     }
 
     private static Brush CreateBrush(byte r, byte g, byte b) {
@@ -44,6 +52,10 @@ public partial class MainWindow : Window {
             case nameof(MainViewModel.CurrentItemIndex):
             case nameof(MainViewModel.CurrentUnitIndex):
                 SelectCurrentCell();
+                FocusInput();
+                break;
+            case nameof(MainViewModel.IsInstrumentBusy) when !_viewModel.IsInstrumentBusy:
+                // 通信が終わったら、入力欄に戻す（「値を取得」のあと、そのまま Enter で確定できるように）
                 FocusInput();
                 break;
         }
@@ -110,8 +122,13 @@ public partial class MainWindow : Window {
     }
 
     // 利用者が表のマスを選んだら、ViewModel の現在位置を合わせる
-    private void ResultGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e) {
+    private async void ResultGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e) {
         if (_isSyncingSelection || ResultGrid.SelectedCells.Count != 1) {
+            return;
+        }
+        // 通信中は位置を変えられない（ViewModel が受け付けない）ので、キー操作で動いた選択を元の位置に戻す
+        if (_viewModel.IsInstrumentBusy) {
+            SelectCurrentCell();
             return;
         }
 
@@ -120,7 +137,7 @@ public partial class MainWindow : Window {
         var itemIndex = _viewModel.Rows.ToList().IndexOf((RowViewModel)cell.Item);
         // 項目名の列（先頭）は選ばれても位置を変えない
         if (unitIndex >= 0 && itemIndex >= 0) {
-            _viewModel.MoveTo(itemIndex, unitIndex);
+            await _viewModel.MoveToAsync(itemIndex, unitIndex);
         }
     }
 
