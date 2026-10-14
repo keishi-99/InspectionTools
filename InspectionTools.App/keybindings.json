@@ -1,0 +1,12 @@
+{
+  "keys": {
+    "AcquireValue": ["Space", "F2", "NumAdd"],
+    "Confirm": ["Enter", "F4"],
+    "Reapply": ["F3", "NumMultiply"],
+    "Pass": ["F5"],
+    "Fail": ["F6"],
+    "Next": ["Down", "PageDown"],
+    "Previous": ["Up", "PageUp"]
+  },
+  "globalHotkey": "]"
+}
