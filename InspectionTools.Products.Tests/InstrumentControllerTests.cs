@@ -197,10 +197,23 @@ public class InstrumentControllerTests {
         var instruments = new Dictionary<InstrumentRole, InstClass> { [InstrumentRole.Dcs] = new DcsInstClass { Name = "DCS", SignalType = 1 } };
         var controller = new InstrumentController(_procedure, instruments, _log);
 
-        var exception = await Assert.ThrowsAsync<InstrumentCommunicationException>(controller.InitializeAsync);
+        var exception = await Assert.ThrowsAsync<InstrumentConnectionException>(controller.InitializeAsync);
 
-        Assert.Equal(InstrumentRole.Dcs, exception.Role);
+        Assert.Equal([InstrumentRole.Dcs], exception.Failures.Select(failure => failure.Role));
         Assert.Empty(_log.Sent);
+    }
+
+    [Fact]
+    public async Task InitializeContinuesAfterAFailureAndReportsEveryFailedRole() {
+        var controller = CreateController();
+        _log.ShouldFail = instrument => instrument.Name is "DMM02" or "CNT";
+
+        var exception = await Assert.ThrowsAsync<InstrumentConnectionException>(controller.InitializeAsync);
+
+        Assert.Equal([InstrumentRole.Dmm02, InstrumentRole.Cnt], exception.Failures.Select(failure => failure.Role));
+        // 失敗した測定器のあとの測定器にも、初期設定を送り続ける
+        Assert.Equal(["DMM01", "DMM02", "FG", "DCS", "CNT"], _log.Sent.Select(sent => sent.Instrument));
+        Assert.Empty(controller.States);
     }
 
     // ===== 複数の役割が同時に変わるときの送る順序（出力を止める → 測定器の設定 → 出力を出す） =====
