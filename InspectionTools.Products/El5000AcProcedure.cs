@@ -12,12 +12,21 @@ public static class El5000AcProcedure {
     public const string Product = "EL5000AC";
 
     /// <summary>EL5000AC の手順表を作る</summary>
-    public static ProductProcedure Create() => new(Product, CreateProfiles(), CreateActions(), CreateIdleStates());
+    public static ProductProcedure Create() => new(Product, CreateProfiles(), CreateActions(), CreateIdleStates(), CreateRequirements());
 
     // 出力する機器は、使わない項目では OFF に戻す（出力を出しっぱなしにしないため）。測定する機器は、項目が指定しない限り触らない
     private static Dictionary<InstrumentRole, string> CreateIdleStates() => new() {
         [InstrumentRole.Dcs] = "OFF",
         [InstrumentRole.Fg] = "OFF",
+    };
+
+    // 役割ごとに選べる測定器の条件（旧アプリの選択欄の絞り込みと同じ。通信方式は 1=ADC、2=VISA USB、3=GPIB）
+    private static Dictionary<InstrumentRole, RoleRequirement> CreateRequirements() => new() {
+        [InstrumentRole.Dmm01] = new("デジタルマルチメータ", [1, 2]),
+        [InstrumentRole.Dmm02] = new("デジタルマルチメータ", [1, 2]),
+        [InstrumentRole.Fg] = new("ファンクションジェネレータ", [2]),
+        [InstrumentRole.Dcs] = new("電流電圧発生器", [2]),
+        [InstrumentRole.Cnt] = new("ユニバーサルカウンタ", [3]),
     };
 
     // ===== 動作（actionId ごと） =====

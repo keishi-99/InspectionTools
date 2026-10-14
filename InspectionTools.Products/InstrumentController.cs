@@ -31,13 +31,26 @@ public sealed class InstrumentController(
         return neededRoles.Distinct().Where(role => !IsConnected(role)).ToList();
     }
 
-    /// <summary>接続したすべての測定器に初期設定を送り、状態を初期状態にする</summary>
+    /// <summary>
+    /// 接続したすべての測定器に初期設定を送り、状態を初期状態にする。失敗した測定器があっても残りには送り続け、
+    /// 最後に失敗した役割をすべて持つ InstrumentConnectionException にする（その場合、状態はすべて不明に戻る）
+    /// </summary>
     public async Task InitializeAsync() {
         _states.Clear();
+        var failures = new List<InstrumentCommunicationException>();
         foreach (var role in instruments.Keys.Order()) {
             var profile = procedure.Profiles[role];
-            await SendAsync(role, profile.Init);
-            _states[role] = profile.InitialState;
+            try {
+                await SendAsync(role, profile.Init);
+                _states[role] = profile.InitialState;
+            } catch (InstrumentCommunicationException ex) {
+                failures.Add(ex);
+            }
+        }
+
+        if (failures.Count > 0) {
+            _states.Clear();
+            throw new InstrumentConnectionException(failures);
         }
     }
 

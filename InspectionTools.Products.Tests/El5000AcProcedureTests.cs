@@ -81,6 +81,22 @@ public class El5000AcProcedureTests {
     }
 
     [Fact]
+    public void RequirementsExistForEveryRoleAndMatchTheOldAppSelectionLists() {
+        Assert.Equal(Enum.GetValues<InstrumentRole>().Order(), Procedure.Requirements.Keys.Order());
+        // 通信方式の一覧は配列なので、レコードの等価比較（参照の比較）ではなく、中身を別々に比べる
+        void AssertRequirement(InstrumentRole role, string category, int[] signalTypes) {
+            Assert.Equal(category, Procedure.Requirements[role].Category);
+            Assert.Equal(signalTypes, Procedure.Requirements[role].SignalTypes);
+        }
+
+        AssertRequirement(InstrumentRole.Dmm01, "デジタルマルチメータ", [1, 2]);
+        AssertRequirement(InstrumentRole.Dmm02, "デジタルマルチメータ", [1, 2]);
+        AssertRequirement(InstrumentRole.Fg, "ファンクションジェネレータ", [2]);
+        AssertRequirement(InstrumentRole.Dcs, "電流電圧発生器", [2]);
+        AssertRequirement(InstrumentRole.Cnt, "ユニバーサルカウンタ", [3]);
+    }
+
+    [Fact]
     public void ItemsThatAcquireValuesAreExactlyTheMeasurementItems() {
         var acquiring = Definition.Items.Where(item => Procedure.FindAction(item.ActionId).Acquisition is not null).Select(item => item.Name);
         var measurement = Definition.Items.Where(item => item.Kind == ItemKind.Measurement).Select(item => item.Name);

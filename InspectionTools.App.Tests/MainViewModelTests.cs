@@ -31,6 +31,11 @@ public sealed class MainViewModelTests : IDisposable {
 
         public void ShowInfo(string message) => Infos.Add(message);
 
+        /// <summary>測定器の選択画面が開かれた回数</summary>
+        public int InstrumentSelectionShownCount { get; private set; }
+
+        public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) => InstrumentSelectionShownCount++;
+
         public string? SelectTemplateFilePath() => TemplatePathToSelect;
     }
 

@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InspectionTools.App\InspectionTools.App.csproj" />
+    <!-- 測定器の代わりに使うダミー（FakeInstrumentConnection）は Instruments.Tests にあるものを共用する -->
+    <ProjectReference Include="..\InspectionTools.Instruments.Tests\InspectionTools.Instruments.Tests.csproj" />
   </ItemGroup>
 
 </Project>
