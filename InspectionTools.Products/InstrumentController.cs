@@ -19,6 +19,9 @@ public sealed class InstrumentController(
     /// <summary>役割ごとの現在の状態の名前（初期設定のあと、または状態を送ったあとのもの）</summary>
     public IReadOnlyDictionary<InstrumentRole, string> States => _states;
 
+    /// <summary>測定器に状態を送れたときに起きる（送った役割と状態。送るのをやめた役割や、失敗した役割では起きない）</summary>
+    public event Action<InstrumentSetting>? StateSent;
+
     /// <summary>その役割の測定器が接続されているか</summary>
     public bool IsConnected(InstrumentRole role) => instruments.ContainsKey(role);
 
@@ -56,12 +59,14 @@ public sealed class InstrumentController(
 
     /// <summary>
     /// 動作の状態を測定器に適用する。動作に書かれた役割はその状態へ、書かれていない役割は IdleStates にあればその状態へ、
-    /// なければ触らない。現在の状態と同じ役割には何も送らず、接続されていない役割は無視する
+    /// なければ触らない。接続されていない役割は無視する。現在の状態と同じ役割には何も送らない。
+    /// ただし force が true のときは、記録の状態を無視して、対象の役割すべてに必ず送る（本体で操作して、記録とずれたときの対処）
     /// </summary>
-    public async Task ApplyAsync(ItemAction action) {
-        foreach (var change in OrderChanges(FindChanges(action))) {
+    public async Task ApplyAsync(ItemAction action, bool force = false) {
+        foreach (var change in OrderChanges(FindChanges(action, force))) {
             await SendAsync(change.Role, FindStateCommand(change));
             _states[change.Role] = change.Name;
+            StateSent?.Invoke(change);
         }
     }
 
@@ -91,15 +96,15 @@ public sealed class InstrumentController(
         return Math.Round(reading * acquisition.Scale, acquisition.Decimals, MidpointRounding.AwayFromZero);
     }
 
-    // 動作が目指す状態のうち、現在の状態から変わるものを、役割の順に並べて返す
-    private List<InstrumentSetting> FindChanges(ItemAction action) {
+    // 動作が目指す状態のうち、送るものを、役割の順に並べて返す（force でなければ、現在の状態から変わるものだけ）
+    private List<InstrumentSetting> FindChanges(ItemAction action, bool force) {
         var targets = action.Settings.ToDictionary(setting => setting.Role, setting => setting.Name);
         foreach (var (role, idleState) in procedure.IdleStates) {
             targets.TryAdd(role, idleState);
         }
 
         return targets
-            .Where(target => IsConnected(target.Key) && IsDifferentFromCurrent(target.Key, target.Value))
+            .Where(target => IsConnected(target.Key) && (force || IsDifferentFromCurrent(target.Key, target.Value)))
             .OrderBy(target => target.Key)
             .Select(target => new InstrumentSetting(target.Key, target.Value))
             .ToList();

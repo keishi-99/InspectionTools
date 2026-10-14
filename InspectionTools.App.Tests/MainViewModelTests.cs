@@ -123,7 +123,7 @@ public sealed class MainViewModelTests : IDisposable {
     [Fact]
     public void ConfirmationAndTaskAreSetByTheirOwnCommands() {
         var viewModel = CreateViewModel();
-        viewModel.MoveTo(2, 0);
+        viewModel.MoveToAsync(2, 0);
         Assert.True(viewModel.IsConfirmation);
 
         viewModel.ConfirmNgCommand.Execute(null);
@@ -139,7 +139,7 @@ public sealed class MainViewModelTests : IDisposable {
     [Fact]
     public void CommittingAtTheLastCellStaysThere() {
         var viewModel = CreateViewModel();
-        viewModel.MoveTo(3, 0);
+        viewModel.MoveToAsync(3, 0);
 
         viewModel.CompleteTaskCommand.Execute(null);
 
@@ -153,7 +153,7 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.InputText = "100";
         viewModel.CommitValueCommand.Execute(null);
 
-        viewModel.MoveTo(0, 0);
+        viewModel.MoveToAsync(0, 0);
 
         Assert.Equal("100", viewModel.InputText);
     }
@@ -185,7 +185,7 @@ public sealed class MainViewModelTests : IDisposable {
     public void DecreasingUnitCountWithResultsAsksAndFollowsTheAnswer(bool answer, int expectedUnitCount) {
         var viewModel = CreateViewModel();
         viewModel.IncreaseUnitCountCommand.Execute(null);
-        viewModel.MoveTo(0, 1);
+        viewModel.MoveToAsync(0, 1);
         viewModel.InputText = "100";
         viewModel.CommitValueCommand.Execute(null);
         _dialog.ConfirmAnswers.Enqueue(answer);
@@ -262,7 +262,7 @@ public sealed class MainViewModelTests : IDisposable {
         var viewModel = CreateViewModel();
         viewModel.UnitCountText = "4";
         viewModel.ApplyUnitCountTextCommand.Execute(null);
-        viewModel.MoveTo(0, 2);
+        viewModel.MoveToAsync(0, 2);
         viewModel.InputText = "100";
         viewModel.CommitValueCommand.Execute(null);
         _dialog.ConfirmAnswers.Enqueue(true);
@@ -279,7 +279,7 @@ public sealed class MainViewModelTests : IDisposable {
         var viewModel = CreateViewModel();
         viewModel.UnitCountText = "3";
         viewModel.ApplyUnitCountTextCommand.Execute(null);
-        viewModel.MoveTo(0, 2);
+        viewModel.MoveToAsync(0, 2);
         viewModel.InputText = "100";
         viewModel.CommitValueCommand.Execute(null);
         _dialog.ConfirmAnswers.Enqueue(false);

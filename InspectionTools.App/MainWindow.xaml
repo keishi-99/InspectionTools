@@ -48,6 +48,7 @@
                 Command="{Binding OpenInstrumentSelectionCommand}"
                 Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
             <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding DcsElapsedText}" Margin="16,0,0,0" VerticalAlignment="Center" FontSize="18" />
         </StackPanel>
 
         <!--  検査項目 × 台の表。列は台数に合わせてコードで作る  -->
@@ -87,6 +88,13 @@
                                 <KeyBinding Key="Return" Command="{Binding CommitValueCommand}" />
                             </TextBox.InputBindings>
                         </TextBox>
+                        <Button
+                            Margin="8,0,0,0"
+                            Padding="16,0"
+                            Content="値を取得"
+                            Command="{Binding AcquireValueCommand}"
+                            IsEnabled="{Binding CanAcquire}"
+                            Visibility="{Binding HasAcquisition, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         <Button Margin="8,0,0,0" Padding="16,0" Content="確定" Command="{Binding CommitValueCommand}" />
                     </StackPanel>
 
@@ -103,8 +111,31 @@
 
                     <Button Margin="32,0,0,0" Padding="16,0" Content="前へ" Command="{Binding MovePreviousCommand}" />
                     <Button Margin="8,0,0,0" Padding="16,0" Content="次へ" Command="{Binding MoveNextCommand}" />
+                    <Button
+                        Margin="32,0,0,0"
+                        Padding="16,0"
+                        Content="設定を再適用"
+                        Command="{Binding ReapplyInstrumentCommand}"
+                        IsEnabled="{Binding CanReapplyInstrument}"
+                        Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>
             </StackPanel>
         </Border>
+
+        <!--  測定器と通信している間は、画面を覆ってマウス操作を止める（通信が重なると、コマンドが混ざるため）  -->
+        <Grid
+            Grid.RowSpan="3"
+            Background="#66FFFFFF"
+            Visibility="{Binding IsInstrumentBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar
+                    Width="48"
+                    Height="48"
+                    IsIndeterminate="True"
+                    Style="{StaticResource MaterialDesignCircularProgressBar}"
+                    Value="0" />
+                <TextBlock Margin="0,8,0,0" Text="測定器と通信中…" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

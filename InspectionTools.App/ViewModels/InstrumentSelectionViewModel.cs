@@ -24,6 +24,9 @@ public sealed partial class InstrumentSelectionViewModel : ObservableObject {
             .ToList();
     }
 
+    /// <summary>製品の手順表（項目の動作 ID から、測定器に行わせる動作を引くため）</summary>
+    public ProductProcedure Procedure => _procedure;
+
     /// <summary>役割ごとの選択（役割の順）</summary>
     public IReadOnlyList<RoleSelectionViewModel> Roles { get; }
 
