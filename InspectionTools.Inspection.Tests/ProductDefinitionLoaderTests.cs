@@ -54,6 +54,23 @@ public class ProductDefinitionLoaderTests {
     }
 
     [Fact]
+    public void ParseReadsDescriptionAndLeavesItNullWhenAbsent() {
+        var definition = ProductDefinitionLoader.Parse(JsonWithItems(
+            """{ "name": "調整", "kind": "Task", "description": "DCS を 4mA にして調整する" }, { "name": "確認", "kind": "Confirmation", "excelRow": 5 }"""));
+
+        Assert.Equal("DCS を 4mA にして調整する", definition.Items[0].Description);
+        Assert.Null(definition.Items[1].Description);
+    }
+
+    [Fact]
+    public void BlankDescriptionIsRejectedWithItemPosition() {
+        var exception = AssertRejected(JsonWithItems("""{ "name": "調整", "kind": "Task", "description": " " }"""));
+
+        Assert.Contains("1番目の項目", exception.Message);
+        Assert.Contains("description", exception.Message);
+    }
+
+    [Fact]
     public void BlankActionIdIsRejectedWithItemPosition() {
         var exception = AssertRejected(JsonWithItems("""{ "name": "調整", "kind": "Task", "actionId": " " }"""));
 

@@ -72,7 +72,7 @@ public sealed partial class MainViewModel : ObservableObject {
 
     /// <summary>現在の項目の位置</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentItem), nameof(IsValueInput), nameof(IsConfirmation), nameof(IsTask), nameof(CurrentRangeText), nameof(HasAcquisition), nameof(CanAcquire))]
+    [NotifyPropertyChangedFor(nameof(CurrentItem), nameof(IsValueInput), nameof(IsConfirmation), nameof(IsTask), nameof(CurrentRangeText), nameof(CurrentDescription), nameof(HasDescription), nameof(HasAcquisition), nameof(CanAcquire))]
     private int _currentItemIndex;
 
     /// <summary>現在の台の位置</summary>
@@ -103,6 +103,12 @@ public sealed partial class MainViewModel : ObservableObject {
     public string CurrentRangeText => CurrentItem.LowerLimit is { } lower && CurrentItem.UpperLimit is { } upper
         ? $"合格範囲: {lower} ～ {upper}"
         : "";
+
+    /// <summary>現在の項目の説明（作業の手順など。なければ空）</summary>
+    public string CurrentDescription => CurrentItem.Description ?? "";
+
+    /// <summary>現在の項目に説明があるか</summary>
+    public bool HasDescription => CurrentItem.Description is not null;
 
     /// <summary>測定器の選択と接続（測定器を使わない起動では null）</summary>
     public InstrumentSelectionViewModel? InstrumentSelection { get; }
