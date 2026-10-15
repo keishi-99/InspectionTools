@@ -66,7 +66,7 @@ public sealed class MainViewModelTests : IDisposable {
         new InspectionItem("消費電流", ItemKind.Measurement, excelRow: 8, lowerLimit: 0m, upperLimit: 230m),
         new InspectionItem("温度入力", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
         new InspectionItem("電源投入", ItemKind.Confirmation, excelRow: 5),
-        new InspectionItem("調整作業", ItemKind.Task),
+        new InspectionItem("調整作業", ItemKind.Task, description: "DCS を 4mA にして調整する"),
     ]);
 
     private MainViewModel CreateViewModel() => new(CreateDefinition(), _store, _dialog);
@@ -134,6 +134,18 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.CompleteTaskCommand.Execute(null);
         Assert.Equal(ResultState.Done, viewModel.Rows[3].Cells[0].State);
         Assert.Equal("完了", viewModel.Rows[3].Cells[0].Display);
+    }
+
+    [Fact]
+    public void DescriptionIsShownOnlyForItemsThatHaveOne() {
+        var viewModel = CreateViewModel();
+        Assert.False(viewModel.HasDescription);
+        Assert.Equal("", viewModel.CurrentDescription);
+
+        viewModel.MoveToAsync(3, 0);
+
+        Assert.True(viewModel.HasDescription);
+        Assert.Equal("DCS を 4mA にして調整する", viewModel.CurrentDescription);
     }
 
     [Fact]

@@ -132,6 +132,12 @@
                     <TextBlock Text="{Binding CurrentItem.Name}" FontWeight="Bold" />
                     <TextBlock Text="{Binding CurrentRangeText}" Margin="16,0,0,0" />
                 </StackPanel>
+                <!--  項目の説明（作業項目の手順など。ある項目だけ出す）  -->
+                <TextBlock
+                    Margin="0,4,0,0"
+                    Text="{Binding CurrentDescription}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasDescription, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                     <!--  測定項目・入力項目  -->

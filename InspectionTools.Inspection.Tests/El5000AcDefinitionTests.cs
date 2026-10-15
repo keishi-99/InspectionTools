@@ -49,6 +49,13 @@ public class El5000AcDefinitionTests {
     }
 
     [Fact]
+    public void EveryTaskItemHasADescription() {
+        var tasks = Definition.Items.Where(item => item.Kind == ItemKind.Task).ToList();
+
+        Assert.All(tasks, item => Assert.False(string.IsNullOrWhiteSpace(item.Description), item.Name));
+    }
+
+    [Fact]
     public void TaskItemsStartWithTwoPt100CalibrationsThenEightAnalogCalibrations() {
         var firstTask = Definition.Items.ToList().FindIndex(item => item.Kind == ItemKind.Task);
         var names = Definition.Items.Skip(firstTask).Take(10).Select(item => item.Name).ToList();

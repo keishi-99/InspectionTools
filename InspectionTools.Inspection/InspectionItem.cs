@@ -3,12 +3,15 @@ namespace InspectionTools.Inspection;
 /// <summary>検査項目の定義（製品ごとに固定で、検査中に変わらない）</summary>
 public sealed class InspectionItem {
 
-    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null, string? actionId = null) {
+    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null, string? actionId = null, string? description = null) {
         if (string.IsNullOrWhiteSpace(name)) {
             throw new ArgumentException("項目名が空です。", nameof(name));
         }
         if (actionId is not null && string.IsNullOrWhiteSpace(actionId)) {
             throw new ArgumentException($"動作ID（actionId）が空です: {name}", nameof(actionId));
+        }
+        if (description is not null && string.IsNullOrWhiteSpace(description)) {
+            throw new ArgumentException($"説明（description）が空です: {name}", nameof(description));
         }
 
         // 作業項目は Excel の行に対応しない（記録しないため）。それ以外は転記先の行が必要
@@ -35,6 +38,7 @@ public sealed class InspectionItem {
         LowerLimit = lowerLimit;
         UpperLimit = upperLimit;
         ActionId = actionId;
+        Description = description;
     }
 
     /// <summary>画面に出す項目名</summary>
@@ -54,4 +58,7 @@ public sealed class InspectionItem {
 
     /// <summary>この項目で測定器に行わせる動作の ID（製品ごとの手順表を引くための鍵。測定器を使わない項目は null）</summary>
     public string? ActionId { get; }
+
+    /// <summary>画面に出す、項目の説明（作業項目の手順など。なければ null）</summary>
+    public string? Description { get; }
 }
