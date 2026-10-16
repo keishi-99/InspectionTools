@@ -4,7 +4,7 @@ namespace InspectionTools.Excel;
 public static class TemplateVerifier {
 
     /// <summary>
-    /// 目印のシートがあり、目印のセルが期待する値になっているかを確かめる。
+    /// 目印のシートがあり、目印のセルに期待する値が含まれているかを確かめる（製品名の前後に説明が付くテンプレートでも通すため、完全一致ではなく含むかで見る）。
     /// 違うときは TemplateVerificationException、ファイルが読めないときは TemplateReadException
     /// </summary>
     public static void Verify(string path, TemplateCheck check) {
@@ -13,7 +13,7 @@ public static class TemplateVerifier {
             ?? throw new TemplateVerificationException($"このファイルには、シート '{check.Sheet}' がありません。別の製品のテンプレートではありませんか。");
 
         var actual = sheet.Cell(check.Cell).GetString().Trim();
-        if (actual != check.ExpectedValue) {
+        if (!actual.Contains(check.ExpectedValue, StringComparison.Ordinal)) {
             var shown = actual.Length == 0 ? "（空欄）" : $"'{actual}'";
             throw new TemplateVerificationException(
                 $"このファイルは、対象の製品のテンプレートではありません。{check.Sheet}!{check.Cell} が '{check.ExpectedValue}' のはずですが、{shown} でした。");

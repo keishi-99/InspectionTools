@@ -31,7 +31,7 @@ public sealed class WpfDialogService : IDialogService {
     public string? SelectTemplateFilePath() {
         var dialog = new OpenFileDialog {
             Title = "転記先のテンプレートを選択",
-            Filter = "Excel ブック (*.xlsx)|*.xlsx",
+            Filter = "Excel ブック (*.xlsx;*.xlsm)|*.xlsx;*.xlsm",
         };
         return dialog.ShowDialog(Owner) == true ? dialog.FileName : null;
     }

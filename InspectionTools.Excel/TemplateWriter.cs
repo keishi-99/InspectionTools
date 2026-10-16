@@ -12,7 +12,9 @@ public static class TemplateWriter {
     /// 正しい製品のテンプレートでなければ TemplateVerificationException、他のプログラムで開かれているなどで書き込めなければ TemplateWriteException
     /// </summary>
     public static void Write(string path, TransferSettings settings, InspectionSession session) {
-        TemplateVerifier.Verify(path, settings.Check);
+        if (settings.Check is { } check) {
+            TemplateVerifier.Verify(path, check);
+        }
 
         // 書き込み中に失敗しても、元のファイルが壊れないように、別名のファイルに最後まで保存してから置き換える
         var temporaryPath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(path))!, $"{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
@@ -56,9 +58,17 @@ public static class TemplateWriter {
                     continue;
                 }
 
+                var result = session.GetResult(itemIndex, unitIndex);
+                if (item.Kind == ItemKind.Confirmation && settings.UnitLayout.ConfirmationColumn is not null) {
+                    // チェックボックスのリンク先のセルには、合格だけ TRUE、不合格と未実施は FALSE を書く（テンプレートの集計が FALSE を数えるため）
+                    var linked = settings.UnitLayout.GetConfirmationCell(excelRow, unitIndex);
+                    sheet.Cell(linked.Row, linked.Column).Value = result.State == ResultState.Ok;
+                    continue;
+                }
+
                 var position = settings.UnitLayout.GetCell(excelRow, unitIndex);
                 var cell = sheet.Cell(position.Row, position.Column);
-                ApplyResult(cell, item, session.GetResult(itemIndex, unitIndex), settings.ConfirmationOkText);
+                ApplyResult(cell, item, result, settings.ConfirmationOkText);
             }
         }
     }

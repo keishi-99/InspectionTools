@@ -3,7 +3,7 @@ namespace InspectionTools.Inspection;
 /// <summary>検査項目の定義（製品ごとに固定で、検査中に変わらない）</summary>
 public sealed class InspectionItem {
 
-    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null, string? actionId = null, string? description = null) {
+    public InspectionItem(string name, ItemKind kind, int? excelRow = null, decimal? lowerLimit = null, decimal? upperLimit = null, string? actionId = null, string? description = null, decimal? defaultValue = null) {
         if (string.IsNullOrWhiteSpace(name)) {
             throw new ArgumentException("項目名が空です。", nameof(name));
         }
@@ -32,6 +32,11 @@ public sealed class InspectionItem {
             }
         }
 
+        // 初期値を入れる欄があるのは、値を入力する項目だけ
+        if (defaultValue is not null && kind is not (ItemKind.Measurement or ItemKind.Input)) {
+            throw new ArgumentException($"初期値（defaultValue）は、測定項目と入力項目にだけ指定できます: {name}", nameof(defaultValue));
+        }
+
         Name = name;
         Kind = kind;
         ExcelRow = excelRow;
@@ -39,6 +44,7 @@ public sealed class InspectionItem {
         UpperLimit = upperLimit;
         ActionId = actionId;
         Description = description;
+        DefaultValue = defaultValue;
     }
 
     /// <summary>画面に出す項目名</summary>
@@ -61,4 +67,7 @@ public sealed class InspectionItem {
 
     /// <summary>画面に出す、項目の説明（作業項目の手順など。なければ null）</summary>
     public string? Description { get; }
+
+    /// <summary>入力欄に最初から出しておく値（固定の値を入れる項目など。なければ null）</summary>
+    public decimal? DefaultValue { get; }
 }

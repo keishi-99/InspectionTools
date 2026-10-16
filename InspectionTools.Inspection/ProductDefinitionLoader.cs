@@ -11,7 +11,7 @@ public static class ProductDefinitionLoader {
     };
 
     // JSON の形（欠けている項目を検査で見つけられるように、すべて null を許す）
-    private sealed record ItemFile(string? Name, ItemKind? Kind, int? ExcelRow, decimal? LowerLimit, decimal? UpperLimit, string? ActionId, string? Description);
+    private sealed record ItemFile(string? Name, ItemKind? Kind, int? ExcelRow, decimal? LowerLimit, decimal? UpperLimit, string? ActionId, string? Description, decimal? DefaultValue);
 
     private sealed record TransferFile(
         string? DataSheet,
@@ -22,7 +22,8 @@ public static class ProductDefinitionLoader {
         string? VerifyValue,
         string? FirstUnitColumn,
         int? UnitsPerBlock,
-        int? BlockRowOffset);
+        int? BlockRowOffset,
+        string? ConfirmationColumn);
 
     private sealed record DefinitionFile(string? Product, int? MaxUnitCount, TransferFile? Transfer, List<ItemFile>? Items);
 
@@ -62,12 +63,25 @@ public static class ProductDefinitionLoader {
         }
 
         var dataSheet = RequireText(file.DataSheet, nameof(file.DataSheet));
-        var settingSheet = RequireText(file.SettingSheet, nameof(file.SettingSheet));
-        var verifyCell = RequireText(file.VerifyCell, nameof(file.VerifyCell));
-        var verifyValue = RequireText(file.VerifyValue, nameof(file.VerifyValue));
+        var settingSheet = OptionalText(file.SettingSheet, nameof(file.SettingSheet));
         var firstUnitColumn = RequireText(file.FirstUnitColumn, nameof(file.FirstUnitColumn));
         if (!firstUnitColumn.All(char.IsAsciiLetter)) {
             throw new ProductDefinitionException($"transfer.firstUnitColumn は列の文字（例: F, AI）で指定してください: {firstUnitColumn}");
+        }
+
+        // 製品の確認は、セルと値の両方を書くか、両方とも書かない（確認しない）かのどちらか
+        var verifyCell = OptionalText(file.VerifyCell, nameof(file.VerifyCell));
+        var verifyValue = OptionalText(file.VerifyValue, nameof(file.VerifyValue));
+        if (verifyCell is null && verifyValue is not null) {
+            throw new ProductDefinitionException("transfer.verifyCell がありません（verifyValue を指定したときは必要です）。");
+        }
+        if (verifyCell is not null && verifyValue is null) {
+            throw new ProductDefinitionException("transfer.verifyValue がありません（verifyCell を指定したときは必要です）。");
+        }
+
+        var confirmationColumn = OptionalText(file.ConfirmationColumn, nameof(file.ConfirmationColumn));
+        if (confirmationColumn is not null && !confirmationColumn.All(char.IsAsciiLetter)) {
+            throw new ProductDefinitionException($"transfer.confirmationColumn は列の文字（例: M, AI）で指定してください: {confirmationColumn}");
         }
 
         if (file.FirstRow is null or < 1) {
@@ -94,7 +108,8 @@ public static class ProductDefinitionLoader {
             verifyValue,
             firstUnitColumn,
             file.UnitsPerBlock,
-            file.BlockRowOffset ?? 0);
+            file.BlockRowOffset ?? 0,
+            confirmationColumn);
     }
 
     // 転記の設定の文字列が空でないことを確認する
@@ -106,6 +121,14 @@ public static class ProductDefinitionLoader {
         return value;
     }
 
+    // 省略できる転記の設定の文字列。書かれていなければ null、書かれているのに空なら、どの項目かを添えて知らせる
+    private static string? OptionalText(string? value, string name) {
+        if (value is null) {
+            return null;
+        }
+        return RequireText(value, name);
+    }
+
     // JSON の1項目を InspectionItem にする（項目の決まりに反するときは、何番目の項目かを添えて知らせる）
     private static InspectionItem CreateItem(ItemFile item, int index) {
         var position = $"{index + 1}番目の項目（{item.Name}）";
@@ -114,7 +137,7 @@ public static class ProductDefinitionLoader {
         }
 
         try {
-            return new InspectionItem(item.Name ?? string.Empty, item.Kind.Value, item.ExcelRow, item.LowerLimit, item.UpperLimit, item.ActionId, item.Description);
+            return new InspectionItem(item.Name ?? string.Empty, item.Kind.Value, item.ExcelRow, item.LowerLimit, item.UpperLimit, item.ActionId, item.Description, item.DefaultValue);
         } catch (ArgumentException ex) {
             throw new ProductDefinitionException($"{position}: {ex.Message}", ex);
         }
