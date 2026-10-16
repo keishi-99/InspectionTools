@@ -1,0 +1,215 @@
+{
+  "product": "PAF5-分離形",
+  "maxUnitCount": 5,
+  "transfer": {
+    "dataSheet": "分離形　1～5",
+    "firstRow": 8,
+    "lastRow": 48,
+    "verifyCell": "B3",
+    "verifyValue": "分離形",
+    "firstUnitColumn": "H",
+    "confirmationColumn": "M"
+  },
+  "items": [
+    {
+      "name": "実装・はんだ付け",
+      "kind": "Confirmation",
+      "excelRow": 8
+    },
+    {
+      "name": "目視確認",
+      "kind": "Confirmation",
+      "excelRow": 9
+    },
+    {
+      "name": "MEMスイッチ8 ロックペイント",
+      "kind": "Confirmation",
+      "excelRow": 10
+    },
+    {
+      "name": "E2PROM初期化",
+      "kind": "Confirmation",
+      "excelRow": 11
+    },
+    {
+      "name": "回路電圧 V1 +1.45～+1.55VDC",
+      "kind": "Measurement",
+      "excelRow": 12,
+      "lowerLimit": 1.45,
+      "upperLimit": 1.55
+    },
+    {
+      "name": "回路電圧 V2 -1.45～-1.55VDC",
+      "kind": "Measurement",
+      "excelRow": 13,
+      "lowerLimit": -1.55,
+      "upperLimit": -1.45
+    },
+    {
+      "name": "消費電流（BL消灯） 300μA以下",
+      "kind": "Measurement",
+      "excelRow": 14,
+      "lowerLimit": 0,
+      "upperLimit": 300
+    },
+    {
+      "name": "消費電流（BL点灯） 2100～3500μA",
+      "kind": "Measurement",
+      "excelRow": 15,
+      "lowerLimit": 2100,
+      "upperLimit": 3500
+    },
+    {
+      "name": "ノイズレベル 200mVp-p以下",
+      "kind": "Measurement",
+      "excelRow": 17,
+      "lowerLimit": 0,
+      "upperLimit": 200,
+      "description": "SEL=0, AMP=max, OSC=0Hz"
+    },
+    {
+      "name": "利得特性 SEL=3 AMP=min OSC=20Hz",
+      "kind": "Input",
+      "excelRow": 19,
+      "lowerLimit": 30,
+      "upperLimit": 34,
+      "description": "VTX-0V間=400mVp-pとなるようにATTを調整し、そのATTの値(dB)を入力してください。"
+    },
+    {
+      "name": "利得特性 SEL=3 AMP=min OSC=200Hz",
+      "kind": "Input",
+      "excelRow": 20,
+      "lowerLimit": 40,
+      "upperLimit": 44
+    },
+    {
+      "name": "利得特性 SEL=3 AMP=min OSC=2kHz",
+      "kind": "Input",
+      "excelRow": 21,
+      "lowerLimit": 23,
+      "upperLimit": 27
+    },
+    {
+      "name": "ノッチ 最小周波数（約6250Hz）",
+      "kind": "Input",
+      "excelRow": 23,
+      "lowerLimit": 5750,
+      "upperLimit": 6750,
+      "description": "SEL=0, AMP=min, ATT=30dB",
+      "defaultValue": 6250
+    },
+    {
+      "name": "ノッチ 最小周波数での振幅 50mVp-p以下",
+      "kind": "Measurement",
+      "excelRow": 24,
+      "lowerLimit": 0,
+      "upperLimit": 50
+    },
+    {
+      "name": "ノッチ 5000Hzでの振幅 100mVp-p以上",
+      "kind": "Measurement",
+      "excelRow": 25,
+      "lowerLimit": 100,
+      "upperLimit": 10000
+    },
+    {
+      "name": "トリガレベル TLV=min ATT=49dB b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 27,
+      "description": "SEL=0, AMP=min, OSC=1000Hz, DIV=1/10"
+    },
+    {
+      "name": "トリガレベル TLV=min ATT=55dB b1:0",
+      "kind": "Confirmation",
+      "excelRow": 28
+    },
+    {
+      "name": "トリガレベル TLV=max ATT=38dB b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 29
+    },
+    {
+      "name": "トリガレベル TLV=max ATT=44dB b1:0",
+      "kind": "Confirmation",
+      "excelRow": 30
+    },
+    {
+      "name": "スケーラ C 100.00±1",
+      "kind": "Confirmation",
+      "excelRow": 32,
+      "description": "DIV=1/1、入力200Hz: 10000パルス"
+    },
+    {
+      "name": "スケーラ C積算リセット確認",
+      "kind": "Confirmation",
+      "excelRow": 33
+    },
+    {
+      "name": "分周機能 SEL=0 1/2SW=OFF DIV=1/1 b1:14430±45",
+      "kind": "Confirmation",
+      "excelRow": 35,
+      "description": "ATT=50dB, OSC=400Hz, AMP=max, TLV=min"
+    },
+    {
+      "name": "分周機能 SEL=1 1/2SW=ON DIV=1/1 b1:7200±11",
+      "kind": "Confirmation",
+      "excelRow": 36
+    },
+    {
+      "name": "分周機能 SEL=1 1/2SW=ON DIV=1/10 b1:720±1",
+      "kind": "Confirmation",
+      "excelRow": 37
+    },
+    {
+      "name": "分周機能 SEL=1 1/2SW=ON DIV=1/100 b1:72±1",
+      "kind": "Confirmation",
+      "excelRow": 38
+    },
+    {
+      "name": "ローカット機能 FEQ=min SEL=F 0.51Hz b1:0",
+      "kind": "Confirmation",
+      "excelRow": 44,
+      "description": "AMP=max, TLV=min, DIV=1/1, 1/2SW=OFF, ATT=40dB"
+    },
+    {
+      "name": "ローカット機能 FEQ=min SEL=F 1Hz b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 45
+    },
+    {
+      "name": "ローカット機能 FEQ=min SEL=7 3.5Hz b1:0",
+      "kind": "Confirmation",
+      "excelRow": 40
+    },
+    {
+      "name": "ローカット機能 FEQ=min SEL=7 5.7Hz b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 41
+    },
+    {
+      "name": "ローカット機能 FEQ=max SEL=7 33Hz b1:0",
+      "kind": "Confirmation",
+      "excelRow": 42
+    },
+    {
+      "name": "ローカット機能 FEQ=max SEL=7 46Hz b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 43
+    },
+    {
+      "name": "ローカット機能 FEQ=max SEL=F 5.7Hz b1:0",
+      "kind": "Confirmation",
+      "excelRow": 46
+    },
+    {
+      "name": "ローカット機能 FEQ=max SEL=F 8Hz b1:0以外",
+      "kind": "Confirmation",
+      "excelRow": 47
+    },
+    {
+      "name": "バックアップ機能",
+      "kind": "Confirmation",
+      "excelRow": 48
+    }
+  ]
+}
