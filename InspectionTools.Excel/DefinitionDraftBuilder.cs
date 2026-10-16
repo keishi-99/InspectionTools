@@ -20,7 +20,7 @@ public static class DefinitionDraftBuilder {
 
     // 折り返さない製品では、unitsPerBlock と blockRowOffset を出力しない（読み込みの規則: 両方ある、または両方ない）
     private sealed record TransferDraft(
-        string DataSheet,
+        string? DataSheet,
         string? SettingSheet,
         int FirstRow,
         int LastRow,
@@ -29,7 +29,10 @@ public static class DefinitionDraftBuilder {
         string FirstUnitColumn,
         int? UnitsPerBlock,
         int? BlockRowOffset,
-        string? ConfirmationColumn);
+        string? ConfirmationColumn,
+        IReadOnlyList<string>? DataSheets,
+        int? UnitsPerSheet,
+        string? UnitCountCell);
 
     private sealed record DefinitionDraft(string Product, int MaxUnitCount, TransferDraft Transfer, List<ItemDraft> Items);
 
@@ -57,7 +60,8 @@ public static class DefinitionDraftBuilder {
 
     // 転記の設定をひな形の形にする
     private static TransferDraft CreateTransferDraft(TransferDefinition transfer) => new(
-        transfer.DataSheet,
+        // シートを分ける製品は、dataSheet ではなく dataSheets を出力する(読み込みの規則: どちらか一方だけ)
+        transfer.DataSheets is null ? transfer.DataSheet : null,
         transfer.SettingSheet,
         transfer.FirstRow,
         transfer.LastRow,
@@ -66,7 +70,10 @@ public static class DefinitionDraftBuilder {
         transfer.FirstUnitColumn,
         transfer.UnitsPerBlock,
         transfer.UnitsPerBlock is null ? null : transfer.BlockRowOffset,
-        transfer.ConfirmationColumn);
+        transfer.ConfirmationColumn,
+        transfer.DataSheets,
+        transfer.UnitsPerSheet,
+        transfer.UnitCountCell);
 
     /// <summary>「8-15,30-38」のような行の指定を、行の集合にする（「30」のように1行だけの指定もできる）</summary>
     public static HashSet<int> ParseRows(string text) {

@@ -1,10 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace InspectionTools.Inspection;
 
 /// <summary>製品ごとの定義（JSON）を読み込み、検査項目の一覧にする</summary>
-public static class ProductDefinitionLoader {
+public static partial class ProductDefinitionLoader {
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) {
         Converters = { new JsonStringEnumConverter() },
@@ -23,7 +24,10 @@ public static class ProductDefinitionLoader {
         string? FirstUnitColumn,
         int? UnitsPerBlock,
         int? BlockRowOffset,
-        string? ConfirmationColumn);
+        string? ConfirmationColumn,
+        List<string>? DataSheets,
+        int? UnitsPerSheet,
+        string? UnitCountCell);
 
     private sealed record DefinitionFile(string? Product, int? MaxUnitCount, TransferFile? Transfer, List<ItemFile>? Items);
 
@@ -50,19 +54,19 @@ public static class ProductDefinitionLoader {
             throw new ProductDefinitionException("検査項目（items）が1つもありません。");
         }
 
-        var transfer = CreateTransfer(file.Transfer);
+        var transfer = CreateTransfer(file.Transfer, file.MaxUnitCount.Value);
         var items = file.Items.Select((item, index) => CreateItem(item, index)).ToList();
         ValidateNoDuplicateRows(items);
         return new ProductDefinition(file.Product, file.MaxUnitCount.Value, transfer, items);
     }
 
     // JSON の転記の設定を TransferDefinition にする（欠けている項目や、使えない値は、どの項目かを添えて知らせる）
-    private static TransferDefinition CreateTransfer(TransferFile? file) {
+    private static TransferDefinition CreateTransfer(TransferFile? file, int maxUnitCount) {
         if (file is null) {
             throw new ProductDefinitionException("転記の設定（transfer）がありません。");
         }
 
-        var dataSheet = RequireText(file.DataSheet, nameof(file.DataSheet));
+        var (dataSheet, dataSheets, unitsPerSheet) = CreateDataSheets(file, maxUnitCount);
         var settingSheet = OptionalText(file.SettingSheet, nameof(file.SettingSheet));
         var firstUnitColumn = RequireText(file.FirstUnitColumn, nameof(file.FirstUnitColumn));
         if (!firstUnitColumn.All(char.IsAsciiLetter)) {
@@ -82,6 +86,11 @@ public static class ProductDefinitionLoader {
         var confirmationColumn = OptionalText(file.ConfirmationColumn, nameof(file.ConfirmationColumn));
         if (confirmationColumn is not null && !confirmationColumn.All(char.IsAsciiLetter)) {
             throw new ProductDefinitionException($"transfer.confirmationColumn は列の文字（例: M, AI）で指定してください: {confirmationColumn}");
+        }
+
+        var unitCountCell = OptionalText(file.UnitCountCell, nameof(file.UnitCountCell));
+        if (unitCountCell is not null && !CellAddressPattern().IsMatch(unitCountCell)) {
+            throw new ProductDefinitionException($"transfer.unitCountCell はセルの位置（例: C1）で指定してください: {unitCountCell}");
         }
 
         if (file.FirstRow is null or < 1) {
@@ -109,7 +118,47 @@ public static class ProductDefinitionLoader {
             firstUnitColumn,
             file.UnitsPerBlock,
             file.BlockRowOffset ?? 0,
-            confirmationColumn);
+            confirmationColumn,
+            dataSheets,
+            unitsPerSheet,
+            unitCountCell);
+    }
+
+    [GeneratedRegex("^[A-Za-z]+[1-9][0-9]*$")]
+    private static partial Regex CellAddressPattern();
+
+    // 結果を書き込むシートを決める。1枚のシートに書く製品は dataSheet、台を数台ずつ別のシートに書く製品は dataSheets と unitsPerSheet を使う
+    // （後者の dataSheet は、最初のシートの名前になる）
+    private static (string DataSheet, IReadOnlyList<string>? DataSheets, int? UnitsPerSheet) CreateDataSheets(TransferFile file, int maxUnitCount) {
+        if (file.DataSheets is null) {
+            if (file.UnitsPerSheet is not null) {
+                throw new ProductDefinitionException("transfer.unitsPerSheet は、transfer.dataSheets と一緒に指定してください。");
+            }
+            return (RequireText(file.DataSheet, nameof(file.DataSheet)), null, null);
+        }
+
+        if (file.DataSheet is not null) {
+            throw new ProductDefinitionException("transfer.dataSheet と transfer.dataSheets は、どちらか一方だけを指定してください。");
+        }
+        if (file.DataSheets.Count == 0 || file.DataSheets.Any(string.IsNullOrWhiteSpace)) {
+            throw new ProductDefinitionException("transfer.dataSheets には、空でないシート名を1つ以上書いてください。");
+        }
+        var duplicate = file.DataSheets.GroupBy(name => name).FirstOrDefault(group => group.Count() > 1);
+        if (duplicate is not null) {
+            throw new ProductDefinitionException($"transfer.dataSheets に、同じシート名が重複しています: {duplicate.Key}");
+        }
+        if (file.UnitsPerSheet is null or < 1) {
+            throw new ProductDefinitionException("transfer.unitsPerSheet は1以上の整数で指定してください（transfer.dataSheets を指定したときは必要です）。");
+        }
+        if (file.UnitsPerBlock is not null) {
+            throw new ProductDefinitionException("transfer.dataSheets と transfer.unitsPerBlock は、同時に指定できません。");
+        }
+
+        var capacity = file.DataSheets.Count * file.UnitsPerSheet.Value;
+        if (maxUnitCount > capacity) {
+            throw new ProductDefinitionException($"最大台数（maxUnitCount: {maxUnitCount}）が、transfer.dataSheets に書ける台数（{capacity}）を超えています。");
+        }
+        return (file.DataSheets[0], file.DataSheets, file.UnitsPerSheet);
     }
 
     // 転記の設定の文字列が空でないことを確認する

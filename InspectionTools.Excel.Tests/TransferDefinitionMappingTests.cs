@@ -17,6 +17,26 @@ public class TransferDefinitionMappingTests {
     }
 
     [Fact]
+    public void SettingsKeepTheSheetSplitAndTheUnitCountCell() {
+        var definition = NoWrap with { DataSheet = "S1", DataSheets = ["S1", "S2"], UnitsPerSheet = 5, UnitCountCell = "C1" };
+
+        var settings = TransferSettings.From(definition);
+
+        Assert.Equal("S1", settings.DataSheet);
+        Assert.Equal(["S1", "S2"], settings.Split!.Sheets);
+        Assert.Equal(5, settings.Split.UnitsPerSheet);
+        Assert.Equal("C1", settings.UnitCountCell);
+    }
+
+    [Fact]
+    public void SettingsOfASingleSheetProductHaveNoSplit() {
+        var settings = TransferSettings.From(NoWrap);
+
+        Assert.Null(settings.Split);
+        Assert.Null(settings.UnitCountCell);
+    }
+
+    [Fact]
     public void SettingsWithoutVerifyCellHaveNoProductCheck() {
         var settings = TransferSettings.From(NoWrap with { VerifyCell = null, VerifyValue = null });
 
