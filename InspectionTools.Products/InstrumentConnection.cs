@@ -76,6 +76,7 @@ public sealed class InstrumentConnection(ProductProcedure procedure, IInstrument
             InstrumentRole.Fg => new FgInstClass(),
             InstrumentRole.Dcs => new DcsInstClass(),
             InstrumentRole.Cnt => new CntInstClass(),
+            InstrumentRole.Osc => new OscInstClass(),
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "未対応の役割です。"),
         };
         instrument.Category = entry.Category;

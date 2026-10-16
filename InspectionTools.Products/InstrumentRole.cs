@@ -12,4 +12,6 @@ public enum InstrumentRole {
     Dcs,
     /// <summary>ユニバーサルカウンタ</summary>
     Cnt,
+    /// <summary>オシロスコープ</summary>
+    Osc,
 }

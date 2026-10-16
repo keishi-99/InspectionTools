@@ -75,14 +75,17 @@ public class El5000AcProcedureTests {
         Assert.All(acquisitionRoles, role => Assert.Contains(role, MeasuringRoles));
     }
 
+    // EL5000AC が使う役割（OSC は PAF5 などの製品が使う役割で、EL5000AC は使わない）
+    private static readonly InstrumentRole[] UsedRoles = [InstrumentRole.Dmm01, InstrumentRole.Dmm02, InstrumentRole.Fg, InstrumentRole.Dcs, InstrumentRole.Cnt];
+
     [Fact]
     public void ProfileExistsForEveryRoleOfTheProcedure() {
-        Assert.Equal(Enum.GetValues<InstrumentRole>().Order(), Procedure.Profiles.Keys.Order());
+        Assert.Equal(UsedRoles.Order(), Procedure.Profiles.Keys.Order());
     }
 
     [Fact]
     public void RequirementsExistForEveryRoleAndMatchTheOldAppSelectionLists() {
-        Assert.Equal(Enum.GetValues<InstrumentRole>().Order(), Procedure.Requirements.Keys.Order());
+        Assert.Equal(UsedRoles.Order(), Procedure.Requirements.Keys.Order());
         // 通信方式の一覧は配列なので、レコードの等価比較（参照の比較）ではなく、中身を別々に比べる
         void AssertRequirement(InstrumentRole role, string category, int[] signalTypes) {
             Assert.Equal(category, Procedure.Requirements[role].Category);
