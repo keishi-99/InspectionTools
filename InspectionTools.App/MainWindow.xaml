@@ -244,10 +244,11 @@
                                                 <TextBlock
                                                     VerticalAlignment="Center"
                                                     FontFamily="Consolas, Meiryo"
-                                                    FontSize="13"
                                                     Text="{Binding Text}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
+                                                            <!--  通常の大きさは、ここに書く（要素に直接書くと、下のトリガーの大きさより優先されてしまう）  -->
+                                                            <Setter Property="FontSize" Value="13" />
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding IsSymbol}" Value="True">
                                                                     <Setter Property="FontSize" Value="17" />

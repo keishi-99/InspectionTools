@@ -45,7 +45,7 @@
 - `ProductDefinitionLoader` の各文、`InspectionItem` の各文、`KeyBindingLoader` の各文
 
 ただし1つ、**検査中にアプリが落ちうる点**がある。
-- `ProductProcedure.FindAction` は、製品の定義ファイルの `actionId` が手順表にないと `KeyNotFoundException` を投げる。この例外は誰も捕まえないので、項目を進めたときにアプリが落ちる。
+- `ProductProcedure.FindAction` は、製品の定義ファイルの `actionId`(null でないもの)が手順表にないと `KeyNotFoundException` を投げる。この例外は誰も捕まえない。手順表のある製品で、現在の項目の動作を調べる箇所(測定器に接続しているときの、項目を移動したあとの状態適用 `ApplyCurrentItemActionAsync`、「値を取得」、キー案内の更新など)から出る。接続していれば、状態を適用する前に失敗する。製品を選んだ時点や、アプリを終了するときには出ない。
 - いまは、EL5000AC の定義と手順表の対応を、テストで確認している。ただし、定義ファイルを直した人が、テストを実行しないで配ると起こりうる。
 - 案(E1): 製品を開くとき(`SelectProduct`)に、すべての `actionId` が手順表にあることを確認し、なければ「定義の `actionId` が手順表にありません: …」と知らせてメニューに戻る。
 
