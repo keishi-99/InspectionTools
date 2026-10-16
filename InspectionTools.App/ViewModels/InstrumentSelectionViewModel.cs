@@ -171,6 +171,7 @@ public sealed partial class InstrumentSelectionViewModel : ObservableObject {
         InstrumentRole.Fg => "FG（周波数発生器）",
         InstrumentRole.Dcs => "DCS（電流電圧発生器）",
         InstrumentRole.Cnt => "CNT（カウンタ）",
+        InstrumentRole.Osc => "OSC（オシロスコープ）",
         _ => role.ToString(),
     };
 }

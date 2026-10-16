@@ -82,6 +82,7 @@ public sealed class InstrumentController(
                 // DMM の読み取りは返事を受け取る問い合わせだが、InstrumentService はその指定を呼び出し側に任せているため、ここで指定する
                 DmmInstClass dmm => await ReadDmmAsync(dmm),
                 CntInstClass cnt => await InstrumentService.ReadCntAsync(cnt, connection, strict: true),
+                OscInstClass osc => await ReadOscAsync(osc),
                 _ => throw new NotSupportedException($"値の取得に対応していない測定器です: {instrument.GetType().Name}"),
             };
         } catch (FormatException ex) {
@@ -136,6 +137,12 @@ public sealed class InstrumentController(
     private Task<decimal> ReadDmmAsync(DmmInstClass dmm) {
         dmm.Query = true;
         return InstrumentService.ReadDmmAsync(dmm, connection, strict: true);
+    }
+
+    // OSC の測定値を読み取る(測定項目は meas1 だけを使う。DMM と同じく、返事を受け取る問い合わせにする)
+    private Task<decimal> ReadOscAsync(OscInstClass osc) {
+        osc.Query = true;
+        return InstrumentService.ReadOscAsync(osc, 1, connection, strict: true);
     }
 
     // 役割の状態の名前から、その状態にするコマンドを探す
