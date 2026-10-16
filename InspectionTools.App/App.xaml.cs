@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using InspectionTools.App.Input;
+using InspectionTools.App.Settings;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Common;
 using InspectionTools.Inspection;
@@ -12,6 +13,9 @@ public partial class App : Application {
 
     // 他のユーザーのセッションとも取り合わないように、Global を付ける
     private SingleInstanceGuard? _singleInstance;
+
+    // 画面の配色(ライト/ダーク)
+    private ThemeController? _themeController;
 
     protected override void OnStartup(StartupEventArgs e) {
         base.OnStartup(e);
@@ -26,6 +30,10 @@ public partial class App : Application {
 
         var dialog = new WpfDialogService();
 
+        // 配色は、実行ファイルのフォルダの settings.json から読み、ウィンドウを作る前に適用する(切り替えると、ここに保存する)
+        _themeController = new ThemeController(Path.Combine(AppContext.BaseDirectory, AppSettingsStore.FileName), new MaterialThemeApplier(), dialog);
+        _themeController.Initialize();
+
         // 製品の一覧は、products フォルダの定義ファイルから作る。途中保存も設定ファイルも、実行ファイルのフォルダに置く（AppData には置かない）
         var catalog = ProductCatalog.Scan(Path.Combine(AppContext.BaseDirectory, "products"));
         var store = new SessionStore(Path.Combine(AppContext.BaseDirectory, "sessions"));
@@ -37,7 +45,7 @@ public partial class App : Application {
             dialog.ShowError("キー割り当ての設定に、確認が必要な点があります。\n" + string.Join("\n", keyBindings.Warnings.Select(warning => $"・{warning}")));
         }
 
-        var window = new MainWindow(shell, keyBindings.Bindings, dialog);
+        var window = new MainWindow(shell, keyBindings.Bindings, dialog, _themeController);
         dialog.Owner = window;
         window.Show();
     }

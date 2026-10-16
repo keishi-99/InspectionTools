@@ -23,6 +23,15 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Text="検査する製品を選んでください" FontSize="20" FontWeight="Bold" />
+            <!--  配色の切り替え（検査画面にも同じスイッチがある）  -->
+            <StackPanel Grid.RowSpan="3" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="ダークモード" />
+                <ToggleButton
+                    x:Name="MenuThemeSwitch"
+                    Margin="8,0,0,0"
+                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                    Click="ThemeSwitch_Click" />
+            </StackPanel>
             <TextBlock
                 Grid.Row="1"
                 Margin="0,8,0,0"
@@ -115,6 +124,12 @@
                     Style="{StaticResource MaterialDesignSwitchToggleButton}"
                     Click="LocalKeysSwitch_Click" />
                 <TextBlock x:Name="LocalKeysState" VerticalAlignment="Center" FontWeight="Bold" />
+                <TextBlock Margin="32,0,0,0" VerticalAlignment="Center" Text="ダークモード" />
+                <ToggleButton
+                    x:Name="InspectionThemeSwitch"
+                    Margin="8,0"
+                    Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                    Click="ThemeSwitch_Click" />
             </StackPanel>
         </StackPanel>
 
@@ -272,7 +287,7 @@
         <!--  測定器と通信している間は、画面を覆ってマウス操作を止める（通信が重なると、コマンドが混ざるため）  -->
         <Grid
             Grid.RowSpan="3"
-            Background="#66FFFFFF"
+            Background="{DynamicResource BusyOverlayBrush}"
             Visibility="{Binding IsInstrumentBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ProgressBar

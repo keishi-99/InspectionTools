@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using InspectionTools.App.Settings;
 using InspectionTools.App.ViewModels;
 
 namespace InspectionTools.App;
@@ -12,6 +13,7 @@ public partial class InstrumentSelectionWindow : Window {
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;
+        SourceInitialized += (_, _) => WindowTitleBar.ApplyCurrentTheme(this);
     }
 
     // 接続や解除の最中は閉じない（途中で閉じると、測定器の状態が分からなくなるため）
