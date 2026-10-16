@@ -724,6 +724,39 @@ public sealed class MainViewModelTests : IDisposable {
         Assert.True(result.Worksheet("ACdata").Cell("K5").Value.GetBoolean());
     }
 
+    // 台を1台ずつ別のシートに書く製品（PAF5 では5台ずつ）では、2台目が2枚目のシートに転記され、各シートの台数のセル(C1)に台数が入る
+    [Fact]
+    public void FinishingWithTwoUnitsOnTwoSheetsWritesEachUnitToItsSheet() {
+        Directory.CreateDirectory(_directory);
+        using (var workbook = new XLWorkbook()) {
+            workbook.AddWorksheet("ACdata");
+            workbook.AddWorksheet("ACdata2");
+            workbook.SaveAs(TemplatePath);
+        }
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var transfer = new TransferDefinition("ACdata", null, 5, 50, null, null, "F", UnitsPerBlock: null, BlockRowOffset: 0,
+            DataSheets: ["ACdata", "ACdata2"], UnitsPerSheet: 1, UnitCountCell: "C1");
+        var viewModel = new MainViewModel(new ProductDefinition(Product, 2, transfer, CreateDefinition().Items), _store, _dialog);
+        viewModel.IncreaseUnitCountCommand.Execute(null);
+        foreach (var value in new[] { "146.745", "100" }) {
+            viewModel.InputText = value;
+            viewModel.CommitValueCommand.Execute(null);
+            viewModel.InputText = "-50";
+            viewModel.CommitValueCommand.Execute(null);
+            viewModel.ConfirmOkCommand.Execute(null);
+            viewModel.CompleteTaskCommand.Execute(null);
+        }
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Empty(_dialog.Errors);
+        using var result = new XLWorkbook(TemplatePath);
+        Assert.Equal(146.745, result.Worksheet("ACdata").Cell("F8").Value.GetNumber());
+        Assert.Equal(100, result.Worksheet("ACdata2").Cell("F8").Value.GetNumber());
+        Assert.Equal(1, result.Worksheet("ACdata").Cell("C1").Value.GetNumber());
+        Assert.Equal(1, result.Worksheet("ACdata2").Cell("C1").Value.GetNumber());
+    }
+
     [Fact]
     public void ClosingTheFileDialogWithoutChoosingDoesNothing() {
         _dialog.TemplatePathToSelect = null;

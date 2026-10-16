@@ -1,3 +1,5 @@
+using ClosedXML.Excel;
+
 namespace InspectionTools.Excel;
 
 /// <summary>選んだファイルが正しい製品のテンプレートかを、書き込む前に確かめる</summary>
@@ -9,6 +11,11 @@ public static class TemplateVerifier {
     /// </summary>
     public static void Verify(string path, TemplateCheck check) {
         using var workbook = TemplateFile.OpenForRead(path);
+        Verify(workbook, check);
+    }
+
+    /// <summary>開いてあるブックで確かめる(複数のシートを確かめるときに、ファイルを何度も開かないため)</summary>
+    internal static void Verify(XLWorkbook workbook, TemplateCheck check) {
         var sheet = TemplateFile.FindSheet(workbook, check.Sheet)
             ?? throw new TemplateVerificationException($"このファイルには、シート '{check.Sheet}' がありません。別の製品のテンプレートではありませんか。");
 

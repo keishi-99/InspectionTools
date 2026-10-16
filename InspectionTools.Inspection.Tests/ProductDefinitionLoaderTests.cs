@@ -220,6 +220,122 @@ public class ProductDefinitionLoaderTests {
         Assert.Equal(2, definition.Items.Count);
     }
 
+    // ===== 台を5台ずつ別のシートに書く製品（dataSheets） =====
+
+    // dataSheet の代わりに dataSheets と unitsPerSheet を書いた定義(2シート × 5台 = 最大10台)
+    private static string MultiSheetJson(string transferExtra = "", string maxUnitCount = "10", string sheets = """["分離形　1～5", "分離形　6～10"]""") => $$"""
+        {
+          "product": "PAF5-分離形",
+          "maxUnitCount": {{maxUnitCount}},
+          "transfer": { "dataSheets": {{sheets}}, "unitsPerSheet": 5, "firstRow": 7, "lastRow": 48, "firstUnitColumn": "H" {{transferExtra}} },
+          "items": [ { "name": "電源投入", "kind": "Confirmation", "excelRow": 8 } ]
+        }
+        """;
+
+    [Fact]
+    public void ParseReadsDataSheetsAndUnitsPerSheet() {
+        var transfer = ProductDefinitionLoader.Parse(MultiSheetJson()).Transfer;
+
+        Assert.Equal(["分離形　1～5", "分離形　6～10"], transfer.DataSheets);
+        Assert.Equal(5, transfer.UnitsPerSheet);
+        // 最初のシートが、これまでの dataSheet(確認用のセルがあるシート)になる
+        Assert.Equal("分離形　1～5", transfer.DataSheet);
+    }
+
+    [Fact]
+    public void SingleSheetDefinitionHasNoDataSheetsAndNoUnitsPerSheet() {
+        var transfer = ProductDefinitionLoader.Parse(ValidJson).Transfer;
+
+        Assert.Null(transfer.DataSheets);
+        Assert.Null(transfer.UnitsPerSheet);
+    }
+
+    [Fact]
+    public void DataSheetAndDataSheetsTogetherAreRejected() {
+        var exception = AssertRejected(MultiSheetJson(transferExtra: ", \"dataSheet\": \"ACdata\""));
+
+        Assert.Contains("transfer.dataSheets", exception.Message);
+    }
+
+    [Fact]
+    public void DataSheetsWithoutUnitsPerSheetAreRejected() {
+        var json = MultiSheetJson().Replace("\"unitsPerSheet\": 5, ", "");
+        Assert.NotEqual(MultiSheetJson(), json);
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains("transfer.unitsPerSheet", exception.Message);
+    }
+
+    [Fact]
+    public void UnitsPerSheetWithoutDataSheetsIsRejected() {
+        var json = ValidJson.Replace("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"F\", \"unitsPerSheet\": 5");
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains("transfer.unitsPerSheet", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("""["分離形　1～5", " "]""")]
+    [InlineData("""["分離形　1～5", "分離形　1～5"]""")]
+    public void EmptyBlankOrDuplicatedSheetNamesAreRejected(string sheets) {
+        var exception = AssertRejected(MultiSheetJson(sheets: sheets));
+
+        Assert.Contains("transfer.dataSheets", exception.Message);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-5")]
+    public void NonPositiveUnitsPerSheetIsRejected(string unitsPerSheet) {
+        var json = MultiSheetJson().Replace("\"unitsPerSheet\": 5", $"\"unitsPerSheet\": {unitsPerSheet}");
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains("transfer.unitsPerSheet", exception.Message);
+    }
+
+    // シートが足りないと、最大台数の最後の台を書く先がなくなる
+    [Fact]
+    public void MaxUnitCountOverTheCapacityOfTheSheetsIsRejected() {
+        var exception = AssertRejected(MultiSheetJson(maxUnitCount: "11"));
+
+        Assert.Contains("maxUnitCount", exception.Message);
+        Assert.Contains("10", exception.Message);
+    }
+
+    [Fact]
+    public void MaxUnitCountWithinTheCapacityIsAccepted() {
+        Assert.Equal(10, ProductDefinitionLoader.Parse(MultiSheetJson(maxUnitCount: "10")).MaxUnitCount);
+        Assert.Equal(7, ProductDefinitionLoader.Parse(MultiSheetJson(maxUnitCount: "7")).MaxUnitCount);
+    }
+
+    [Fact]
+    public void DataSheetsWithWrapAreRejected() {
+        var exception = AssertRejected(MultiSheetJson(transferExtra: ", \"unitsPerBlock\": 4, \"blockRowOffset\": 20"));
+
+        Assert.Contains("unitsPerBlock", exception.Message);
+    }
+
+    [Fact]
+    public void ParseReadsUnitCountCellAndLeavesItNullWhenAbsent() {
+        Assert.Equal("C1", ProductDefinitionLoader.Parse(MultiSheetJson(transferExtra: ", \"unitCountCell\": \"C1\"")).Transfer.UnitCountCell);
+        Assert.Null(ProductDefinitionLoader.Parse(MultiSheetJson()).Transfer.UnitCountCell);
+    }
+
+    [Theory]
+    [InlineData("1C")]
+    [InlineData("C")]
+    [InlineData("C0")]
+    [InlineData("C1:D2")]
+    public void InvalidUnitCountCellIsRejectedWithItsName(string cell) {
+        var exception = AssertRejected(MultiSheetJson(transferExtra: $", \"unitCountCell\": \"{cell}\""));
+
+        Assert.Contains("transfer.unitCountCell", exception.Message);
+    }
+
     [Fact]
     public void ParseReadsTextKind() {
         var definition = ProductDefinitionLoader.Parse(JsonWithItems("""{ "name": "LCDシリアル", "kind": "Text", "excelRow": 7 }"""));

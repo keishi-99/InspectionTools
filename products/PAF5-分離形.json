@@ -1,8 +1,15 @@
 {
   "product": "PAF5-分離形",
-  "maxUnitCount": 5,
+  "maxUnitCount": 20,
   "transfer": {
-    "dataSheet": "分離形　1～5",
+    "dataSheets": [
+      "分離形　1～5",
+      "分離形　6～10",
+      "分離形　11～15",
+      "分離形　16～20"
+    ],
+    "unitsPerSheet": 5,
+    "unitCountCell": "C1",
     "firstRow": 7,
     "lastRow": 48,
     "verifyCell": "B3",

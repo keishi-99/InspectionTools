@@ -88,6 +88,9 @@ public class Paf5SeparateDefinitionTests {
         var transfer = Definition.Transfer;
 
         Assert.Equal("分離形　1～5", transfer.DataSheet);
+        Assert.Equal(["分離形　1～5", "分離形　6～10", "分離形　11～15", "分離形　16～20"], transfer.DataSheets);
+        Assert.Equal(5, transfer.UnitsPerSheet);
+        Assert.Equal("C1", transfer.UnitCountCell);
         Assert.Null(transfer.SettingSheet);
         Assert.Equal((7, 48), (transfer.FirstRow, transfer.LastRow));
         Assert.Equal(("B3", "分離形"), (transfer.VerifyCell, transfer.VerifyValue));
@@ -96,9 +99,10 @@ public class Paf5SeparateDefinitionTests {
         Assert.Null(transfer.UnitsPerBlock);
     }
 
+    // 1枚のシートに5台ずつ、4枚（1～5、6～10、11～15、16～20）で最大20台
     [Fact]
-    public void MaxUnitCountIsFiveBecauseOneSheetHoldsFiveUnits() {
-        Assert.Equal(5, Definition.MaxUnitCount);
+    public void MaxUnitCountIsTwentyBecauseFourSheetsHoldFiveUnitsEach() {
+        Assert.Equal(20, Definition.MaxUnitCount);
     }
 
     // 合格範囲は、画面に書かれた表記のとおり（ただしノッチの最小周波数は、表記に範囲がないので、テンプレートの判定式の範囲）
