@@ -221,6 +221,21 @@ public class ProductDefinitionLoaderTests {
     }
 
     [Fact]
+    public void ParseReadsTextKind() {
+        var definition = ProductDefinitionLoader.Parse(JsonWithItems("""{ "name": "LCDシリアル", "kind": "Text", "excelRow": 7 }"""));
+
+        Assert.Equal(ItemKind.Text, definition.Items[0].Kind);
+        Assert.Equal(7, definition.Items[0].ExcelRow);
+    }
+
+    [Fact]
+    public void TextItemWithRangeIsRejectedWithItemPosition() {
+        var exception = AssertRejected(JsonWithItems("""{ "name": "LCDシリアル", "kind": "Text", "excelRow": 7, "lowerLimit": 0, "upperLimit": 1 }"""));
+
+        Assert.Contains("1番目の項目", exception.Message);
+    }
+
+    [Fact]
     public void SettingSheetMayBeOmitted() {
         var json = ValidJson.Replace("\"settingSheet\": \"ACsetting\", ", "");
         Assert.NotEqual(ValidJson, json);

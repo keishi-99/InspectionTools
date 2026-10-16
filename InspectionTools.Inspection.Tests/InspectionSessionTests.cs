@@ -19,6 +19,67 @@ public class InspectionSessionTests {
         return new InspectionSession(items, unitCount);
     }
 
+    // 0: 文字入力、1: 測定 の2項目
+    private static InspectionSession CreateTextSession() => new([
+        new("LCDシリアル", ItemKind.Text, excelRow: 7),
+        new("消費電流", ItemKind.Measurement, excelRow: 8, lowerLimit: 0m, upperLimit: 230m),
+    ], unitCount: 2);
+
+    [Fact]
+    public void SetTextStoresTheTextAndMarksOk() {
+        var session = CreateTextSession();
+
+        session.SetText(0, 1, "1111111Z");
+
+        var result = session.GetResult(0, 1);
+        Assert.Equal("1111111Z", result.Text);
+        Assert.Equal(ResultState.Ok, result.State);
+        Assert.Equal(ResultState.NotDone, session.GetResult(0, 0).State);
+    }
+
+    [Fact]
+    public void SetTextRemovesSpacesAroundTheText() {
+        var session = CreateTextSession();
+
+        session.SetText(0, 0, "  0012345Z \t");
+
+        Assert.Equal("0012345Z", session.GetResult(0, 0).Text);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SetTextRejectsBlankText(string text) {
+        var session = CreateTextSession();
+
+        Assert.Throws<ArgumentException>(() => session.SetText(0, 0, text));
+        Assert.Equal(ResultState.NotDone, session.GetResult(0, 0).State);
+    }
+
+    [Fact]
+    public void SetTextOverwritesThePreviousText() {
+        var session = CreateTextSession();
+        session.SetText(0, 0, "AAA");
+
+        session.SetText(0, 0, "BBB");
+
+        Assert.Equal("BBB", session.GetResult(0, 0).Text);
+    }
+
+    [Fact]
+    public void SetTextOnAnItemOfAnotherKindThrows() {
+        var session = CreateTextSession();
+
+        Assert.Throws<InvalidOperationException>(() => session.SetText(1, 0, "AAA"));
+    }
+
+    [Fact]
+    public void SetValueOnATextItemThrows() {
+        var session = CreateTextSession();
+
+        Assert.Throws<InvalidOperationException>(() => session.SetValue(0, 0, 1m, isManual: true));
+    }
+
     [Fact]
     public void AllCellsAreNotDoneAtStart() {
         var session = CreateSession(unitCount: 2);

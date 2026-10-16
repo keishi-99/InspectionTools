@@ -32,6 +32,11 @@ public sealed class InspectionItem {
             }
         }
 
+        // 文字入力の項目は、合格範囲で判定しない
+        if (kind == ItemKind.Text && (lowerLimit is not null || upperLimit is not null)) {
+            throw new ArgumentException($"文字入力の項目には合格範囲を指定できません: {name}");
+        }
+
         // 初期値を入れる欄があるのは、値を入力する項目だけ
         if (defaultValue is not null && kind is not (ItemKind.Measurement or ItemKind.Input)) {
             throw new ArgumentException($"初期値（defaultValue）は、測定項目と入力項目にだけ指定できます: {name}", nameof(defaultValue));

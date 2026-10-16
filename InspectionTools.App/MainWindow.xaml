@@ -186,7 +186,7 @@
                             Width="160"
                             InputMethod.IsInputMethodEnabled="False"
                             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
-                            materialDesign:HintAssist.Hint="値" />
+                            materialDesign:HintAssist.Hint="{Binding InputHint}" />
                         <Button
                             Margin="8,0,0,0"
                             Padding="16,0"

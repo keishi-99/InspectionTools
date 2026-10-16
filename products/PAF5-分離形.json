@@ -3,7 +3,7 @@
   "maxUnitCount": 5,
   "transfer": {
     "dataSheet": "分離形　1～5",
-    "firstRow": 8,
+    "firstRow": 7,
     "lastRow": 48,
     "verifyCell": "B3",
     "verifyValue": "分離形",
@@ -11,6 +11,12 @@
     "confirmationColumn": "M"
   },
   "items": [
+    {
+      "name": "LCDユニット シリアル",
+      "kind": "Text",
+      "excelRow": 7,
+      "description": "LCDユニットのシリアル番号を入力（またはバーコードを読み取り）してください。"
+    },
     {
       "name": "実装・はんだ付け",
       "kind": "Confirmation",

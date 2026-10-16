@@ -34,6 +34,17 @@ public class RangeComparerTests {
         Assert.DoesNotContain(mismatches, mismatch => mismatch.ItemName == "調整作業");
     }
 
+    // 文字入力の項目（シリアルなど）は、合格範囲を持たないので、テンプレートに対応する行がなくても食い違いにしない
+    [Fact]
+    public void TextItemsAreNotCompared() {
+        var items = CreateItems();
+        items.Insert(0, new InspectionItem("LCDシリアル", ItemKind.Text, excelRow: 7));
+
+        var mismatches = RangeComparer.Compare(items, CreateRows());
+
+        Assert.Empty(mismatches);
+    }
+
     [Theory]
     [InlineData("0.0001", "230")]
     [InlineData("0", "229.9999")]

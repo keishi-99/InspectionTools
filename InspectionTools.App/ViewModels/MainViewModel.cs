@@ -77,7 +77,7 @@ public sealed partial class MainViewModel : ObservableObject {
 
     /// <summary>現在の項目の位置</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentItem), nameof(IsValueInput), nameof(IsConfirmation), nameof(IsTask), nameof(CurrentRangeText), nameof(CurrentDescription), nameof(HasDescription), nameof(HasAcquisition), nameof(CanAcquire))]
+    [NotifyPropertyChangedFor(nameof(CurrentItem), nameof(IsValueInput), nameof(IsTextInput), nameof(InputHint), nameof(IsConfirmation), nameof(IsTask), nameof(CurrentRangeText), nameof(CurrentDescription), nameof(HasDescription), nameof(HasAcquisition), nameof(CanAcquire))]
     private int _currentItemIndex;
 
     /// <summary>現在の台の位置</summary>
@@ -95,8 +95,14 @@ public sealed partial class MainViewModel : ObservableObject {
     /// <summary>現在の項目</summary>
     public InspectionItem CurrentItem => _session.Items[CurrentItemIndex];
 
-    /// <summary>値の入力欄を使う項目か（測定項目・入力項目）</summary>
-    public bool IsValueInput => CurrentItem.Kind is ItemKind.Measurement or ItemKind.Input;
+    /// <summary>入力欄を使う項目か（測定項目・入力項目・文字入力の項目）</summary>
+    public bool IsValueInput => CurrentItem.Kind is ItemKind.Measurement or ItemKind.Input or ItemKind.Text;
+
+    /// <summary>入力欄に、数値ではなく文字（シリアルなど）を入力する項目か</summary>
+    public bool IsTextInput => CurrentItem.Kind == ItemKind.Text;
+
+    /// <summary>入力欄に薄く出す案内</summary>
+    public string InputHint => IsTextInput ? "文字" : "値";
 
     /// <summary>合格／不合格のボタンを使う項目か</summary>
     public bool IsConfirmation => CurrentItem.Kind == ItemKind.Confirmation;
@@ -324,6 +330,15 @@ public sealed partial class MainViewModel : ObservableObject {
         if (IsInstrumentBusy) {
             return;
         }
+        if (IsTextInput) {
+            if (string.IsNullOrWhiteSpace(InputText)) {
+                _dialog.ShowError("文字が入力されていません。入力してください。");
+                return;
+            }
+            _session.SetText(CurrentItemIndex, CurrentUnitIndex, InputText);
+            await FinishCurrentCellAsync();
+            return;
+        }
         if (!decimal.TryParse(InputText, NumberStyles.Float, CultureInfo.CurrentCulture, out var value)) {
             _dialog.ShowError(string.IsNullOrWhiteSpace(InputText) ? "値が入力されていません。数値で入力してください(例: 1.234)。" : $"'{InputText}' は数値として読めません。数値で入力してください(例: 1.234)。");
             return;
@@ -516,7 +531,8 @@ public sealed partial class MainViewModel : ObservableObject {
         var result = _session.GetResult(CurrentItemIndex, CurrentUnitIndex);
         // まだ値のないマスは、項目に初期値があればそれを出す。初期値は人が打ち込んだ値ではないので、そのまま確定しても手入力にはしない
         var shownValue = result.Value ?? CurrentItem.DefaultValue;
-        InputText = shownValue?.ToString() ?? "";
+        // 文字入力の項目は、入力した文字を出す(測定器から取得する値ではないので、取得した値の記録はしない)
+        InputText = CurrentItem.Kind == ItemKind.Text ? result.Text ?? "" : shownValue?.ToString() ?? "";
         // すでに測定器から取得した値が入っているマスは、書き換えずに確定し直しても、取得した値のままにする
         _acquiredText = shownValue is not null && !result.IsManual ? InputText : null;
         for (var itemIndex = 0; itemIndex < Rows.Count; itemIndex++) {

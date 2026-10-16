@@ -20,7 +20,18 @@ public class Paf5SeparateDefinitionTests {
     [Fact]
     public void DefinitionHasTheExpectedProductAndItemCount() {
         Assert.Equal("PAF5-分離形", Definition.Product);
-        Assert.Equal(34, Definition.Items.Count);
+        Assert.Equal(35, Definition.Items.Count);
+    }
+
+    // 最初の項目は、台ごとに手入力（またはバーコードの読み取り）する LCD ユニットのシリアル
+    [Fact]
+    public void FirstItemIsTheLcdSerialTextInput() {
+        var first = Definition.Items[0];
+
+        Assert.Equal(ItemKind.Text, first.Kind);
+        Assert.Equal(7, first.ExcelRow);
+        Assert.Null(first.LowerLimit);
+        Assert.False(string.IsNullOrWhiteSpace(first.Description));
     }
 
     [Fact]
@@ -30,14 +41,15 @@ public class Paf5SeparateDefinitionTests {
         Assert.Equal(7, Count(ItemKind.Measurement));
         Assert.Equal(4, Count(ItemKind.Input));
         Assert.Equal(23, Count(ItemKind.Confirmation));
+        Assert.Equal(1, Count(ItemKind.Text));
         Assert.Equal(0, Count(ItemKind.Task));
     }
 
-    // テンプレートの行8〜48のうち、見出しや注意書きだけの行（16、18、22、26、31、34、39）を除いた34行。
+    // LCD のシリアル（行7）と、行8〜48のうち見出しや注意書きだけの行（16、18、22、26、31、34、39）を除いた34行。
     // ローカット機能（行40〜47）だけは、検査の流れの順（min/F、min/7、max/7、max/F）に並べるので、Excel の行の順とは違う
     [Fact]
     public void RecordedItemsCoverTheExpectedExcelRowsInOrder() {
-        int[] expected = [8, 9, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 23, 24, 25, 27, 28, 29, 30, 32, 33, 35, 36, 37, 38, 44, 45, 40, 41, 42, 43, 46, 47, 48];
+        int[] expected = [7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 23, 24, 25, 27, 28, 29, 30, 32, 33, 35, 36, 37, 38, 44, 45, 40, 41, 42, 43, 46, 47, 48];
 
         Assert.Equal(expected, Definition.Items.Select(item => item.ExcelRow!.Value));
     }
@@ -77,7 +89,7 @@ public class Paf5SeparateDefinitionTests {
 
         Assert.Equal("分離形　1～5", transfer.DataSheet);
         Assert.Null(transfer.SettingSheet);
-        Assert.Equal((8, 48), (transfer.FirstRow, transfer.LastRow));
+        Assert.Equal((7, 48), (transfer.FirstRow, transfer.LastRow));
         Assert.Equal(("B3", "分離形"), (transfer.VerifyCell, transfer.VerifyValue));
         Assert.Equal("H", transfer.FirstUnitColumn);
         Assert.Equal("M", transfer.ConfirmationColumn);

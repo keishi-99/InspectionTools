@@ -121,6 +121,25 @@ public sealed class TemplateWriterTests : IDisposable {
         Assert.Equal("良", ReadCell(TemplatePath, "G5").GetString());
     }
 
+    // 文字入力の項目は、文字のまま書く（先頭の 0 や英字が消えないように、数値にしない）。実施していない台は、前回の値を消して空欄にする
+    [Fact]
+    public void TextIsWrittenAsTextAndNotDoneTextIsCleared() {
+        CreateTemplate();
+        using (var workbook = new XLWorkbook(TemplatePath)) {
+            workbook.Worksheet("ACdata").Cell("G7").Value = "前回のシリアル";
+            workbook.SaveAs(TemplatePath);
+        }
+        var session = new InspectionSession([new("LCDシリアル", ItemKind.Text, excelRow: 7)], unitCount: 2);
+        session.SetText(0, 0, "0012345Z");
+
+        TemplateWriter.Write(TemplatePath, Settings, session);
+
+        var written = ReadCell(TemplatePath, "F7");
+        Assert.True(written.Value.IsText);
+        Assert.Equal("0012345Z", written.GetString());
+        Assert.True(ReadCell(TemplatePath, "G7").IsEmpty());
+    }
+
     [Fact]
     public void NotDoneConfirmationIsWrittenAsFalseToo() {
         CreateTemplate();

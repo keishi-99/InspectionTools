@@ -10,8 +10,8 @@ public static class RangeComparer {
         var mismatches = new List<RangeMismatch>();
         var rowsByNumber = rows.ToDictionary(row => row.Row);
 
-        // 作業項目は Excel の行を持たないので、突き合わせの対象にしない
-        var recordedItems = items.Where(item => item.ExcelRow is not null).ToList();
+        // 作業項目は Excel の行を持たないので、突き合わせの対象にしない。文字入力の項目は合格範囲を持たないので、これも対象にしない
+        var recordedItems = items.Where(item => item.ExcelRow is not null && item.Kind != ItemKind.Text).ToList();
         foreach (var item in recordedItems) {
             var excelRow = item.ExcelRow!.Value;
             if (!rowsByNumber.TryGetValue(excelRow, out var row)) {

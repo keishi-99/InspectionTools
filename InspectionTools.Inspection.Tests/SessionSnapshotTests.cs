@@ -38,6 +38,49 @@ public class SessionSnapshotTests {
         Assert.Equal(4, snapshot.Cells.Count);
     }
 
+    // ===== 文字入力の項目 =====
+
+    private static List<InspectionItem> CreateTextItems() => [
+        new("LCDシリアル", ItemKind.Text, excelRow: 7),
+        new("消費電流", ItemKind.Measurement, excelRow: 8, lowerLimit: 0m, upperLimit: 230m),
+    ];
+
+    [Fact]
+    public void TextIsKeptThroughSnapshotAndRestore() {
+        var original = new InspectionSession(CreateTextItems(), unitCount: 2);
+        original.SetText(0, 1, "0012345Z");
+
+        var restored = InspectionSession.FromSnapshot(original.ToSnapshot(Product), Product, CreateTextItems());
+
+        Assert.Equal("0012345Z", restored.GetResult(0, 1).Text);
+        Assert.Equal(ResultState.Ok, restored.GetResult(0, 1).State);
+        Assert.Equal(ResultState.NotDone, restored.GetResult(0, 0).State);
+    }
+
+    // 文字入力を足す前に保存された途中保存（"text" のない形）も、そのまま読める
+    [Fact]
+    public void SnapshotSavedBeforeTextItemsWereAddedCanStillBeLoaded() {
+        const string OldJson = """
+            { "product": "EL5000AC", "itemCount": 4, "unitCount": 1, "currentItemIndex": 1, "currentUnitIndex": 0,
+              "cells": [ { "unit": 0, "item": 0, "value": 146.745, "state": "Ok", "isManual": false } ] }
+            """;
+        var snapshot = System.Text.Json.JsonSerializer.Deserialize<SessionSnapshot>(
+            OldJson,
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web) { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } })!;
+
+        var restored = Restore(snapshot);
+
+        Assert.Equal(146.745m, restored.GetResult(0, 0).Value);
+        Assert.Null(snapshot.Cells[0].Text);
+    }
+
+    [Fact]
+    public void TextCellWithoutTextIsRejected() {
+        var snapshot = new SessionSnapshot(Product, 2, 1, 0, 0, [new CellSnapshot(0, 0, null, ResultState.Ok, false)]);
+
+        Assert.Throws<SessionRestoreException>(() => InspectionSession.FromSnapshot(snapshot, Product, CreateTextItems()));
+    }
+
     [Fact]
     public void SnapshotRoundTripRestoresEveryCellAndPosition() {
         var original = CreateSessionWithResults();
