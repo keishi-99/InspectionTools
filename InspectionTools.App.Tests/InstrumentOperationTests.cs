@@ -38,6 +38,10 @@ public sealed class InstrumentOperationTests : IDisposable {
 
         public bool Confirm(string message) => true;
         public void ShowError(string message) => Errors.Add(message);
+        public List<string> Warnings { get; } = [];
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
         public void ShowInfo(string message) { }
         public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) => OnShowInstrumentSelection?.Invoke(viewModel);
         public string? SelectTemplateFilePath() => null;
@@ -348,7 +352,12 @@ public sealed class InstrumentOperationTests : IDisposable {
 
         await _viewModel.AcquireValueCommand.ExecuteAsync(null);
 
-        Assert.Contains("値を取得できませんでした", Assert.Single(_dialog.Errors));
+        var message = Assert.Single(_dialog.Errors);
+        Assert.Contains("値を取得できませんでした", message);
+        // 取得の失敗には、取得のやり直しを案内する(「設定を再適用」は、取得の失敗に合わない)。同じ内容を2回書かない
+        Assert.Contains("もう一度「値を取得」を押す", message);
+        Assert.DoesNotContain("設定を再適用", message);
+        Assert.Equal(1, message.Split("値を取得できません").Length - 1);
         Assert.Equal("100", _viewModel.InputText);
         Assert.False(_viewModel.IsInstrumentBusy);
     }

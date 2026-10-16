@@ -8,6 +8,6 @@ public sealed class InstrumentConnectionException(IReadOnlyList<InstrumentCommun
     public IReadOnlyList<InstrumentCommunicationException> Failures { get; } = failures;
 
     private static string CreateMessage(IReadOnlyList<InstrumentCommunicationException> failures) {
-        return "測定器に接続できませんでした。\n" + string.Join("\n", failures.Select(failure => $"・{failure.Message}"));
+        return "測定器に接続できませんでした。\n" + string.Join("\n", failures.Select(failure => $"・{failure.Message}")) + "\n接続を解除しました。選び直して、もう一度接続してください。";
     }
 }

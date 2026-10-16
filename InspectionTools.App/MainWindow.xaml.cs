@@ -105,7 +105,7 @@ public partial class MainWindow : Window {
             _globalHotkey.Unregister();
         } else if (_keyBindings.GlobalHotkey is { } chord
             && !_globalHotkey.TryRegister(new WindowInteropHelper(this).Handle, chord, out var error)) {
-            _dialog.ShowError($"全体のホットキーを有効にできません。\n{error}");
+            _dialog.ShowWarning($"全体のホットキーを有効にできません。\n{error}");
         }
         UpdateKeySwitches();
         FocusInput();

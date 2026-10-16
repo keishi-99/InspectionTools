@@ -84,8 +84,11 @@ public sealed class InstrumentController(
                 CntInstClass cnt => await InstrumentService.ReadCntAsync(cnt, connection, strict: true),
                 _ => throw new NotSupportedException($"値の取得に対応していない測定器です: {instrument.GetType().Name}"),
             };
+        } catch (FormatException ex) {
+            // 通信はできたが、返事が数値として読めなかった
+            throw new InstrumentCommunicationException(role, $"{DescribeInstrument(role)}の返事を数値として読めませんでした。値を取得できませんでした。（詳細: {ex.Message}）", ex);
         } catch (Exception ex) {
-            throw new InstrumentCommunicationException(role, $"{Describe(role)}: 測定値を取得できません。{ex.Message}", ex);
+            throw new InstrumentCommunicationException(role, $"{CommunicationFailed(role)}値を取得できませんでした。ケーブルと電源を確認してください。（詳細: {ex.Message}）", ex);
         }
 
         // 読み取りのたびに次の測定を準備する測定器（カウンタ）は、取得の一部として準備のコマンドを送る
@@ -146,7 +149,7 @@ public sealed class InstrumentController(
     private InstClass FindInstrument(InstrumentRole role) {
         return instruments.TryGetValue(role, out var instrument)
             ? instrument
-            : throw new InstrumentCommunicationException(role, $"{role} の測定器が接続されていません。");
+            : throw new InstrumentCommunicationException(role, $"{Describe(role)} の測定器が接続されていません。");
     }
 
     // 測定器の通信方式に合ったコマンドを、測定器に1回送る
@@ -162,9 +165,18 @@ public sealed class InstrumentController(
         try {
             await connection.ConnectAsync(instrument);
         } catch (Exception ex) {
-            throw new InstrumentCommunicationException(role, $"{Describe(role)}: 通信に失敗しました。{ex.Message}", ex);
+            throw new InstrumentCommunicationException(role, $"{CommunicationFailed(role)}ケーブルと電源を確認してください。（詳細: {ex.Message}）", ex);
         }
     }
+
+    // 「測定器 Dmm01（DMM-01）」の形(機器の名前が分かるときは、名前も添える)。あとに助詞をつなげるために、名前があるときは、そのまま、ないときは、半角の空白を足す
+    private string DescribeInstrument(InstrumentRole role) {
+        var target = Describe(role);
+        return target.EndsWith('）') ? $"測定器 {target}" : $"測定器 {target} ";
+    }
+
+    // 通信に失敗した、という文(例: 「測定器 Dmm01（DMM-01）との通信に失敗しました。」)
+    private string CommunicationFailed(InstrumentRole role) => $"{DescribeInstrument(role)}との通信に失敗しました。";
 
     // エラーの文面に出す、役割と測定器の名前
     private string Describe(InstrumentRole role) {

@@ -30,6 +30,10 @@ public sealed class MainViewModelTests : IDisposable {
 
         public void ShowError(string message) => Errors.Add(message);
 
+        public List<string> Warnings { get; } = [];
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
         public void ShowInfo(string message) => Infos.Add(message);
 
         /// <summary>測定器の選択画面が開かれた回数</summary>
@@ -105,6 +109,16 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.CommitValueCommand.Execute(null);
 
         Assert.Equal(ResultState.Ng, viewModel.Rows[0].Cells[0].State);
+    }
+
+    [Fact]
+    public void NonNumberMessageShowsTheEnteredText() {
+        var viewModel = CreateViewModel();
+        viewModel.InputText = "1.2.3";
+
+        viewModel.CommitValueCommand.Execute(null);
+
+        Assert.Contains("'1.2.3' は数値として読めません", Assert.Single(_dialog.Errors));
     }
 
     [Theory]
@@ -437,6 +451,52 @@ public sealed class MainViewModelTests : IDisposable {
 
         Assert.Single(_dialog.Errors);
         Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+    }
+
+    [Fact]
+    public void SaveFailureIsReportedOnlyOnceWhileItKeepsFailing() {
+        // 項目を進めるたびに保存するので、失敗が続いても、通知は最初の1回だけにする
+        Directory.CreateDirectory(Path.GetDirectoryName(_directory)!);
+        File.WriteAllText(_directory, "ファイル");
+        var viewModel = CreateViewModel();
+
+        viewModel.MoveToAsync(1, 0);
+        viewModel.MoveToAsync(2, 0);
+        viewModel.MoveToAsync(3, 0);
+
+        Assert.Single(_dialog.Errors);
+        Assert.Contains("繰り返しません", _dialog.Errors[0]);
+    }
+
+    [Fact]
+    public void SaveFailureIsReportedAgainAfterASuccessfulSave() {
+        Directory.CreateDirectory(Path.GetDirectoryName(_directory)!);
+        File.WriteAllText(_directory, "ファイル");
+        var viewModel = CreateViewModel();
+        viewModel.MoveToAsync(1, 0);
+        Assert.Single(_dialog.Errors);
+
+        // 保存できるようにしてから、保存に成功させる。そのあと、また失敗させる
+        File.Delete(_directory);
+        viewModel.MoveToAsync(2, 0);
+        Directory.Delete(_directory, recursive: true);
+        File.WriteAllText(_directory, "ファイル");
+        viewModel.MoveToAsync(3, 0);
+
+        Assert.Equal(2, _dialog.Errors.Count);
+    }
+
+    [Fact]
+    public void RestoreFailureExplainsThatTheDefinitionMayHaveChanged() {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(SavedPath, "{ これはJSONではない");
+        var viewModel = CreateViewModel();
+
+        viewModel.Start();
+
+        var message = Assert.Single(_dialog.Errors);
+        Assert.Contains("定義(項目)が変わった", message);
+        Assert.Contains("最初から始めます", message);
     }
 
     // ===== 検査終了（転記） =====

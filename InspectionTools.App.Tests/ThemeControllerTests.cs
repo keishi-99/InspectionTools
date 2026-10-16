@@ -20,6 +20,10 @@ public sealed class ThemeControllerTests : IDisposable {
 
         public void ShowError(string message) => Errors.Add(message);
 
+        public List<string> Warnings { get; } = [];
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
         public void ShowInfo(string message) { }
 
         public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) { }
@@ -52,7 +56,7 @@ public sealed class ThemeControllerTests : IDisposable {
 
         Assert.Equal([ThemeSetting.Light], _applier.Applied);
         Assert.False(controller.IsDark);
-        Assert.Empty(_dialog.Errors);
+        Assert.Empty(_dialog.Warnings);
         Assert.False(File.Exists(SettingsPath));
     }
 
@@ -76,7 +80,7 @@ public sealed class ThemeControllerTests : IDisposable {
         controller.Initialize();
 
         Assert.Equal([ThemeSetting.Light], _applier.Applied);
-        Assert.Contains("ライトで起動しました", Assert.Single(_dialog.Errors));
+        Assert.Contains("ライトで起動しました", Assert.Single(_dialog.Warnings));
     }
 
     [Fact]
@@ -138,6 +142,6 @@ public sealed class ThemeControllerTests : IDisposable {
 
         Assert.True(controller.IsDark);
         Assert.Equal(ThemeSetting.Dark, _applier.Applied[^1]);
-        Assert.Contains("保存できませんでした", Assert.Single(_dialog.Errors));
+        Assert.Contains("保存できませんでした", Assert.Single(_dialog.Warnings));
     }
 }

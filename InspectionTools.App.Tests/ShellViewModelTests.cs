@@ -23,6 +23,10 @@ public sealed class ShellViewModelTests : IDisposable {
 
         public void ShowError(string message) => Errors.Add(message);
 
+        public List<string> Warnings { get; } = [];
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
         public void ShowInfo(string message) => Infos.Add(message);
 
         public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) { }
