@@ -71,8 +71,9 @@ public sealed class KeyBindings {
         return false;
     }
 
-    /// <summary>画面に出す、キーの案内（各操作の先頭のキー。例: 値を取得 [Space]  確定 [Enter]）</summary>
-    public string HintText => string.Join("   ", Labels
+    /// <summary>画面に出す、キーの案内(キーのある操作ごとに、操作の名前と、割り当てたキーすべて)</summary>
+    public IReadOnlyList<KeyHintItem> Hints => Labels
         .Where(label => ChordsOf(label.Key).Count > 0)
-        .Select(label => $"{label.Value} [{ChordsOf(label.Key)[0]}]"));
+        .Select(label => new KeyHintItem(label.Value, ChordsOf(label.Key).Select(chord => new KeyBadge(chord.DisplayText)).ToList(), label.Key))
+        .ToList();
 }

@@ -505,7 +505,19 @@ public sealed partial class MainViewModel : ObservableObject {
         InputText = result.Value?.ToString() ?? "";
         // すでに測定器から取得した値が入っているマスは、書き換えずに確定し直しても、取得した値のままにする
         _acquiredText = result.Value is not null && !result.IsManual ? InputText : null;
+        for (var itemIndex = 0; itemIndex < Rows.Count; itemIndex++) {
+            Rows[itemIndex].IsCurrent = itemIndex == CurrentItemIndex;
+        }
     }
+
+    /// <summary>キーの案内で、いまの項目で使える操作として出すか（使えない操作は、薄く出す）</summary>
+    public bool IsKeyActionAvailable(KeyAction action) => action switch {
+        KeyAction.AcquireValue => CanAcquire,
+        KeyAction.Confirm => IsValueInput || IsTask,
+        KeyAction.Pass or KeyAction.Fail => IsConfirmation,
+        KeyAction.Reapply => CanReapplyInstrument,
+        _ => true,
+    };
 
     private void ReplaceSession(InspectionSession session) {
         _session = session;
@@ -522,7 +534,7 @@ public sealed partial class MainViewModel : ObservableObject {
             for (var unitIndex = 0; unitIndex < _session.UnitCount; unitIndex++) {
                 cells.Add(new CellViewModel(_session, itemIndex, unitIndex));
             }
-            rows.Add(new RowViewModel(_session.Items[itemIndex].Name, cells));
+            rows.Add(new RowViewModel(_session.Items[itemIndex].Name, cells) { IsCurrent = itemIndex == _session.CurrentItemIndex });
         }
         return rows;
     }
