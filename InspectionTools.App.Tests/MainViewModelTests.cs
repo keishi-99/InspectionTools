@@ -23,7 +23,11 @@ public sealed class MainViewModelTests : IDisposable {
         /// <summary>転記先として選ばれるファイル（null なら、選ばずに閉じたことになる）</summary>
         public string? TemplatePathToSelect { get; set; }
 
+        /// <summary>確認ダイアログが開かれた瞬間に呼ばれる(そのときの画面の状態を調べるため)</summary>
+        public Action<string>? OnConfirm { get; set; }
+
         public bool Confirm(string message) {
+            OnConfirm?.Invoke(message);
             ConfirmMessages.Add(message);
             return ConfirmAnswers.Dequeue();
         }
@@ -681,12 +685,12 @@ public sealed class MainViewModelTests : IDisposable {
     }
 
     [Fact]
-    public void FinishingTransfersTheResultsAndStartsANewInspection() {
+    public async Task FinishingTransfersTheResultsAndStartsANewInspection() {
         CreateTemplate();
         _dialog.TemplatePathToSelect = TemplatePath;
         var viewModel = CreateFinishedViewModel();
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Equal(146.745, ReadNumber("F8"));
         Assert.Equal(-50, ReadNumber("F16"));
@@ -697,9 +701,82 @@ public sealed class MainViewModelTests : IDisposable {
         Assert.Equal(1, viewModel.UnitCount);
     }
 
+    // ===== 転記中のスピナー =====
+
+    // 転記は時間がかかるので、背景で行い、その間はスピナーを出して画面の操作を止める。busy の変化と、そのときの文言を記録する
+    private static List<(bool IsBusy, string Text)> RecordBusyChanges(MainViewModel viewModel) {
+        var changes = new List<(bool, string)>();
+        viewModel.PropertyChanged += (_, e) => {
+            if (e.PropertyName == nameof(MainViewModel.IsInstrumentBusy)) {
+                changes.Add((viewModel.IsInstrumentBusy, viewModel.BusyText));
+            }
+        };
+        return changes;
+    }
+
+    [Fact]
+    public void BusyTextIsAboutInstrumentCommunicationAtFirst() {
+        Assert.Equal("測定器と通信中…", CreateViewModel().BusyText);
+    }
+
+    [Fact]
+    public async Task SpinnerIsShownWhileTransferringAndClearedAfterwards() {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+        var changes = RecordBusyChanges(viewModel);
+
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
+
+        // 合格範囲の読み取りと、書き込みの2回、「Excel に転記しています…」を出して、最後は消えている
+        Assert.Contains((true, "Excel に転記しています…"), changes);
+        Assert.Equal(2, changes.Count(change => change.IsBusy));
+        Assert.False(viewModel.IsInstrumentBusy);
+    }
+
+    // 確認ダイアログが出ている間は、スピナーを止める(「転記しています」と出たまま、確認を求めないため)
+    [Fact]
+    public async Task SpinnerIsClearedWhileAConfirmationIsShown() {
+        CreateTemplate();
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateViewModel();
+        bool? busyWhenAsked = null;
+        _dialog.OnConfirm = _ => busyWhenAsked = viewModel.IsInstrumentBusy;
+        _dialog.ConfirmAnswers.Enqueue(false);
+
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
+
+        Assert.False(busyWhenAsked);
+        Assert.False(viewModel.IsInstrumentBusy);
+        Assert.Empty(_dialog.Infos);
+    }
+
+    [Fact]
+    public async Task SpinnerIsClearedWhenTheTransferFails() {
+        CreateTemplate(productName: "EL9240");
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var viewModel = CreateFinishedViewModel();
+
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
+
+        Assert.Single(_dialog.Errors);
+        Assert.False(viewModel.IsInstrumentBusy);
+    }
+
+    [Fact]
+    public async Task SpinnerIsNotShownWhenTheFileDialogIsClosedWithoutChoosing() {
+        _dialog.TemplatePathToSelect = null;
+        var viewModel = CreateFinishedViewModel();
+        var changes = RecordBusyChanges(viewModel);
+
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
+
+        Assert.Empty(changes);
+    }
+
     // 合格範囲のシートも製品の目印もないテンプレート（PAF5）では、合格範囲の突き合わせと製品の確認をせずに転記する。確認項目はリンク先の列に TRUE を書く
     [Fact]
-    public void FinishingWithoutSettingSheetAndProductCheckTransfersAndWritesConfirmationToItsColumn() {
+    public async Task FinishingWithoutSettingSheetAndProductCheckTransfersAndWritesConfirmationToItsColumn() {
         Directory.CreateDirectory(_directory);
         using (var workbook = new XLWorkbook()) {
             workbook.AddWorksheet("ACdata");
@@ -715,7 +792,7 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.ConfirmOkCommand.Execute(null);
         viewModel.CompleteTaskCommand.Execute(null);
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Empty(_dialog.Errors);
         Assert.Empty(_dialog.ConfirmMessages);
@@ -726,7 +803,7 @@ public sealed class MainViewModelTests : IDisposable {
 
     // 台を1台ずつ別のシートに書く製品（PAF5 では5台ずつ）では、2台目が2枚目のシートに転記され、各シートの台数のセル(C1)に台数が入る
     [Fact]
-    public void FinishingWithTwoUnitsOnTwoSheetsWritesEachUnitToItsSheet() {
+    public async Task FinishingWithTwoUnitsOnTwoSheetsWritesEachUnitToItsSheet() {
         Directory.CreateDirectory(_directory);
         using (var workbook = new XLWorkbook()) {
             workbook.AddWorksheet("ACdata");
@@ -747,7 +824,7 @@ public sealed class MainViewModelTests : IDisposable {
             viewModel.CompleteTaskCommand.Execute(null);
         }
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Empty(_dialog.Errors);
         using var result = new XLWorkbook(TemplatePath);
@@ -758,11 +835,11 @@ public sealed class MainViewModelTests : IDisposable {
     }
 
     [Fact]
-    public void ClosingTheFileDialogWithoutChoosingDoesNothing() {
+    public async Task ClosingTheFileDialogWithoutChoosingDoesNothing() {
         _dialog.TemplatePathToSelect = null;
         var viewModel = CreateFinishedViewModel();
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Empty(_dialog.Errors);
         Assert.Empty(_dialog.Infos);
@@ -771,12 +848,12 @@ public sealed class MainViewModelTests : IDisposable {
     }
 
     [Fact]
-    public void TemplateOfAnotherProductIsRejectedAndTheResultsAreKept() {
+    public async Task TemplateOfAnotherProductIsRejectedAndTheResultsAreKept() {
         CreateTemplate(productName: "EL9240");
         _dialog.TemplatePathToSelect = TemplatePath;
         var viewModel = CreateFinishedViewModel();
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Single(_dialog.Errors);
         Assert.Empty(_dialog.Infos);
@@ -786,13 +863,13 @@ public sealed class MainViewModelTests : IDisposable {
     }
 
     [Fact]
-    public void TemplateOpenedByAnotherProgramIsReportedAndTheResultsAreKept() {
+    public async Task TemplateOpenedByAnotherProgramIsReportedAndTheResultsAreKept() {
         CreateTemplate();
         _dialog.TemplatePathToSelect = TemplatePath;
         var viewModel = CreateFinishedViewModel();
         using var otherProgram = new FileStream(TemplatePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Single(_dialog.Errors);
         Assert.True(File.Exists(SavedPath));
@@ -802,14 +879,14 @@ public sealed class MainViewModelTests : IDisposable {
     [Theory]
     [InlineData(true, 146.745)]
     [InlineData(false, null)]
-    public void DifferentRangeInTheTemplateAsksAndFollowsTheAnswer(bool answer, double? expectedValue) {
+    public async Task DifferentRangeInTheTemplateAsksAndFollowsTheAnswer(bool answer, double? expectedValue) {
         // 定義は上限230、テンプレートは上限200
         CreateTemplate(measurementUpper: 200);
         _dialog.TemplatePathToSelect = TemplatePath;
         _dialog.ConfirmAnswers.Enqueue(answer);
         var viewModel = CreateFinishedViewModel();
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Contains("消費電流", Assert.Single(_dialog.ConfirmMessages));
         Assert.Equal(expectedValue, ReadNumber("F8"));
@@ -818,7 +895,7 @@ public sealed class MainViewModelTests : IDisposable {
     [Theory]
     [InlineData(true, 146.745)]
     [InlineData(false, null)]
-    public void UndoneItemsAskBeforeTransferAndFollowTheAnswer(bool answer, double? expectedValue) {
+    public async Task UndoneItemsAskBeforeTransferAndFollowTheAnswer(bool answer, double? expectedValue) {
         CreateTemplate();
         _dialog.TemplatePathToSelect = TemplatePath;
         _dialog.ConfirmAnswers.Enqueue(answer);
@@ -827,7 +904,7 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.InputText = "146.745";
         viewModel.CommitValueCommand.Execute(null);
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Contains("2 か所", Assert.Single(_dialog.ConfirmMessages));
         Assert.Equal(expectedValue, ReadNumber("F8"));
@@ -835,14 +912,14 @@ public sealed class MainViewModelTests : IDisposable {
     }
 
     [Fact]
-    public void FailingToDeleteTheSavedStateAfterTransferStillStartsANewInspection() {
+    public async Task FailingToDeleteTheSavedStateAfterTransferStillStartsANewInspection() {
         CreateTemplate();
         _dialog.TemplatePathToSelect = TemplatePath;
         var viewModel = CreateFinishedViewModel();
         // 途中保存のファイルを別のプログラムが開いている状態にして、削除だけを失敗させる
         using var otherProgram = new FileStream(SavedPath, FileMode.Open, FileAccess.Read, FileShare.None);
 
-        viewModel.FinishInspectionCommand.Execute(null);
+        await viewModel.FinishInspectionCommand.ExecuteAsync(null);
 
         Assert.Equal(146.745, ReadNumber("F8"));
         Assert.Contains("転記は完了", Assert.Single(_dialog.Errors));
