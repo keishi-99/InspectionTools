@@ -80,8 +80,38 @@ public readonly record struct KeyChord(Key Key, ModifierKeys Modifiers = Modifie
         }
     }
 
+    // 画面の案内に出す短い名前（設定ファイルの書き方とは別。枠の中に収まるように短くする）
+    private static readonly Dictionary<Key, string> DisplayNames = new() {
+        [Key.Up] = "↑",
+        [Key.Down] = "↓",
+        [Key.Left] = "←",
+        [Key.Right] = "→",
+        [Key.Prior] = "PgUp",
+        [Key.Next] = "PgDn",
+        [Key.Add] = "テンキー+",
+        [Key.Subtract] = "テンキー-",
+        [Key.Multiply] = "テンキー*",
+        [Key.Divide] = "テンキー/",
+    };
+
+    /// <summary>画面の案内に出す名前に直す（例: ↓、PgDn、Ctrl+F5）。設定ファイルに書く名前（ToString）とは違う</summary>
+    public string DisplayText {
+        get {
+            var key = Key;
+            return DisplayNames.TryGetValue(key, out var name) ? ModifierPrefix() + name : ToString();
+        }
+    }
+
     /// <summary>設定ファイルに書く名前に直す（例: Ctrl+F5）</summary>
     public override string ToString() {
+        // 構造体の中のラムダ式は this を使えないので、キーを変数に取り出す
+        var key = Key;
+        var alias = Aliases.FirstOrDefault(entry => entry.Key == key);
+        return ModifierPrefix() + (alias.Name ?? key.ToString());
+    }
+
+    // 修飾キーの部分(例: 「Ctrl+Shift+」。修飾キーがなければ空)
+    private string ModifierPrefix() {
         var parts = new List<string>();
         if (Modifiers.HasFlag(ModifierKeys.Control)) {
             parts.Add("Ctrl");
@@ -96,11 +126,7 @@ public readonly record struct KeyChord(Key Key, ModifierKeys Modifiers = Modifie
             parts.Add("Win");
         }
 
-        // 構造体の中のラムダ式は this を使えないので、キーを変数に取り出す
-        var key = Key;
-        var alias = Aliases.FirstOrDefault(entry => entry.Key == key);
-        parts.Add(alias.Name ?? key.ToString());
-        return string.Join("+", parts);
+        return parts.Count == 0 ? "" : string.Join("+", parts) + "+";
     }
 
     private static ModifierKeys? ParseModifier(string name) {

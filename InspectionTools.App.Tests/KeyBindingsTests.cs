@@ -88,25 +88,53 @@ public class KeyBindingsTests {
         Assert.False(bindings.TryFind(new KeyChord(Key.Return), out _));
     }
 
-    [Fact]
-    public void HintTextListsTheFirstKeyOfEachAction() {
-        var hint = KeyBindings.Default.HintText;
+    private static string[] KeysOf(IReadOnlyList<KeyHintItem> hints, string label) =>
+        hints.Single(hint => hint.Label == label).Keys.Select(key => key.Text).ToArray();
 
-        Assert.Contains("値を取得 [Space]", hint);
-        Assert.Contains("確定 [Enter]", hint);
-        Assert.Contains("再適用 [F3]", hint);
-        Assert.Contains("合格 [F5]", hint);
-        Assert.Contains("不合格 [F6]", hint);
-        Assert.Contains("次へ [Down]", hint);
-        Assert.Contains("前へ [Up]", hint);
+    [Fact]
+    public void HintsListEveryKeyOfEachAction() {
+        var hints = KeyBindings.Default.Hints;
+
+        Assert.Equal(["Space", "F2", "テンキー+"], KeysOf(hints, "値を取得"));
+        Assert.Equal(["Enter", "F4"], KeysOf(hints, "確定"));
+        Assert.Equal(["F3", "テンキー*"], KeysOf(hints, "再適用"));
+        Assert.Equal(["F5"], KeysOf(hints, "合格"));
+        Assert.Equal(["F6"], KeysOf(hints, "不合格"));
+        Assert.Equal(["↓", "PgDn"], KeysOf(hints, "次へ"));
+        Assert.Equal(["↑", "PgUp"], KeysOf(hints, "前へ"));
     }
 
     [Fact]
-    public void HintTextSkipsActionsWithoutKeys() {
+    public void HintsSkipActionsWithoutKeys() {
         var chords = new Dictionary<KeyAction, IReadOnlyList<KeyChord>> { [KeyAction.Confirm] = [new(Key.Return)] };
 
-        var hint = new KeyBindings(chords, new KeyChord(Key.F12)).HintText;
+        var hints = new KeyBindings(chords, new KeyChord(Key.F12)).Hints;
 
-        Assert.Equal("確定 [Enter]", hint);
+        Assert.Equal("確定", Assert.Single(hints).Label);
+    }
+
+    [Theory]
+    [InlineData("]", true)]
+    [InlineData("↓", true)]
+    [InlineData("F5", false)]
+    [InlineData("Enter", false)]
+    [InlineData("A", false)]
+    public void OnlySingleSymbolKeysAreShownLarge(string text, bool expected) {
+        Assert.Equal(expected, new KeyBadge(text).IsSymbol);
+    }
+
+    [Fact]
+    public void DisplayTextIsShortAndKeepsModifiers() {
+        Assert.Equal("↓", new KeyChord(Key.Down).DisplayText);
+        Assert.Equal("Ctrl+PgDn", new KeyChord(Key.Next, ModifierKeys.Control).DisplayText);
+        Assert.Equal("Enter", new KeyChord(Key.Return).DisplayText);
+        Assert.Equal("]", new KeyChord(Key.OemCloseBrackets).DisplayText);
+    }
+
+    [Fact]
+    public void ToStringStillGivesTheNameForTheSettingsFile() {
+        Assert.Equal("Down", new KeyChord(Key.Down).ToString());
+        Assert.Equal("PageDown", new KeyChord(Key.Next).ToString());
+        Assert.Equal("Ctrl+Shift+F5", new KeyChord(Key.F5, ModifierKeys.Control | ModifierKeys.Shift).ToString());
     }
 }

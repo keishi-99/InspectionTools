@@ -36,8 +36,8 @@
                             Margin="0,0,0,8"
                             Padding="24,12"
                             HorizontalAlignment="Left"
-                            HorizontalContentAlignment="Left"
-                            MinWidth="240"
+                            HorizontalContentAlignment="Center"
+                            Width="150"
                             Height="Auto"
                             FontSize="18"
                             Content="{Binding Name}"
@@ -61,7 +61,7 @@
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding Product}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
                 <TextBlock Text="台数" Margin="32,0,8,0" VerticalAlignment="Center" />
-                <Button Width="36" Content="－" Command="{Binding DecreaseUnitCountCommand}" />
+                <Button Width="36" Padding="0" Content="－" Command="{Binding DecreaseUnitCountCommand}" />
                 <TextBox
                     x:Name="UnitCountTextBox"
                     Width="48"
@@ -76,21 +76,31 @@
                         <KeyBinding Key="Return" Command="{Binding ApplyUnitCountTextCommand}" />
                     </TextBox.InputBindings>
                 </TextBox>
-                <Button Width="36" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
+                <Button Width="36" Padding="0" Content="＋" Command="{Binding IncreaseUnitCountCommand}" />
                 <TextBlock Text="{Binding MaxUnitCount, StringFormat=（最大{0}台）}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了（転記）" Command="{Binding FinishInspectionCommand}" />
+                <Button Margin="48,0,0,0" Padding="16,0" Content="検査終了" Command="{Binding FinishInspectionCommand}" />
                 <Button Margin="24,0,0,0" Padding="16,0" Content="メニューへ戻る" Click="BackToMenuButton_Click" />
+            </StackPanel>
+            <!--  キーの有効・無効のスイッチ。全体のホットキーは他のソフトのキーを奪うので、必要なときだけ有効にする  -->
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                 <Button
-                    Margin="24,0,0,0"
                     Padding="16,0"
                     Content="測定器"
                     Command="{Binding OpenInstrumentSelectionCommand}"
                     Visibility="{Binding HasInstrumentSelection, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 <TextBlock Text="{Binding InstrumentStatusText}" Margin="8,0,0,0" VerticalAlignment="Center" />
-            </StackPanel>
-            <!--  キーの有効・無効のスイッチ。全体のホットキーは他のソフトのキーを奪うので、必要なときだけ有効にする  -->
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <TextBlock x:Name="GlobalHotkeyLabel" VerticalAlignment="Center" />
+                <TextBlock x:Name="GlobalHotkeyLabel" Margin="32,0,0,0" VerticalAlignment="Center" Text="前面ホットキー" />
+                <!--  キーは、下部のキー案内と同じ枠で囲む  -->
+                <Border
+                    x:Name="GlobalHotkeyBadge"
+                    Margin="6,0,0,0"
+                    Padding="6,1"
+                    VerticalAlignment="Center"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="3">
+                    <TextBlock x:Name="GlobalHotkeyKeyText" VerticalAlignment="Center" FontFamily="Consolas, Meiryo" />
+                </Border>
                 <ToggleButton
                     x:Name="GlobalHotkeySwitch"
                     Margin="8,0"
@@ -116,13 +126,27 @@
             CanUserAddRows="False"
             CanUserSortColumns="False"
             CanUserReorderColumns="False"
-            HeadersVisibility="All"
+            HeadersVisibility="Column"
             IsReadOnly="True"
+            MinRowHeight="26"
+            RowHeight="26"
             SelectionMode="Single"
             SelectionUnit="Cell"
             FrozenColumnCount="1"
             GridLinesVisibility="All"
-            SelectedCellsChanged="ResultGrid_SelectedCellsChanged" />
+            SelectedCellsChanged="ResultGrid_SelectedCellsChanged">
+            <!--  いま検査している項目の行は、薄く色を付けて太字にする（マスの合否の色は、そのまま見える）  -->
+            <DataGrid.RowStyle>
+                <Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                            <Setter Property="Background" Value="#22673AB7" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+        </DataGrid>
 
         <!--  下部: 現在の項目と入力欄  -->
         <Border Grid.Row="2" Margin="0,8,0,0" Padding="12" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="4">
@@ -181,7 +205,66 @@
                     <TextBlock Text="{Binding DcsElapsedText}" Margin="24,0,0,0" VerticalAlignment="Center" FontSize="18" />
                 </StackPanel>
                 <!--  キーの案内（設定ファイルで割り当てを変えると、ここも変わる）  -->
-                <TextBlock x:Name="KeyHintTextBlock" Margin="0,8,0,0" Opacity="0.6" TextWrapping="Wrap" />
+                <TextBlock x:Name="KeyHintDisabledText" Margin="0,8,0,0" Opacity="0.6" Visibility="Collapsed" />
+                <ItemsControl x:Name="KeyHintItems" Margin="0,8,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,2,24,2" Orientation="Horizontal">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <!--  いまの項目で使えない操作は、薄く出す  -->
+                                            <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                                <Setter Property="Opacity" Value="0.35" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <TextBlock VerticalAlignment="Center" Opacity="0.8" Text="{Binding Label}" />
+                                <ItemsControl ItemsSource="{Binding Keys}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!--  キーは、旧アプリのヘルプと同じく、等幅の文字を角丸の枠で囲む。記号1文字のキーは大きく太く出す  -->
+                                            <Border
+                                                Margin="6,0,0,0"
+                                                Padding="6,1"
+                                                BorderBrush="Gray"
+                                                BorderThickness="1"
+                                                CornerRadius="3">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontFamily="Consolas, Meiryo"
+                                                    FontSize="13"
+                                                    Text="{Binding Text}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSymbol}" Value="True">
+                                                                    <Setter Property="FontSize" Value="17" />
+                                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
         </Border>
 

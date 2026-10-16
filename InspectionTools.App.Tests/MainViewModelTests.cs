@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using InspectionTools.App.Input;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Inspection;
 
@@ -134,6 +135,50 @@ public sealed class MainViewModelTests : IDisposable {
         viewModel.CompleteTaskCommand.Execute(null);
         Assert.Equal(ResultState.Done, viewModel.Rows[3].Cells[0].State);
         Assert.Equal("完了", viewModel.Rows[3].Cells[0].Display);
+    }
+
+    [Fact]
+    public void OnlyTheCurrentItemRowIsMarkedAsCurrent() {
+        var viewModel = CreateViewModel();
+        Assert.Equal([true, false, false, false], viewModel.Rows.Select(row => row.IsCurrent));
+
+        viewModel.MoveToAsync(2, 0);
+
+        Assert.Equal([false, false, true, false], viewModel.Rows.Select(row => row.IsCurrent));
+    }
+
+    [Fact]
+    public void CurrentRowMarkSurvivesChangingTheUnitCount() {
+        var viewModel = CreateViewModel();
+        viewModel.MoveToAsync(2, 0);
+
+        viewModel.IncreaseUnitCountCommand.Execute(null);
+
+        Assert.Equal([false, false, true, false], viewModel.Rows.Select(row => row.IsCurrent));
+    }
+
+    [Fact]
+    public void KeyActionAvailabilityFollowsTheKindOfTheCurrentItem() {
+        var viewModel = CreateViewModel();
+
+        // 測定項目(測定器に接続していないので、値の取得は使えない)
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.AcquireValue));
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Confirm));
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.Pass));
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.Fail));
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.Reapply));
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Next));
+
+        // 確認項目
+        viewModel.MoveToAsync(2, 0);
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.Confirm));
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Pass));
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Fail));
+
+        // 作業項目(確定のキーで、作業完了になる)
+        viewModel.MoveToAsync(3, 0);
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Confirm));
+        Assert.False(viewModel.IsKeyActionAvailable(KeyAction.Pass));
     }
 
     [Fact]
