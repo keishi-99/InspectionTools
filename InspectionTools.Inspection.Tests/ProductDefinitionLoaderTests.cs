@@ -219,4 +219,80 @@ public class ProductDefinitionLoaderTests {
 
         Assert.Equal(2, definition.Items.Count);
     }
+
+    [Fact]
+    public void SettingSheetMayBeOmitted() {
+        var json = ValidJson.Replace("\"settingSheet\": \"ACsetting\", ", "");
+        Assert.NotEqual(ValidJson, json);
+
+        var transfer = ProductDefinitionLoader.Parse(json).Transfer;
+
+        Assert.Null(transfer.SettingSheet);
+    }
+
+    [Fact]
+    public void VerifyCellAndValueMayBothBeOmitted() {
+        var json = ValidJson.Replace("\"verifyCell\": \"A3\", \"verifyValue\": \"EL5000\", ", "");
+        Assert.NotEqual(ValidJson, json);
+
+        var transfer = ProductDefinitionLoader.Parse(json).Transfer;
+
+        Assert.Null(transfer.VerifyCell);
+        Assert.Null(transfer.VerifyValue);
+    }
+
+    // 片方だけでは、何を何と比べるのか決まらないので、書いていない方の名前を添えて弾く
+    [Theory]
+    [InlineData("\"verifyCell\": \"A3\", ", "transfer.verifyCell")]
+    [InlineData("\"verifyValue\": \"EL5000\", ", "transfer.verifyValue")]
+    public void OnlyOneOfVerifyCellAndValueIsRejectedWithTheMissingName(string removed, string expectedName) {
+        var json = ValidJson.Replace(removed, "");
+        Assert.NotEqual(ValidJson, json);
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains(expectedName, exception.Message);
+    }
+
+    [Fact]
+    public void ParseReadsConfirmationColumnAndLeavesItNullWhenAbsent() {
+        var json = ValidJson.Replace("\"firstUnitColumn\": \"F\"", "\"firstUnitColumn\": \"H\", \"confirmationColumn\": \"M\"");
+
+        Assert.Equal("M", ProductDefinitionLoader.Parse(json).Transfer.ConfirmationColumn);
+        Assert.Null(ProductDefinitionLoader.Parse(ValidJson).Transfer.ConfirmationColumn);
+    }
+
+    [Theory]
+    [InlineData("5")]
+    [InlineData("M1")]
+    [InlineData(" ")]
+    public void InvalidConfirmationColumnIsRejectedWithItsName(string column) {
+        var json = ValidJson.Replace("\"firstUnitColumn\": \"F\"", $"\"firstUnitColumn\": \"F\", \"confirmationColumn\": \"{column}\"");
+
+        var exception = AssertRejected(json);
+
+        Assert.Contains("transfer.confirmationColumn", exception.Message);
+    }
+
+    [Fact]
+    public void ParseReadsDefaultValueAndLeavesItNullWhenAbsent() {
+        var definition = ProductDefinitionLoader.Parse(JsonWithItems("""
+            { "name": "ノッチ周波数", "kind": "Input", "excelRow": 23, "lowerLimit": 6250, "upperLimit": 6250, "defaultValue": 6250 },
+            { "name": "消費電流", "kind": "Measurement", "excelRow": 8, "lowerLimit": 0, "upperLimit": 230 }
+            """));
+
+        Assert.Equal(6250m, definition.Items[0].DefaultValue);
+        Assert.Null(definition.Items[1].DefaultValue);
+    }
+
+    // 初期値を入れる欄があるのは、値を入力する項目（測定、入力）だけ
+    [Theory]
+    [InlineData("""{ "name": "電源投入", "kind": "Confirmation", "excelRow": 5, "defaultValue": 1 }""")]
+    [InlineData("""{ "name": "調整", "kind": "Task", "defaultValue": 1 }""")]
+    public void DefaultValueOnConfirmationOrTaskIsRejectedWithItemPosition(string item) {
+        var exception = AssertRejected(JsonWithItems(item));
+
+        Assert.Contains("1番目の項目", exception.Message);
+        Assert.Contains("defaultValue", exception.Message);
+    }
 }

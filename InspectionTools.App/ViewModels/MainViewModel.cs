@@ -54,6 +54,8 @@ public sealed partial class MainViewModel : ObservableObject {
         }
         _session = new InspectionSession(definition.Items, unitCount: 1);
         Rows = CreateRows();
+        // 最初の項目に初期値があれば、入力欄に出す
+        SyncPosition();
     }
 
     /// <summary>製品名</summary>
@@ -418,11 +420,16 @@ public sealed partial class MainViewModel : ObservableObject {
         var isSavedStateKept = false;
         try {
             // 違う製品のテンプレートで合格範囲を突き合わせても意味がないので、先に製品を確認する
-            TemplateVerifier.Verify(templatePath, settings.Check);
-            var templateRows = TemplateReader.ReadRows(templatePath, TemplateLayout.From(_definition.Transfer));
-            var mismatches = RangeComparer.Compare(_session.Items, templateRows);
-            if (mismatches.Count > 0 && !_dialog.Confirm(CreateMismatchMessage(mismatches))) {
-                return;
+            if (settings.Check is { } check) {
+                TemplateVerifier.Verify(templatePath, check);
+            }
+            // 合格範囲のシートがないテンプレートは、突き合わせる相手がないので、確認しない
+            if (_definition.Transfer.SettingSheet is not null) {
+                var templateRows = TemplateReader.ReadRows(templatePath, TemplateLayout.From(_definition.Transfer));
+                var mismatches = RangeComparer.Compare(_session.Items, templateRows);
+                if (mismatches.Count > 0 && !_dialog.Confirm(CreateMismatchMessage(mismatches))) {
+                    return;
+                }
             }
 
             // 未実施のセルは、転記先の値を消して空欄にする（上書きの確認は不要という要件）ため、消えることを先に知らせる
@@ -507,9 +514,11 @@ public sealed partial class MainViewModel : ObservableObject {
         CurrentItemIndex = _session.CurrentItemIndex;
         CurrentUnitIndex = _session.CurrentUnitIndex;
         var result = _session.GetResult(CurrentItemIndex, CurrentUnitIndex);
-        InputText = result.Value?.ToString() ?? "";
+        // まだ値のないマスは、項目に初期値があればそれを出す。初期値は人が打ち込んだ値ではないので、そのまま確定しても手入力にはしない
+        var shownValue = result.Value ?? CurrentItem.DefaultValue;
+        InputText = shownValue?.ToString() ?? "";
         // すでに測定器から取得した値が入っているマスは、書き換えずに確定し直しても、取得した値のままにする
-        _acquiredText = result.Value is not null && !result.IsManual ? InputText : null;
+        _acquiredText = shownValue is not null && !result.IsManual ? InputText : null;
         for (var itemIndex = 0; itemIndex < Rows.Count; itemIndex++) {
             Rows[itemIndex].IsCurrent = itemIndex == CurrentItemIndex;
         }

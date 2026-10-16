@@ -17,6 +17,27 @@ public class TransferDefinitionMappingTests {
     }
 
     [Fact]
+    public void SettingsWithoutVerifyCellHaveNoProductCheck() {
+        var settings = TransferSettings.From(NoWrap with { VerifyCell = null, VerifyValue = null });
+
+        Assert.Null(settings.Check);
+    }
+
+    [Fact]
+    public void SettingsKeepConfirmationColumn() {
+        var layout = TransferSettings.From(NoWrap with { ConfirmationColumn = "K" }).UnitLayout;
+
+        Assert.Equal(new CellPosition(8, 11), layout.GetConfirmationCell(itemRow: 8, unitIndex: 0));
+    }
+
+    [Fact]
+    public void TemplateLayoutWithoutSettingSheetCannotBeMade() {
+        var exception = Assert.Throws<InvalidOperationException>(() => TemplateLayout.From(NoWrap with { SettingSheet = null }));
+
+        Assert.Contains("settingSheet", exception.Message);
+    }
+
+    [Fact]
     public void SettingsWithoutWrapPlaceUnitsInOneRow() {
         var layout = TransferSettings.From(NoWrap).UnitLayout;
 
@@ -51,5 +72,20 @@ public class TransferDefinitionMappingTests {
         var transfer = ProductDefinitionLoader.Parse(json).Transfer;
 
         Assert.Equal(Wrapped, transfer);
+    }
+
+    [Fact]
+    public void DraftWithConfirmationColumnAndWithoutSettingSheetCanBeLoadedBack() {
+        var definition = Wrapped with { SettingSheet = null, VerifyCell = null, VerifyValue = null, ConfirmationColumn = "H" };
+        var json = DefinitionDraftBuilder.BuildJson(
+            "PAF5",
+            [new TemplateRow(Row: 5, Name: "実装", LowerLimit: null, UpperLimit: null, IsConfirmation: true)],
+            new HashSet<int>(),
+            maxUnitCount: 5,
+            definition);
+
+        var transfer = ProductDefinitionLoader.Parse(json).Transfer;
+
+        Assert.Equal(definition, transfer);
     }
 }

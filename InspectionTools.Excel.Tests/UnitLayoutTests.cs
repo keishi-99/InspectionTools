@@ -64,6 +64,37 @@ public class UnitLayoutTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new UnitLayout("C", unitsPerBlock: 4, blockRowOffset: 0));
     }
 
+    // PAF5 では、台の値は H〜L 列、確認のチェックボックスのリンク先は M〜Q 列にある
+    [Theory]
+    [InlineData(0, 13)]
+    [InlineData(4, 17)]
+    public void ConfirmationCellIsInTheConfirmationColumnOfTheSameUnit(int unitIndex, int expectedColumn) {
+        var layout = new UnitLayout("H", confirmationColumn: "M");
+
+        Assert.Equal(new CellPosition(Row: 8, Column: expectedColumn), layout.GetConfirmationCell(itemRow: 8, unitIndex));
+        Assert.Equal(8 + unitIndex, layout.GetCell(itemRow: 8, unitIndex).Column);
+    }
+
+    [Fact]
+    public void ConfirmationCellFollowsTheWrapAsWell() {
+        var layout = new UnitLayout("C", unitsPerBlock: 4, blockRowOffset: 20, confirmationColumn: "H");
+
+        Assert.Equal(new CellPosition(28, 8), layout.GetConfirmationCell(itemRow: 8, unitIndex: 4));
+    }
+
+    [Fact]
+    public void WithoutConfirmationColumnConfirmationCellIsTheValueCell() {
+        var layout = new UnitLayout("F");
+
+        Assert.Null(layout.ConfirmationColumn);
+        Assert.Equal(layout.GetCell(itemRow: 5, unitIndex: 2), layout.GetConfirmationCell(itemRow: 5, unitIndex: 2));
+    }
+
+    [Fact]
+    public void InvalidConfirmationColumnIsRejected() {
+        Assert.Throws<ArgumentException>(() => new UnitLayout("F", confirmationColumn: "M1"));
+    }
+
     [Fact]
     public void NegativeUnitIndexIsRejected() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new UnitLayout("F").GetCell(8, -1));

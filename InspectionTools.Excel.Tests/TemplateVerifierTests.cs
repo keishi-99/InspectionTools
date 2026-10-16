@@ -40,6 +40,24 @@ public sealed class TemplateVerifierTests : IDisposable {
         TemplateVerifier.Verify(CreateTemplate(productCell: " EL5000 "), Check);
     }
 
+    // 製品名の前後に説明が付くテンプレート（PAF5 の「PAF5 変換器ユニット(分離形) 試験成績書」など）でも、目印の文字を含んでいれば通す
+    [Fact]
+    public void CellContainingTheExpectedValuePasses() {
+        var check = new TemplateCheck("ACdata", "A3", "分離形");
+
+        TemplateVerifier.Verify(CreateTemplate(productCell: "PAF5 変換器ユニット(分離形)　試験成績書"), check);
+    }
+
+    [Fact]
+    public void CellNotContainingTheExpectedValueThrows() {
+        var check = new TemplateCheck("ACdata", "A3", "分離形");
+        var path = CreateTemplate(productCell: "PAF5 変換器ユニット(一体形)　試験成績書");
+
+        var exception = Assert.Throws<TemplateVerificationException>(() => TemplateVerifier.Verify(path, check));
+
+        Assert.Contains("'分離形'", exception.Message);
+    }
+
     [Fact]
     public void DifferentProductThrowsWithCellAddressAndBothValues() {
         var path = CreateTemplate(productCell: "EL9240");

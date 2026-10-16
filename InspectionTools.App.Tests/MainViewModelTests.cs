@@ -499,6 +499,69 @@ public sealed class MainViewModelTests : IDisposable {
         Assert.Contains("最初から始めます", message);
     }
 
+    // ===== 初期値（defaultValue） =====
+
+    // 0: 初期値のある入力項目、1: 初期値のない入力項目
+    private static List<InspectionItem> CreateDefaultValueItems() => [
+        new("ノッチ周波数", ItemKind.Input, excelRow: 23, lowerLimit: 6000m, upperLimit: 6500m, defaultValue: 6250m),
+        new("温度入力", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
+    ];
+
+    private MainViewModel CreateViewModelWithDefaultValue() =>
+        new(new ProductDefinition(Product, MaxUnitCount, Transfer, CreateDefaultValueItems()), _store, _dialog);
+
+    // 保存された途中の結果を読み直して、最初のマスが手入力として記録されているかを調べる
+    private bool IsFirstCellManual() =>
+        _store.Load(Product, CreateDefaultValueItems()).Session!.GetResult(0, 0).IsManual;
+
+    [Fact]
+    public void DefaultValueIsShownInTheInputBoxOfAnItemWithoutResult() {
+        var viewModel = CreateViewModelWithDefaultValue();
+
+        Assert.Equal("6250", viewModel.InputText);
+    }
+
+    [Fact]
+    public void ItemWithoutDefaultValueStartsWithAnEmptyInputBox() {
+        var viewModel = CreateViewModelWithDefaultValue();
+        viewModel.CommitValueCommand.Execute(null);
+
+        Assert.Equal(1, viewModel.CurrentItemIndex);
+        Assert.Equal("", viewModel.InputText);
+    }
+
+    // 初期値は人が打ち込んだ値ではないので、そのまま確定しても手入力にはしない
+    [Fact]
+    public void CommittingTheDefaultValueAsIsIsNotRecordedAsManual() {
+        var viewModel = CreateViewModelWithDefaultValue();
+
+        viewModel.CommitValueCommand.Execute(null);
+
+        Assert.Equal(ResultState.Ok, viewModel.Rows[0].Cells[0].State);
+        Assert.False(IsFirstCellManual());
+    }
+
+    [Fact]
+    public void EditingTheDefaultValueIsRecordedAsManual() {
+        var viewModel = CreateViewModelWithDefaultValue();
+        viewModel.InputText = "6300";
+
+        viewModel.CommitValueCommand.Execute(null);
+
+        Assert.True(IsFirstCellManual());
+    }
+
+    [Fact]
+    public void ReturningToACommittedCellShowsTheResultInsteadOfTheDefaultValue() {
+        var viewModel = CreateViewModelWithDefaultValue();
+        viewModel.InputText = "6300";
+        viewModel.CommitValueCommand.Execute(null);
+
+        viewModel.MoveToAsync(0, 0);
+
+        Assert.Equal("6300", viewModel.InputText);
+    }
+
     // ===== 検査終了（転記） =====
 
     // 定義の4項目（行8、16、5と作業）に対応する、仮のテンプレートを作る
@@ -548,6 +611,33 @@ public sealed class MainViewModelTests : IDisposable {
         Assert.False(File.Exists(SavedPath));
         Assert.Equal(ResultState.NotDone, viewModel.Rows[0].Cells[0].State);
         Assert.Equal(1, viewModel.UnitCount);
+    }
+
+    // 合格範囲のシートも製品の目印もないテンプレート（PAF5）では、合格範囲の突き合わせと製品の確認をせずに転記する。確認項目はリンク先の列に TRUE を書く
+    [Fact]
+    public void FinishingWithoutSettingSheetAndProductCheckTransfersAndWritesConfirmationToItsColumn() {
+        Directory.CreateDirectory(_directory);
+        using (var workbook = new XLWorkbook()) {
+            workbook.AddWorksheet("ACdata");
+            workbook.SaveAs(TemplatePath);
+        }
+        _dialog.TemplatePathToSelect = TemplatePath;
+        var transfer = new TransferDefinition("ACdata", null, 5, 50, null, null, "F", UnitsPerBlock: null, BlockRowOffset: 0, ConfirmationColumn: "K");
+        var viewModel = new MainViewModel(new ProductDefinition(Product, MaxUnitCount, transfer, CreateDefinition().Items), _store, _dialog);
+        viewModel.InputText = "146.745";
+        viewModel.CommitValueCommand.Execute(null);
+        viewModel.InputText = "-50";
+        viewModel.CommitValueCommand.Execute(null);
+        viewModel.ConfirmOkCommand.Execute(null);
+        viewModel.CompleteTaskCommand.Execute(null);
+
+        viewModel.FinishInspectionCommand.Execute(null);
+
+        Assert.Empty(_dialog.Errors);
+        Assert.Empty(_dialog.ConfirmMessages);
+        Assert.Equal(146.745, ReadNumber("F8"));
+        using var result = new XLWorkbook(TemplatePath);
+        Assert.True(result.Worksheet("ACdata").Cell("K5").Value.GetBoolean());
     }
 
     [Fact]

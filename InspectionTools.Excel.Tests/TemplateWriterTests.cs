@@ -105,6 +105,43 @@ public sealed class TemplateWriterTests : IDisposable {
         Assert.True(ReadCell(TemplatePath, "G5").IsEmpty());
     }
 
+    // チェックボックスのリンク先の列がある製品（PAF5）では、確認項目は値の列ではなくその列に TRUE/FALSE を書き、不合格と未実施は FALSE にする
+    [Fact]
+    public void ConfirmationIsWrittenAsTrueOrFalseToTheConfirmationColumn() {
+        CreateTemplate();
+        var settings = Settings with { UnitLayout = new UnitLayout("F", confirmationColumn: "K") };
+        var session = CreateSession();
+
+        TemplateWriter.Write(TemplatePath, settings, session);
+
+        Assert.True(ReadCell(TemplatePath, "K5").Value.GetBoolean());
+        Assert.False(ReadCell(TemplatePath, "L5").Value.GetBoolean());
+        // 値の列の「良」には触れない
+        Assert.Equal("良", ReadCell(TemplatePath, "F5").GetString());
+        Assert.Equal("良", ReadCell(TemplatePath, "G5").GetString());
+    }
+
+    [Fact]
+    public void NotDoneConfirmationIsWrittenAsFalseToo() {
+        CreateTemplate();
+        var settings = Settings with { UnitLayout = new UnitLayout("F", confirmationColumn: "K") };
+        var session = new InspectionSession([new("電源投入", ItemKind.Confirmation, excelRow: 5)], unitCount: 1);
+
+        TemplateWriter.Write(TemplatePath, settings, session);
+
+        Assert.False(ReadCell(TemplatePath, "K5").Value.GetBoolean());
+    }
+
+    [Fact]
+    public void WithoutProductCheckAnyTemplateIsWritten() {
+        CreateTemplate(productName: "EL9240");
+        var settings = Settings with { Check = null };
+
+        TemplateWriter.Write(TemplatePath, settings, CreateSession());
+
+        Assert.Equal(146.745, ReadCell(TemplatePath, "F8").Value.GetNumber());
+    }
+
     [Fact]
     public void UnfinishedCellsOfInspectedUnitsAreClearedOfOldValues() {
         CreateTemplate();
