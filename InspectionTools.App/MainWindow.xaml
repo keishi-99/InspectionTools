@@ -284,7 +284,7 @@
             </StackPanel>
         </Border>
 
-        <!--  測定器と通信している間は、画面を覆ってマウス操作を止める（通信が重なると、コマンドが混ざるため）  -->
+        <!--  測定器と通信している間と、Excel に転記している間は、画面を覆ってマウス操作を止める（通信が重なると、コマンドが混ざるため。転記中の操作を防ぐため）  -->
         <Grid
             Grid.RowSpan="3"
             Background="{DynamicResource BusyOverlayBrush}"
@@ -296,7 +296,7 @@
                     IsIndeterminate="True"
                     Style="{StaticResource MaterialDesignCircularProgressBar}"
                     Value="0" />
-                <TextBlock Margin="0,8,0,0" Text="測定器と通信中…" HorizontalAlignment="Center" />
+                <TextBlock Margin="0,8,0,0" Text="{Binding BusyText}" HorizontalAlignment="Center" />
             </StackPanel>
         </Grid>
         </Grid>

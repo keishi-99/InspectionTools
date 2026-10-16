@@ -149,10 +149,17 @@ public sealed partial class MainViewModel : ObservableObject {
         DcsElapsedText = $"DCS 経過 {(int)elapsed.TotalMinutes:00}:{elapsed.Seconds:00}";
     }
 
-    /// <summary>測定器に通信している最中か（通信中は、画面の操作を止める）</summary>
+    /// <summary>測定器に通信している最中、または Excel に転記している最中か（その間は、画面の操作を止めて、スピナーを出す）</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsInstrumentIdle), nameof(CanAcquire), nameof(CanReapplyInstrument))]
     private bool _isInstrumentBusy;
+
+    private const string InstrumentBusyText = "測定器と通信中…";
+    private const string TransferBusyText = "Excel に転記しています…";
+
+    /// <summary>スピナーの下に出す文言（何を待っているのか）</summary>
+    [ObservableProperty]
+    private string _busyText = InstrumentBusyText;
 
     /// <summary>測定器に通信していないか（画面の操作を受け付けてよいか）</summary>
     public bool IsInstrumentIdle => !IsInstrumentBusy;
@@ -281,6 +288,7 @@ public sealed partial class MainViewModel : ObservableObject {
     // 測定器との通信を1つずつ行う。通信している間は画面を止め、失敗しても手入力で検査を続けられるように、例外は通知にとどめる
     // 見出し(failureMessage)は、測定器の文面だけでは何の操作が失敗したか分からないときだけ付ける(同じ内容を2回書かない)。hint は、次にすること
     private async Task RunInstrumentOperationAsync(string? failureMessage, string hint, Func<Task> operation) {
+        BusyText = InstrumentBusyText;
         IsInstrumentBusy = true;
         try {
             await operation();
@@ -434,13 +442,10 @@ public sealed partial class MainViewModel : ObservableObject {
         var unitCount = UnitCount;
         var isSavedStateKept = false;
         try {
-            // 違う製品のテンプレートで合格範囲を突き合わせても意味がないので、先に製品を確認する
-            if (settings.Check is { } check) {
-                TemplateVerifier.Verify(templatePath, check);
-            }
+            // 製品の確認と合格範囲の読み取りは、ファイルを開くので時間がかかる。背景で行い、その間はスピナーを出す
+            var templateRows = await RunInBackgroundAsync(TransferBusyText, () => VerifyAndReadTemplateRows(templatePath, settings));
             // 合格範囲のシートがないテンプレートは、突き合わせる相手がないので、確認しない
-            if (_definition.Transfer.SettingSheet is not null) {
-                var templateRows = TemplateReader.ReadRows(templatePath, TemplateLayout.From(_definition.Transfer));
+            if (templateRows is not null) {
                 var mismatches = RangeComparer.Compare(_session.Items, templateRows);
                 if (mismatches.Count > 0 && !_dialog.Confirm(CreateMismatchMessage(mismatches))) {
                     return;
@@ -453,7 +458,7 @@ public sealed partial class MainViewModel : ObservableObject {
                 return;
             }
 
-            ResultTransfer.Transfer(templatePath, settings, _session, _store, Product);
+            await RunInBackgroundAsync(TransferBusyText, () => ResultTransfer.Transfer(templatePath, settings, _session, _store, Product));
         } catch (Exception ex) when (ex is TemplateReadException or TemplateVerificationException or TemplateWriteException) {
             // 途中保存は残っているので、原因を直してもう一度押せばやり直せる
             _dialog.ShowError($"転記できませんでした。\n{ex.Message}\n\n検査結果は途中保存に残してあります。原因を直してから、もう一度「検査終了」を押してください。");
@@ -470,6 +475,34 @@ public sealed partial class MainViewModel : ObservableObject {
         ReplaceSession(new InspectionSession(_definition.Items, unitCount: 1));
         await ApplyCurrentItemActionAsync();
     }
+
+    // 違う製品のテンプレートで合格範囲を突き合わせても意味がないので、先に製品を確認する。そのあと、テンプレートの合格範囲を読み取る
+    // （合格範囲のシートがない製品は、突き合わせる相手がないので null）
+    private IReadOnlyList<TemplateRow>? VerifyAndReadTemplateRows(string templatePath, TransferSettings settings) {
+        if (settings.Check is { } check) {
+            TemplateVerifier.Verify(templatePath, check);
+        }
+        return _definition.Transfer.SettingSheet is null
+            ? null
+            : TemplateReader.ReadRows(templatePath, TemplateLayout.From(_definition.Transfer));
+    }
+
+    // 重い処理を別のスレッドで行う。その間、スピナーを出して画面の操作を止める
+    // （画面を動かすスレッドで重い処理をすると、スピナーも止まってしまうため）
+    private async Task<T> RunInBackgroundAsync<T>(string busyText, Func<T> work) {
+        BusyText = busyText;
+        IsInstrumentBusy = true;
+        try {
+            return await Task.Run(work);
+        } finally {
+            IsInstrumentBusy = false;
+        }
+    }
+
+    private Task RunInBackgroundAsync(string busyText, Action work) => RunInBackgroundAsync<object?>(busyText, () => {
+        work();
+        return null;
+    });
 
     // 合格範囲の食い違いを、確認ダイアログに出す文面にする（多いときは先頭の数件だけ）
     private static string CreateMismatchMessage(IReadOnlyList<RangeMismatch> mismatches) {
