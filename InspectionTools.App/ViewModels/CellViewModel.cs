@@ -27,6 +27,7 @@ public sealed partial class CellViewModel(InspectionSession session, int itemInd
                 ResultState.Ng => "不合格",
                 _ => "",
             },
+            ItemKind.Text => result.Text ?? "",
             ItemKind.Task => result.State == ResultState.Done ? "完了" : "",
             _ => "",
         };

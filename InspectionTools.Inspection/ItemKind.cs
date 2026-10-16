@@ -10,4 +10,6 @@ public enum ItemKind {
     Confirmation,
     /// <summary>測定器の操作や製品側の作業だけを行う（Excel に記録しない）</summary>
     Task,
+    /// <summary>シリアルのような文字を入力する。合格範囲はなく、空欄でなければ実施済みになる</summary>
+    Text,
 }

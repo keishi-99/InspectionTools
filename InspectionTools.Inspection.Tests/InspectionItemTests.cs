@@ -19,6 +19,29 @@ public class InspectionItemTests {
         Assert.Throws<ArgumentException>(() => new InspectionItem("電圧", kind, excelRow: 9));
     }
 
+    // 文字入力の項目（シリアルなど）は、Excel の行を持ち、合格範囲は持たない
+    [Fact]
+    public void TextItemKeepsRowAndHasNoRange() {
+        var item = new InspectionItem("LCDシリアル", ItemKind.Text, excelRow: 7);
+
+        Assert.Equal(7, item.ExcelRow);
+        Assert.Null(item.LowerLimit);
+        Assert.Null(item.UpperLimit);
+    }
+
+    [Fact]
+    public void TextItemWithoutExcelRowThrows() {
+        Assert.Throws<ArgumentException>(() => new InspectionItem("LCDシリアル", ItemKind.Text));
+    }
+
+    [Theory]
+    [InlineData(0, null)]
+    [InlineData(null, 10)]
+    [InlineData(0, 10)]
+    public void TextItemWithRangeThrows(int? lower, int? upper) {
+        Assert.Throws<ArgumentException>(() => new InspectionItem("LCDシリアル", ItemKind.Text, excelRow: 7, lowerLimit: lower, upperLimit: upper));
+    }
+
     [Fact]
     public void LowerLimitGreaterThanUpperLimitThrows() {
         Assert.Throws<ArgumentException>(() => new InspectionItem("電圧", ItemKind.Input, excelRow: 9, lowerLimit: 5m, upperLimit: 1m));

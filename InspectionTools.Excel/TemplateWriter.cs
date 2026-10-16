@@ -85,6 +85,15 @@ public static class TemplateWriter {
                     cell.Clear(XLClearOptions.Contents);
                 }
                 break;
+            case ItemKind.Text:
+                // 文字のまま書く（数値に変換されると、先頭の 0 や英字が消えるため）
+                if (result.Text is { } text) {
+                    cell.Value = text;
+                }
+                else {
+                    cell.Clear(XLClearOptions.Contents);
+                }
+                break;
             case ItemKind.Confirmation:
                 if (result.State == ResultState.Ok) {
                     cell.Value = confirmationOkText;

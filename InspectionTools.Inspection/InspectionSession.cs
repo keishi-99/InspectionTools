@@ -51,6 +51,22 @@ public sealed class InspectionSession {
         result.State = item.LowerLimit <= value && value <= item.UpperLimit ? ResultState.Ok : ResultState.Ng;
     }
 
+    /// <summary>入力した文字を設定し、実施済みにする（文字入力の項目のみ。前後の空白は取り除き、空欄は受け付けない。やり直しは上書き）</summary>
+    public void SetText(int itemIndex, int unitIndex, string text) {
+        ValidatePosition(itemIndex, unitIndex);
+        var item = Items[itemIndex];
+        if (item.Kind != ItemKind.Text) {
+            throw new InvalidOperationException($"文字を設定できない項目です: {item.Name}（{item.Kind}）");
+        }
+        if (string.IsNullOrWhiteSpace(text)) {
+            throw new ArgumentException($"文字が空です: {item.Name}", nameof(text));
+        }
+
+        var result = _units[unitIndex][itemIndex];
+        result.Text = text.Trim();
+        result.State = ResultState.Ok;
+    }
+
     /// <summary>人が決めた合否を設定する（確認項目のみ）</summary>
     public void SetConfirmation(int itemIndex, int unitIndex, bool isOk) {
         ValidatePosition(itemIndex, unitIndex);
@@ -138,7 +154,7 @@ public sealed class InspectionSession {
                 if (result.State == ResultState.NotDone) {
                     continue;
                 }
-                cells.Add(new CellSnapshot(unitIndex, itemIndex, result.Value, result.State, result.IsManual));
+                cells.Add(new CellSnapshot(unitIndex, itemIndex, result.Value, result.State, result.IsManual, result.Text));
             }
         }
         return new SessionSnapshot(product, Items.Count, UnitCount, CurrentItemIndex, CurrentUnitIndex, cells);
@@ -197,6 +213,12 @@ public sealed class InspectionSession {
                     throw new SessionRestoreException($"値がありません: {item.Name}（台 {cell.Unit + 1}）");
                 }
                 SetValue(cell.Item, cell.Unit, cell.Value.Value, cell.IsManual);
+                break;
+            case ItemKind.Text when cell.State == ResultState.Ok:
+                if (string.IsNullOrWhiteSpace(cell.Text)) {
+                    throw new SessionRestoreException($"文字がありません: {item.Name}（台 {cell.Unit + 1}）");
+                }
+                SetText(cell.Item, cell.Unit, cell.Text);
                 break;
             case ItemKind.Confirmation when cell.State is ResultState.Ok or ResultState.Ng:
                 SetConfirmation(cell.Item, cell.Unit, cell.State == ResultState.Ok);

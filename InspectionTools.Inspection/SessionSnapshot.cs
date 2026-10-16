@@ -9,5 +9,5 @@ public sealed record SessionSnapshot(
     int CurrentUnitIndex,
     IReadOnlyList<CellSnapshot> Cells);
 
-/// <summary>実施済みの1セル（項目 × 台）の保存内容（未実施のセルは保存しない）</summary>
-public sealed record CellSnapshot(int Unit, int Item, decimal? Value, ResultState State, bool IsManual);
+/// <summary>実施済みの1セル（項目 × 台）の保存内容（未実施のセルは保存しない）。Text は文字入力の項目だけに入る（文字入力を足す前の保存ファイルにはないので、省略時は null）</summary>
+public sealed record CellSnapshot(int Unit, int Item, decimal? Value, ResultState State, bool IsManual, string? Text = null);

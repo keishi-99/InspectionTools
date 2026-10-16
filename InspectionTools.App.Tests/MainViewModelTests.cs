@@ -499,6 +499,90 @@ public sealed class MainViewModelTests : IDisposable {
         Assert.Contains("最初から始めます", message);
     }
 
+    // ===== 文字入力（シリアルなど） =====
+
+    // 0: 文字入力、1: 入力
+    private MainViewModel CreateViewModelWithTextItem() => new(new ProductDefinition(Product, MaxUnitCount, Transfer, [
+        new InspectionItem("LCDシリアル", ItemKind.Text, excelRow: 7),
+        new InspectionItem("温度入力", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
+    ]), _store, _dialog);
+
+    [Fact]
+    public void TextItemUsesTheInputBoxWithoutRange() {
+        var viewModel = CreateViewModelWithTextItem();
+
+        Assert.True(viewModel.IsValueInput);
+        Assert.True(viewModel.IsTextInput);
+        Assert.Equal("", viewModel.CurrentRangeText);
+        Assert.False(viewModel.HasAcquisition);
+    }
+
+    [Fact]
+    public void CommittingTextShowsItInTheCellMarksOkAndMovesOn() {
+        var viewModel = CreateViewModelWithTextItem();
+        viewModel.InputText = "  0012345Z ";
+
+        viewModel.CommitValueCommand.Execute(null);
+
+        var cell = viewModel.Rows[0].Cells[0];
+        Assert.Equal(ResultState.Ok, cell.State);
+        Assert.Equal("0012345Z", cell.Display);
+        Assert.Equal(1, viewModel.CurrentItemIndex);
+        Assert.Equal("", viewModel.InputText);
+        Assert.False(viewModel.IsTextInput);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CommittingBlankTextShowsErrorAndChangesNothing(string text) {
+        var viewModel = CreateViewModelWithTextItem();
+        viewModel.InputText = text;
+
+        viewModel.CommitValueCommand.Execute(null);
+
+        Assert.Contains("入力されていません", Assert.Single(_dialog.Errors));
+        Assert.Equal(ResultState.NotDone, viewModel.Rows[0].Cells[0].State);
+        Assert.Equal(0, viewModel.CurrentItemIndex);
+    }
+
+    [Fact]
+    public void ReturningToACommittedTextCellShowsTheTextInTheInputBox() {
+        var viewModel = CreateViewModelWithTextItem();
+        viewModel.InputText = "ABC-1";
+        viewModel.CommitValueCommand.Execute(null);
+
+        viewModel.MoveToAsync(0, 0);
+
+        Assert.Equal("ABC-1", viewModel.InputText);
+    }
+
+    [Fact]
+    public async Task ConfirmKeyCommitsTheText() {
+        var viewModel = CreateViewModelWithTextItem();
+        viewModel.InputText = "ABC-1";
+
+        await viewModel.ExecuteKeyActionAsync(KeyAction.Confirm);
+
+        Assert.Equal("ABC-1", viewModel.Rows[0].Cells[0].Display);
+        Assert.True(viewModel.IsKeyActionAvailable(KeyAction.Confirm));
+    }
+
+    [Fact]
+    public void TextIsRestoredFromTheSavedStateWhenTheAppIsStartedAgain() {
+        var viewModel = CreateViewModelWithTextItem();
+        viewModel.InputText = "ABC-1";
+        viewModel.CommitValueCommand.Execute(null);
+
+        var restored = _store.Load(Product, [
+            new InspectionItem("LCDシリアル", ItemKind.Text, excelRow: 7),
+            new InspectionItem("温度入力", ItemKind.Input, excelRow: 16, lowerLimit: -50.2m, upperLimit: -49.8m),
+        ]);
+
+        Assert.Equal(LoadStatus.Restored, restored.Status);
+        Assert.Equal("ABC-1", restored.Session!.GetResult(0, 0).Text);
+    }
+
     // ===== 初期値（defaultValue） =====
 
     // 0: 初期値のある入力項目、1: 初期値のない入力項目
