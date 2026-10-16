@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using InspectionTools.App.Input;
+using InspectionTools.App.Settings;
 using InspectionTools.App.ViewModels;
 using InspectionTools.Inspection;
 
@@ -14,14 +16,11 @@ namespace InspectionTools.App;
 
 public partial class MainWindow : Window {
 
-    private static readonly Brush OkBrush = CreateBrush(0xC8, 0xE6, 0xC9);
-    private static readonly Brush NgBrush = CreateBrush(0xFF, 0xCD, 0xD2);
-    private static readonly Brush DoneBrush = CreateBrush(0xBB, 0xDE, 0xFB);
-
     private readonly ShellViewModel _shell;
     private MainViewModel? _viewModel;
     private readonly KeyBindings _keyBindings;
     private readonly IDialogService _dialog;
+    private readonly ThemeController _themeController;
 
     // 全体のホットキー（前面に出すキー）。登録するとシステム全体でそのキーが奪われるので、ボタンで有効にしたときだけ登録する
     private readonly GlobalHotkey _globalHotkey = new();
@@ -36,11 +35,21 @@ public partial class MainWindow : Window {
     private bool _isSyncingSelection;
 
 
-    public MainWindow(ShellViewModel shell, KeyBindings keyBindings, IDialogService dialog) {
+    public MainWindow(ShellViewModel shell, KeyBindings keyBindings, IDialogService dialog, ThemeController themeController) {
         InitializeComponent();
         _shell = shell;
         _keyBindings = keyBindings;
         _dialog = dialog;
+        _themeController = themeController;
+        _themeController.PropertyChanged += (_, e) => {
+            if (e.PropertyName == nameof(ThemeController.IsDark)) {
+                UpdateThemeSwitches();
+                WindowTitleBar.ApplyCurrentTheme(this);
+            }
+        };
+        UpdateThemeSwitches();
+        // タイトルバーも配色に合わせる(ウィンドウが作られてから)
+        SourceInitialized += (_, _) => WindowTitleBar.ApplyCurrentTheme(this);
         _globalHotkey.Pressed += BringToFront;
         UpdateKeySwitches();
         DataContext = shell;
@@ -73,6 +82,21 @@ public partial class MainWindow : Window {
         BuildGrid();
         RefreshKeyHints();
         FocusInput();
+    }
+
+    // ダークモードを切り替える(メニューと検査画面の、どちらのスイッチからでも)。適用と保存は、ThemeController が行う
+    private void ThemeSwitch_Click(object sender, RoutedEventArgs e) {
+        var isDark = ((ToggleButton)sender).IsChecked == true;
+        _themeController.SetTheme(isDark ? ThemeSetting.Dark : ThemeSetting.Light);
+        // 保存に失敗しても、配色は切り替わっているので、スイッチも切り替えた状態のままにする
+        UpdateThemeSwitches();
+        FocusInput();
+    }
+
+    // 2つのスイッチを、いまの配色に合わせる
+    private void UpdateThemeSwitches() {
+        MenuThemeSwitch.IsChecked = _themeController.IsDark;
+        InspectionThemeSwitch.IsChecked = _themeController.IsDark;
     }
 
     // 全体のホットキーの有効・無効を切り替える。有効にできなかったとき（他のソフトが同じキーを使っているなど）は、理由を知らせて無効のままにする
@@ -143,12 +167,6 @@ public partial class MainWindow : Window {
 
     private void BackToMenuButton_Click(object sender, RoutedEventArgs e) => _shell.BackToMenuCommand.Execute(null);
 
-    private static Brush CreateBrush(byte r, byte g, byte b) {
-        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-        brush.Freeze();
-        return brush;
-    }
-
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
         switch (e.PropertyName) {
             case nameof(MainViewModel.Rows):
@@ -211,15 +229,16 @@ public partial class MainWindow : Window {
     private Style CreateCellStyle(int unitIndex) {
         var style = CreateCellStyle();
         var statePath = $"Cells[{unitIndex}].{nameof(CellViewModel.State)}";
-        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Ok, OkBrush));
-        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Ng, NgBrush));
-        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Done, DoneBrush));
+        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Ok, ThemeBrushes.CellOk));
+        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Ng, ThemeBrushes.CellNg));
+        style.Triggers.Add(CreateStateTrigger(statePath, ResultState.Done, ThemeBrushes.CellDone));
         return style;
     }
 
-    private static DataTrigger CreateStateTrigger(string statePath, ResultState state, Brush brush) {
+    // 色は、リソースの名前で参照する(配色を切り替えたとき、表を作り直さなくても、色が変わる)
+    private static DataTrigger CreateStateTrigger(string statePath, ResultState state, string brushKey) {
         var trigger = new DataTrigger { Binding = new Binding(statePath), Value = state };
-        trigger.Setters.Add(new Setter(BackgroundProperty, brush));
+        trigger.Setters.Add(new Setter(BackgroundProperty, new DynamicResourceExtension(brushKey)));
         return trigger;
     }
 
