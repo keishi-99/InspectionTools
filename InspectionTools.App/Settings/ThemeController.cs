@@ -29,7 +29,7 @@ public sealed partial class ThemeController(string settingsPath, IThemeApplier a
         Theme = result.Settings.Theme;
         applier.Apply(Theme);
         if (result.Warning is not null) {
-            dialog.ShowError($"設定ファイルを読み込めなかったため、ライトで起動しました。\n{result.Warning}");
+            dialog.ShowWarning($"設定ファイルを読み込めなかったため、ライトで起動しました。\n{result.Warning}");
         }
     }
 
@@ -47,7 +47,7 @@ public sealed partial class ThemeController(string settingsPath, IThemeApplier a
         try {
             AppSettingsStore.Save(settingsPath, new AppSettings(theme));
         } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) {
-            dialog.ShowError($"配色の設定を保存できませんでした。次の起動では、元の配色に戻ります。\n{ex.Message}");
+            dialog.ShowWarning($"配色の設定を保存できませんでした。次の起動では、元の配色に戻ります。\n{ex.Message}");
         }
     }
 }

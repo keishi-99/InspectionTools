@@ -19,6 +19,9 @@ public sealed partial class MainViewModel : ObservableObject {
 
     private readonly TimeProvider _timeProvider;
 
+    // 途中保存の失敗を、すでに知らせたか(続けて失敗しても、通知を繰り返さないため)
+    private bool _isSaveFailureReported;
+
     // DCS が出力を始めた時刻（出力していないときは null）
     private DateTimeOffset? _dcsOutputStartedAt;
 
@@ -194,7 +197,7 @@ public sealed partial class MainViewModel : ObservableObject {
 
         var controller = InstrumentSelection!.Controller!;
         var action = CurrentAction;
-        await RunInstrumentOperationAsync("値を取得できませんでした。", async () => {
+        await RunInstrumentOperationAsync(null, "もう一度「値を取得」を押すか、手入力で続けてください。", async () => {
             await ApplyAndTrackAsync(controller, action, force: false);
             var value = await controller.AcquireAsync(action.Acquisition!);
             _acquiredText = value.ToString();
@@ -245,7 +248,7 @@ public sealed partial class MainViewModel : ObservableObject {
         }
 
         var action = CurrentAction;
-        await RunInstrumentOperationAsync("測定器の設定を適用できませんでした。", () => ApplyAndTrackAsync(controller, action, force));
+        await RunInstrumentOperationAsync("測定器の設定を適用できませんでした。", "手入力で続けるか、「設定を再適用」でやり直してください。", () => ApplyAndTrackAsync(controller, action, force));
     }
 
     // 測定器に状態を適用する。DCS に送ったときは、出力を始めた時刻を記録する（OFF にしたときは、記録を消す）
@@ -268,12 +271,14 @@ public sealed partial class MainViewModel : ObservableObject {
     }
 
     // 測定器との通信を1つずつ行う。通信している間は画面を止め、失敗しても手入力で検査を続けられるように、例外は通知にとどめる
-    private async Task RunInstrumentOperationAsync(string failureMessage, Func<Task> operation) {
+    // 見出し(failureMessage)は、測定器の文面だけでは何の操作が失敗したか分からないときだけ付ける(同じ内容を2回書かない)。hint は、次にすること
+    private async Task RunInstrumentOperationAsync(string? failureMessage, string hint, Func<Task> operation) {
         IsInstrumentBusy = true;
         try {
             await operation();
         } catch (InstrumentCommunicationException ex) {
-            _dialog.ShowError($"{failureMessage}\n{ex.Message}\n\n手入力で続けるか、「設定を再適用」でやり直してください。");
+            var heading = failureMessage is null ? "" : failureMessage + "\n";
+            _dialog.ShowError($"{heading}{ex.Message}\n\n{hint}");
         } finally {
             IsInstrumentBusy = false;
         }
@@ -296,7 +301,7 @@ public sealed partial class MainViewModel : ObservableObject {
                 }
                 break;
             case LoadStatus.Failed:
-                _dialog.ShowError($"途中保存を復元できませんでした。最初から始めます。\n理由: {loaded.Message}\n壊れたファイルは次の場所に残してあります: {loaded.BrokenFilePath}");
+                _dialog.ShowError($"途中保存を復元できませんでした。最初から始めます。\n理由: {loaded.Message}\n製品の定義(項目)が変わったか、保存ファイルが壊れた可能性があります。保存してあった結果は使えません。\n元のファイルは次の場所に残してあります: {loaded.BrokenFilePath}");
                 break;
         }
     }
@@ -318,7 +323,7 @@ public sealed partial class MainViewModel : ObservableObject {
             return;
         }
         if (!decimal.TryParse(InputText, NumberStyles.Float, CultureInfo.CurrentCulture, out var value)) {
-            _dialog.ShowError("数値で入力してください。");
+            _dialog.ShowError(string.IsNullOrWhiteSpace(InputText) ? "値が入力されていません。数値で入力してください(例: 1.234)。" : $"'{InputText}' は数値として読めません。数値で入力してください(例: 1.234)。");
             return;
         }
         // 「値を取得」で入力欄に出した文字列のまま確定したときだけ、測定器から取得した値として記録する（書き換えたら手入力）
@@ -539,12 +544,17 @@ public sealed partial class MainViewModel : ObservableObject {
         return rows;
     }
 
-    // 保存に失敗しても検査は続けられるように、例外は通知にとどめる
+    // 保存に失敗しても検査は続けられるように、例外は通知にとどめる。項目を進めるたびに保存するので、失敗が続いても、通知は最初の1回だけにする(保存できたら、次の失敗から、また通知する)
     private void Save() {
         try {
             _store.Save(Product, _session);
+            _isSaveFailureReported = false;
         } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) {
-            _dialog.ShowError($"途中保存に失敗しました。検査は続けられますが、アプリが終了すると結果が失われます。\n{ex.Message}");
+            if (_isSaveFailureReported) {
+                return;
+            }
+            _isSaveFailureReported = true;
+            _dialog.ShowError($"途中保存に失敗しました。検査は続けられますが、アプリが終了すると結果が失われます。\n保存できるようになるまで、この通知は繰り返しません。\n{ex.Message}");
         }
     }
 

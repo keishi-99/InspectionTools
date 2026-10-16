@@ -16,8 +16,12 @@ public sealed class WpfDialogService : IDialogService {
     public void ShowError(string message) =>
         Show(message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
 
+    public void ShowWarning(string message) =>
+        Show(message, "確認", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+    // 題は「お知らせ」(転記の完了も、検査の中断も、これで知らせる)
     public void ShowInfo(string message) =>
-        Show(message, "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+        Show(message, "お知らせ", MessageBoxButton.OK, MessageBoxImage.Information);
 
     public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) {
         var window = new InstrumentSelectionWindow(viewModel) { Owner = Owner };

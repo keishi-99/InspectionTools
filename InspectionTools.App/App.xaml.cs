@@ -42,7 +42,7 @@ public partial class App : Application {
         // キー割り当ては、実行ファイルのフォルダの設定ファイルだけで決まる。書き間違いや、キーのない操作は、起動時に知らせる
         var keyBindings = KeyBindingLoader.Load(Path.Combine(AppContext.BaseDirectory, KeyBindingLoader.FileName));
         if (keyBindings.Warnings.Count > 0) {
-            dialog.ShowError("キー割り当ての設定に、確認が必要な点があります。\n" + string.Join("\n", keyBindings.Warnings.Select(warning => $"・{warning}")));
+            dialog.ShowWarning("キー割り当ての設定に、確認が必要な点があります。\n" + string.Join("\n", keyBindings.Warnings.Select(warning => $"・{warning}")));
         }
 
         var window = new MainWindow(shell, keyBindings.Bindings, dialog, _themeController);
@@ -56,6 +56,8 @@ public partial class App : Application {
         InstrumentSelectionViewModel? instrumentSelection = null;
         var procedure = ProductProcedures.TryCreate(definition.Product);
         if (procedure is not null) {
+            // 定義の actionId が手順表にないと、検査中に例外になる。開く時点で見つけて、メニューに戻す
+            ProductDefinitionChecker.EnsureActionsExist(definition, procedure);
             instrumentSelection = new InstrumentSelectionViewModel(
                 procedure,
                 new InstrumentConnection(procedure, new DeviceControllerConnection()),

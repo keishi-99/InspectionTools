@@ -15,6 +15,10 @@ public sealed class MainViewModelInstrumentTests : IDisposable {
 
         public bool Confirm(string message) => true;
         public void ShowError(string message) => Errors.Add(message);
+        public List<string> Warnings { get; } = [];
+
+        public void ShowWarning(string message) => Warnings.Add(message);
+
         public void ShowInfo(string message) { }
         public void ShowInstrumentSelection(InstrumentSelectionViewModel viewModel) => SelectionShownCount++;
         public string? SelectTemplateFilePath() => null;

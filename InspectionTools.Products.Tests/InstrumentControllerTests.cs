@@ -254,7 +254,9 @@ public class InstrumentControllerTests {
         var exception = await Assert.ThrowsAsync<InstrumentCommunicationException>(() => controller.ApplyAsync(Action("dcs-4mA")));
 
         Assert.Equal(InstrumentRole.Dcs, exception.Role);
-        Assert.Contains("DCS", exception.Message);
+        Assert.Contains("測定器 Dcs（DCS）との通信に失敗しました。", exception.Message);
+        Assert.Contains("ケーブルと電源を確認してください", exception.Message);
+        Assert.Contains("（詳細: ", exception.Message);
         Assert.Equal("OFF", controller.States[InstrumentRole.Dcs]);
     }
 
@@ -426,6 +428,9 @@ public class InstrumentControllerTests {
 
         Assert.Equal(InstrumentRole.Dmm01, exception.Role);
         Assert.IsType<FormatException>(exception.InnerException);
+        // 通信はできたので、通信の失敗とは書かない
+        Assert.Contains("返事を数値として読めませんでした", exception.Message);
+        Assert.DoesNotContain("通信に失敗", exception.Message);
     }
 
     [Fact]
@@ -445,5 +450,9 @@ public class InstrumentControllerTests {
         var exception = await Assert.ThrowsAsync<InstrumentCommunicationException>(() => controller.AcquireAsync(Action("dmm02-dcv").Acquisition!));
 
         Assert.Equal(InstrumentRole.Dmm02, exception.Role);
+        // どの測定器との通信かを書き、英語の詳細は「詳細」に分け、先に確認することを書く
+        Assert.Contains("測定器 Dmm02（DMM02）との通信に失敗しました。", exception.Message);
+        Assert.Contains("ケーブルと電源を確認してください", exception.Message);
+        Assert.Contains("（詳細: ", exception.Message);
     }
 }

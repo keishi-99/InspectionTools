@@ -9,6 +9,9 @@ public interface IDialogService {
     /// <summary>エラーを知らせる</summary>
     void ShowError(string message);
 
+    /// <summary>続けられるが、確認してほしいことを知らせる(設定の読み間違いなど。エラーより軽い表示にする)</summary>
+    void ShowWarning(string message);
+
     /// <summary>処理が終わったことなどを知らせる</summary>
     void ShowInfo(string message);
 
